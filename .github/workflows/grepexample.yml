@@ -1,36 +1,35 @@
 name: grepexample workflow
 on:
- workflow_dispatch:
-   inputs:
-     component:
-      description: choose the component or else type "fullstack"
-      required: true
-      type: string       
+  workflow_dispatch:
+    inputs:
+      component:
+        description: Choose the component or else type "fullstack"
+        required: true
+        type: string
+
 jobs:
- job1:
-   runs-on: ubuntu-latest
-   outputs:
-     component: ${{ steps.component-input.output.component }}
-   steps:
-     - name: checkout code
-       uses: actions/checkout@v4
-     - name: check compo input
-       id: component-input
-	     shell: bash
-	     run: | 
-	       temp="${{ inputs.component }}"
-        lower=${temp,,}}
-	       if [[ "$temp" == "fullstack" ]]; then
-	         echo "component=fullstack" >> $GITHUB_OUTPUT
-		       echo "Deploying fullstack"
-	       else
-          comp='jq '.[] | .componentNmae' component.json | grep -if "\<${{ inputs.component }}\>" -m1'
-		        lowercomp=${comp,,}
-		     if [[ $lowercomp == "\"${lower}\"" ]]; then  
-		     echo "Deploying 'cat ./component.json | grep  -if  -o "${{ inputs.component }}" -m1'"
-		     echo "component='cat ./component.json | grep  -if  -o "${{ inputs.component }}" -m1'" >> $GITHUB_OUTPUT
-		     else 
-		     echo "Error: Component '${{ inputs.component }}' not found in component.json
-		     exit 1
-		     fi
-  
+  job1:
+    runs-on: ubuntu-latest
+    outputs:
+      component: ${{ steps.component-input.outputs.component }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check component input
+        id: component-input
+        shell: bash
+        run: |
+          temp="${{ inputs.component }}"
+          lower=${temp,,}
+          if [[ "$lower" == "fullstack" ]]; then
+            echo "component=fullstack" >> $GITHUB_OUTPUT
+            echo "Deploying fullstack"
+          else
+            comp=$(jq '.[] | .componentName' component.json | grep -iF "${{ inputs.component }}" -m1)
+            if [[ "$comp" != "" ]]; then  # Check if comp is empty string
+              echo "component='$comp'" >> $GITHUB_OUTPUT
+              echo "Deploying '$comp'"
+            else
+              echo "Error: Component '${{ inputs.component }}' not found in component.json"
+              exit 1
+            fi
+          fi
