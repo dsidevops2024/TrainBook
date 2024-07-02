@@ -9,12 +9,12 @@ on:
         required: true
         type: string
 
-  pull_request_target:
-    branches:
-      - main
-      - merge2
-    types:
-      - closed
+  #pull_request_target:
+    #branches:
+      #- main
+      #- merge2
+    #types:
+      #- closed
 
 jobs:
   deploy_job:
