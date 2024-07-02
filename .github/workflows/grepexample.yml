@@ -1,63 +1,40 @@
 name: grepexample workflow
+
 on:
   workflow_dispatch:
     inputs:
       component:
-        description: Choose the component or else type "fullstack"
+        description: choose the component or else type "fullstack"
         required: true
         type: string
-  pull_request_target:
-     branches:
-       - main
-     paths:
-      - '.github/**'
-     types:
-      - closed
 
 jobs:
   job1:
-    if: github.event.pull_request.merged == true
     runs-on: ubuntu-latest
     outputs:
       component: ${{ steps.component-input.outputs.component }}
+
     steps:
-      - uses: actions/checkout@v4
-      - name: Check component input
+      - name: checkout code
+        uses: actions/checkout@v4
+
+      - name: check component input
         id: component-input
         shell: bash
         run: |
           temp="${{ inputs.component }}"
           lower=${temp,,}
           if [[ "$lower" == "fullstack" ]]; then
-            echo "component=fullstack" >> $GITHUB_OUTPUT
+            echo "component=fullstack" >> $GITHUB_ENV
             echo "Deploying fullstack"
           else
             comp=$(jq '.[] | .componentName' component.json | grep -iF "\<${{ inputs.component }}\>" -m1)
-            if [[ "$comp" != "" ]]; then  # Check if comp is empty string
-              echo "component='$comp'" >> $GITHUB_OUTPUT
-              echo "Deploying '$comp'"
+            lowercomp=${comp,,}
+            if [[ $lowercomp == "\"${lower}\"" ]]; then
+              echo "Deploying $(cat ./component.json | grep -iF -o "${{ inputs.component }}" -m1)"
+              echo "component=$(cat ./component.json | grep -iF -o "${{ inputs.component }}" -m1)" >> $GITHUB_ENV
             else
               echo "Error: Component '${{ inputs.component }}' not found in component.json"
               exit 1
             fi
           fi
-  job2:
-    if: github.event.pull_request.merged != true
-    runs-on: ubuntu-latest
-    steps:
-     - name: check the output of the error
-       run: echo "it is not merged"
-      
-  job3:
-    needs: job1
-    runs-on: ubuntu-latest
-    steps:
-     - name: check the output of the error
-       run: echo "it is not merged"
-
-  job4:
-    
-    runs-on: ubuntu-latest
-    steps:
-     - name: check the output of the error
-       run: echo "it is not merged"
