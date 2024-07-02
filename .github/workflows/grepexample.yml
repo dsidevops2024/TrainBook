@@ -24,7 +24,7 @@ jobs:
             echo "component=fullstack" >> $GITHUB_OUTPUT
             echo "Deploying fullstack"
           else
-            comp=$(jq '.[] | .componentName' component.json | grep -iF "${{ inputs.component }}" -m1)
+            comp=$(jq '.[] | .componentName' component.json | grep -iF "$\<{{ inputs.component }}\>" -m1)
             if [[ "$comp" != "" ]]; then  # Check if comp is empty string
               echo "component='$comp'" >> $GITHUB_OUTPUT
               echo "Deploying '$comp'"
