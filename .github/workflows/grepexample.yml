@@ -28,7 +28,7 @@ jobs:
             echo "component=fullstack" >> $GITHUB_ENV
             echo "Deploying fullstack"
           else
-            comp=$(jq '.[] | .componentName' component.json | grep -iF "\<${{ inputs.component }}\>" -m1)
+            comp=$(jq '.[] | .componentName' component.json | grep -i "\<${{ inputs.component }}\>" -m1)
             lowercomp=${comp,,}
             if [[ $lowercomp == "\"${lower}\"" ]]; then
               echo "Deploying $(cat ./component.json | grep -iF -o "${{ inputs.component }}" -m1)"
