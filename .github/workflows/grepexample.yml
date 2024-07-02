@@ -6,16 +6,17 @@ on:
         description: Choose the component or else type "fullstack"
         required: true
         type: string
-  #pull_request_target:
-    #branches:
-     # - main
-    #paths:
-      #- '.github/*'
-    #types:
-      #- closed
+  pull_request_target:
+     branches:
+       - main
+     paths:
+      - '.github/*'
+     types:
+      - closed
 
 jobs:
   job1:
+    if: github.event.pull_request.merged == true
     runs-on: ubuntu-latest
     outputs:
       component: ${{ steps.component-input.outputs.component }}
@@ -40,3 +41,23 @@ jobs:
               exit 1
             fi
           fi
+  job2:
+    if: github.event.pull_request.merged != true
+    runs-on: ubuntu-latest
+    steps:
+     - name: check the output of the error
+       run: echo "it is not merged"
+      
+  job3:
+    needs: job1
+    runs-on: ubuntu-latest
+    steps:
+     - name: check the output of the error
+       run: echo "it is not merged"
+
+  job4:
+    
+    runs-on: ubuntu-latest
+    steps:
+     - name: check the output of the error
+       run: echo "it is not merged"
