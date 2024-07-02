@@ -1,9 +1,10 @@
 name: PR Workflow
 
 on:
-  pull_request:
-    paths:
-      - '.github/**'
+  workflow_dispatch:
+  #pull_request:
+    #paths:
+      #- '.github/**'
 
 jobs:
   build:
