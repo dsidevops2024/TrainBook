@@ -1,4 +1,4 @@
-name: oldgrepexampleold workflow
+name: grepexampleold workflow
 
 on:
   workflow_dispatch:
