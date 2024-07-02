@@ -6,6 +6,13 @@ on:
         description: Choose the component or else type "fullstack"
         required: true
         type: string
+  pull_request_target:
+    branches:
+      - main
+    paths:
+      - '.github/*'
+    types:
+      - closed
 
 jobs:
   job1:
