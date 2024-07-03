@@ -4,8 +4,8 @@ on:
     branches:
       - main
     paths:
-      - './.github/Test/**'
-      - './.github/workflows/**'
+      - '.github/Test/**'
+      - '.github/workflows/**'
     types:
        - closed
 jobs:
