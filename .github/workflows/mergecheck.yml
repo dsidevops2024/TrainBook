@@ -1,32 +1,26 @@
 name: pullrequest Workflow
-
 on:
   pull_request_target:
     branches:
       - main
-     
     paths:
       - '.github/**'
-
     types:
        - closed
-  
-
-    
-
 jobs:
   build:
     if: github.event.pull_request.merged == true
-    
-
     runs-on: ubuntu-latest
-
     steps:
-      
       - name: check the merge2 pull request
         run:  echo "Workflow executed by the main"
       - name: Checkout code
         uses: actions/checkout@v2
-     
       - name: execute only if triggered by specific user
         run: echo "Workflow executed by the specifi user"
+  handle_unmerged:
+    if: github.event.pull_request.merged != true
+    runs-on: ubuntu-latest
+    steps:
+      - name: Merge not complete
+        run: echo "Merge is not yet complete"
