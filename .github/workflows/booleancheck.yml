@@ -3,7 +3,7 @@ name: Booleancheck
 on:
   workflow_dispatch:
     inputs:
-      runTests:
+      initial:
         description: 'A boolean input'
         required: true
         type: boolean
@@ -24,7 +24,7 @@ jobs:
       - name: Set component
         id: set-component
         run: |
-          working_value=${{ fromJSON(${{ github.events.input.initial }}) }}
+          working_value=${{ fromJSON( github.events.input.initial ) }}
           echo "env=dev" >> $GITHUB_OUTPUT
           echo "comp=fullstack" >> $GITHUB_OUTPUT
           echo "init=$working_value" >> $GITHUB_OUTPUT
