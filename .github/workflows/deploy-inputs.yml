@@ -18,6 +18,7 @@ jobs:
       - name: Checking input (converted to boolean)
         run: |
           working_value=${{ fromJSON(github.event.inputs.runTests) }}
+          echo "var= $working_value"
           if [[ $working_value == true ]]; then
             echo "Running tests"  # Simplified using boolean value directly
           else
