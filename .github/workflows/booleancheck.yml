@@ -19,15 +19,15 @@ jobs:
     steps:
       
       - name: Checking input (might be string initially)
-        run: echo " initial (string representation):${{ github.events.input.initial }}"
+        run: echo "initial (string representation):${{ github.events.inputs.initial }}"
      
       - name: Set component
         id: set-component
         run: |
-          #working_value=${{ fromJSON(github.events.input.initial) }}
+          #working_value=${{ fromJSON(github.events.inputs.initial) }}
           echo "env=dev" >> $GITHUB_OUTPUT
           echo "comp=fullstack" >> $GITHUB_OUTPUT
-          echo "init=${{ fromJSON(github.events.input.initial) }}" >> $GITHUB_OUTPUT
+          echo "init=${{ fromJSON(github.events.inputs.initial) }}" >> $GITHUB_OUTPUT
 
   job2:
     environment: ${{ needs.job1.outputs.environment }}
