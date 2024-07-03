@@ -24,10 +24,10 @@ jobs:
       - name: Set component
         id: set-component
         run: |
-          working_value=${{ fromJSON(github.events.input.initial) }}
+          #working_value=${{ fromJSON(github.events.input.initial) }}
           echo "env=dev" >> $GITHUB_OUTPUT
           echo "comp=fullstack" >> $GITHUB_OUTPUT
-          echo "init=$working_value" >> $GITHUB_OUTPUT
+          echo "init=${{ fromJSON(github.events.input.initial) }}" >> $GITHUB_OUTPUT
 
   job2:
     environment: ${{ needs.job1.outputs.environment }}
