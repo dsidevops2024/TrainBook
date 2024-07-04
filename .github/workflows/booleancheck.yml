@@ -34,8 +34,8 @@ jobs:
     needs: job1
     strategy:
          matrix:
-              #env: ${{ needs.job1.outputs.environment }}
-              env: [dev, prod]
+              env: ${{ fromJSON(needs.job1.outputs.environment) }}
+              #env: [dev, prod]
     uses: ./.github/workflows/permissioncheck.yml
     with: 
         component: ${{ needs.job1.outputs.component }}
