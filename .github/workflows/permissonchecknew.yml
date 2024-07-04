@@ -10,7 +10,7 @@ jobs:
       - name: Read Allowed Users
         id: check_user
         run: |
-          allowed_users=$(cat TrainBook/.github/allowed_users.txt)
+          allowed_users=$(cat .github/allowed_users.txt)
           if [[ $allowed_users == *"${{ github.actor }}"* ]]; then
             echo "::set-output name=allowed::true"
           else
