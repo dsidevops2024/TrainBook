@@ -1,13 +1,14 @@
 name: mergecheck Workflow
 on:
-  pull_request_target:
-    branches:
-      - main
-    paths:
-      - '.github/Test/**'
-      - '.github/workflows/**'
-    types:
-       - closed
+  workflow_dispatch:
+  #pull_request_target:
+   # branches:
+     # - main
+   # paths:
+     # - '.github/Test/**'
+      #- '.github/workflows/**'
+    #types:
+       #- closed
 jobs:
   build:
     if: github.event.pull_request.merged == true
