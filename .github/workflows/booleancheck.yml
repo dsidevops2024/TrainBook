@@ -1,12 +1,14 @@
 name: Booleancheck
 
 on:
-  workflow_dispatch:
-    inputs:
-      runtest:
-        description: 'A boolean input'
-        required: true
-        type: boolean
+  pull_request_target:
+    branches:
+     - main
+    paths:
+     - '.github/Test/**'
+     - '.github/workflows/**'
+    types:
+     - closed
 
 jobs:
   job1:
@@ -14,33 +16,29 @@ jobs:
     outputs:
       environment: ${{ steps.set-component.outputs.env }}
       component: ${{ steps.set-component.outputs.comp }}
-      initial: ${{ steps.set-component.outputs.init }}
+     
 
     steps:
       
-      - name: Checking input (might be string initially)
-        run: echo "runtest (string representation):${{ github.events.inputs.runtest }}"
      
       - name: Set component
         id: set-component
         run: |
-          working_value=${{ fromJSON(github.events.inputs.runtest) }}
           echo "env=dev" >> $GITHUB_OUTPUT
           echo "comp=fullstack" >> $GITHUB_OUTPUT
-          echo "init=${{ github.events.inputs.runtest }}" >> $GITHUB_OUTPUT
+          
 
   job2:
-    environment: ${{ needs.job1.outputs.environment }}
-    runs-on: ubuntu-latest
+    #environment: ${{ needs.job1.outputs.environment }}
+    #runs-on: ubuntu-latest
     needs: job1
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Checking the values
-        run: |
-          echo "Environment is: ${{ needs.job1.outputs.environment }}"
-          echo "Component is: ${{ needs.job1.outputs.component }}"
-          echo "Initial is: ${{ needs.job1.outputs.initial }}"
-
+    strategy:
+         matrix:
+              env: ${{ fromJSON(need.job1.outputs.environment) }}
+    uses: ./.github/workflows/permissioncheck.yml
+    with: 
+        component: ${{ needs.job1.outputs.component }}
+        environment: ${{ needs.job1.outputs.environment }}
+        initial: true
+    
  
