@@ -39,7 +39,7 @@ jobs:
     uses: ./.github/workflows/permissioncheck.yml
     with: 
         component: ${{ needs.job1.outputs.component }}
-        environment: ${{matrix.env.env }}
+        environment: ${{matrix.env }}
         initial: true
     
  
