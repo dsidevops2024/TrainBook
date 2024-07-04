@@ -32,10 +32,10 @@ jobs:
     #environment: ${{ needs.job1.outputs.environment }}
     #runs-on: ubuntu-latest
     needs: job1
-    #strategy:
-         #matrix:
+    strategy:
+         matrix:
               #env: ${{ needs.job1.outputs.environment }}
-              #env: [dev]
+              env: [dev, prod]
     uses: ./.github/workflows/permissioncheck.yml
     with: 
         component: ${{ needs.job1.outputs.component }}
