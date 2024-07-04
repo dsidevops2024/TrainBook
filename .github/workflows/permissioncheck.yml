@@ -29,8 +29,12 @@ jobs:
           echo " checking:${{ inputs.component }}"
           echo " checking:${{ inputs.environment }}"
       - name: Checkout code
-        run: |
-          echo " checking:${{ inputs.initial }}"
+        run: echo " checking:${{ inputs.initial }}"
      
       - name: execute only if triggered by specific user
         run: echo "Workflow executed by the specific user"
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: checking the matrix job
+        run: echo "The job run successfully"
