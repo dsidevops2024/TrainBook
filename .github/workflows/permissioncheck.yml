@@ -1,23 +1,36 @@
 name: Restricted Workflow
 
 on:
-  workflow_dispatch:
+  workflow_call:
+   inputs:
+    component:
+      type: string
+      required: true
+    environment:
+      type: string
+      required: true
+    initial:
+     type: boolean
+     required: true
     
 
 jobs:
   build:
     
-    if: github.actor == 'DivyaPrabhavathi' || github.actor == 'santhosh-158'
+   # if: github.actor == 'DivyaPrabhavathi' || github.actor == 'santhosh-158'
     #|| github.actor == 'mspriya92' 
  
     runs-on: ubuntu-latest
 
     steps:
       - name: Debug github.actor
-        run: echo "GitHub Actor:${{ github.actor }}"
-      
+        # run: echo "GitHub Actor:${{ github.actor }}"
+        run: |
+          echo " checking:${{ inputs.component }}"
+          echo " checking:${{ inputs.environment }}"
       - name: Checkout code
-        uses: actions/checkout@v2
+        run: |
+          echo " checking:${{ inputs.initial }}"
      
       - name: execute only if triggered by specific user
         run: echo "Workflow executed by the specific user"
