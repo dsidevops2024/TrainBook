@@ -29,6 +29,12 @@ jobs:
            }
           shell: powershell
        - name: Pull and Process Artifacts
-         uses:
+         uses: 
+         with:
+            version: ${{ $ steps.version.outputs.APP_VERSION }}
+            branchRef: ${{ github.ref_name }}
+            artifactsYamlPath: '.\Component.yml'
+            artifactoryAccessTokenName:
+            artifactoryAccessTokenValue:
          
       
