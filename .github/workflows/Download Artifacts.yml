@@ -33,13 +33,20 @@ jobs:
         $startTime = Get-Date
         Write-Output "Start Time: $startTime"
         Write-Output "Downloading artifact..."
-        # Add your artifact download logic here
+        # Simulate download with sleep for now, replace with actual download code
+        Start-Sleep -Seconds 5
         Write-Output "Artifact download completed."
         $endTime = Get-Date
         $timeTaken = New-TimeSpan -Start $startTime -End $endTime
         Write-Output "Time taken to download artifacts: $timeTaken"
  
-    - name: Publish Artifact
+    - name: Upload Artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: web-app
+        path: staging/*.war
+ 
+    - name: Download Artifact
       uses: actions/download-artifact@v3
       with:
         name: web-app
