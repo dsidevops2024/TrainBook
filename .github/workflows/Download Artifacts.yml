@@ -1,45 +1,46 @@
 name: Download Artifacts Workflow
-
+ 
 on:
   workflow_dispatch:
-
+ 
 jobs:
   download-artifacts:
     runs-on: ubuntu-latest
+ 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-
-      - name: Set up JDK 17
-        uses: actions/setup-java@v3
-        with:
-          java-version: '17'
-          distribution: 'temurin'
-          cache: maven
-
-      - name: Build with new Maven
-        run: mvn -B package --file pom.xml
-
-      - name: Creates staging directory and copy .war
-        run: |
-          mkdir staging
-          cp target/*.war staging/
-
-      - name: Calculate Time for Artifact Download
-        id: download-time
-        run: |
-          \$startTime = Get-Date
-          Write-Output "Start Time: \$startTime"
-          Write-Output "Downloading artifact..."
-          # Add your artifact download logic here
-          Write-Output "Artifact download completed."
-          \$endTime = Get-Date
-          \$timeTaken = New-TimeSpan -Start \$startTime -End \$endTime
-          Write-Output "Time taken to download artifacts: \$timeTaken"
-        shell: pwsh
-
-      - name: Publish Artifact
-        uses: actions/download-artifact@v3
-        with:
-          name: web-app
-          path: staging
+    - name: Checkout code
+      uses: actions/checkout@v3
+ 
+    - name: Set up JDK 17
+      uses: actions/setup-java@v3
+      with:
+        java-version: '17'
+        distribution: 'temurin'
+        cache: maven
+ 
+    - name: Build with new Maven
+      run: mvn -B package --file pom.xml
+ 
+    - name: Creates staging directory and copy .war
+      run: |
+        mkdir staging
+        cp target/*.war staging/
+ 
+    - name: Calculate Time for Artifact Download
+      id: download-time
+      shell: pwsh
+      run: |
+        $startTime = Get-Date
+        Write-Output "Start Time: $startTime"
+        Write-Output "Downloading artifact..."
+        # Add your artifact download logic here
+        Write-Output "Artifact download completed."
+        $endTime = Get-Date
+        $timeTaken = New-TimeSpan -Start $startTime -End $endTime
+        Write-Output "Time taken to download artifacts: $timeTaken"
+ 
+    - name: Publish Artifact
+      uses: actions/download-artifact@v3
+      with:
+        name: web-app
+        path: staging
