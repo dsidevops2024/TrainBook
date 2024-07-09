@@ -2,8 +2,8 @@
 
 -component: "AccountTypeEngine"
  repoPath: "dsidevops2024/TrainBook"
- filePath:
- localName:
- destinationDir:
+ filePath: pom.xml
+ #localName:
+ #destinationDir:
  renameWithVersion: false
  deployPath: "Engines"
