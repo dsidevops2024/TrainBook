@@ -1,0 +1,9 @@
+- version: "6.10.1.0"
+
+-component: "AccountTypeEngine"
+ repoPath:
+ filePath:
+ localName:
+ destinationDir:
+ renameWithVersion: false
+ deployPath: "Engines"
