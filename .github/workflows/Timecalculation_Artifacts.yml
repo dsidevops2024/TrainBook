@@ -36,15 +36,15 @@ jobs:
           
           foreach ($artifact in $artifacts) {
             $artifactStartTime = Get-Date
-            Write-Output "Start Time for $artifact download: $artifactStartTime"
+            Write-Output "Start Time for $($artifact) download: $artifactStartTime"
             
-            Write-Output "Downloading $artifact..."
+            Write-Output "Downloading $($artifact)..."
             # Add your artifact download logic here for $artifact
             Start-Sleep -Seconds 5 # Simulating artifact download time
             
             $artifactEndTime = Get-Date
             $artifactTimeTaken = New-TimeSpan -Start $artifactStartTime -End $artifactEndTime
-            Write-Output "Time taken to download $artifact: $artifactTimeTaken"
+            Write-Output "Time taken to download $($artifact): $($artifactTimeTaken)"
           }
  
           $endTime = Get-Date
