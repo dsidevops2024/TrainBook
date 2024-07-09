@@ -1,0 +1,34 @@
+name: Installer Build Pipeline
+on:
+  workflow_dispatch:
+  workflow_call:
+jobs:
+  sphereengine-build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+  Installer-build:
+    runs-on: installer
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+      - name: update version numbers
+        shell: pwsh
+        run: ./Fix-Versions.ps1
+      - name: Set version
+        id: version
+        run: |
+          $artifacts = Get-Content .\component.yml | ConverFrom-Yaml
+          foreach ($artifact in $artifacts) {
+            if($artifact.version){
+              $vrs = $artifact.version
+              "APP_VERSION=$vrs" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+              break
+            }
+           }
+          shell: powershell
+       - name: Pull and Process Artifacts
+         uses:
+         
+      
