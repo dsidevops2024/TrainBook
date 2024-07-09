@@ -1,7 +1,7 @@
 - version: "6.10.1.0"
 
 -component: "AccountTypeEngine"
- repoPath:
+ repoPath: "dsidevops2024/TrainBook"
  filePath:
  localName:
  destinationDir:
