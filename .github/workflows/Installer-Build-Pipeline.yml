@@ -34,9 +34,9 @@ jobs:
       - name: Pull and Process Artifacts
         uses: dsidevops2024/TrainBook/.github/actions/artifactory-multi-pull-curl@main
         with:
-          version: ${{ $ steps.version.outputs.APP_VERSION }}
-          branchRef: ${{ github.ref_name }}
-          artifactsYamlPath: '.\Component.yml'
+           version: \${{ steps.version.outputs.APP_VERSION }}
+           branchRef: \${{ github.ref_name }}
+           artifactsYamlPath: '.\Component.yml'
             
          
       
