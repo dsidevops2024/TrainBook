@@ -7,19 +7,22 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
   Installer-build:
-    runs-on: installer
+    runs-on: ubuntu-latest
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
-      - name: update version numbers
-        shell: pwsh
-        run: ./Fix-Versions.ps1
+      - name: Set up JDK 17
+        uses: actions/setup-java@v3
+        with:
+          java-version: '18'
+          distribution: 'temurin'
+          cache: maven
+      - name: Build with new Maven
+        run: mvn -B package --file pom.xml
       - name: Set version
         id: version
         run: |
-          $artifacts = Get-Content .\component.yml | ConverFrom-Yaml
+          $artifacts = Get-Content .\component.yml | ConvertFrom-Yaml
           foreach ($artifact in $artifacts) {
             if($artifact.version){
               $vrs = $artifact.version
@@ -28,13 +31,12 @@ jobs:
             }
            }
           shell: powershell
-       - name: Pull and Process Artifacts
-         uses: 
-         with:
-            version: ${{ $ steps.version.outputs.APP_VERSION }}
-            branchRef: ${{ github.ref_name }}
-            artifactsYamlPath: '.\Component.yml'
-            artifactoryAccessTokenName:
-            artifactoryAccessTokenValue:
+      - name: Pull and Process Artifacts
+        uses: 
+        with:
+          version: ${{ $ steps.version.outputs.APP_VERSION }}
+          branchRef: ${{ github.ref_name }}
+          artifactsYamlPath: '.\Component.yml'
+            
          
       
