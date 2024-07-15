@@ -64,7 +64,10 @@ jobs:
         run: docker run -d --name tomcat-container --network my-network -p 8080:8080 bitnami/tomcat:latest  # Detached mode (-d), expose port
              
       - name: Deploy your application  
-        run: docker run -d --name app-container --network my-network -v staging/*.war:/usr/local/tomcat/webapps/web-app.war mspriya92/java-web-app:latest
+        run: docker run -d --name app-container --network my-network -v staging/web-app.war:/usr/local/tomcat/webapps/web-app.war bitnami/java-web-app:latest
+
+             
+
       - name: Wait for tomcat to deploy
         run: sleep 30
       - name: Check if tomcat is running
