@@ -61,8 +61,8 @@ jobs:
       - name: Pull tomcat image
         run: docker pull bitnami/tomcat:latest
       - name: Run Tomcat container
-        run: docker run -d --name tomcat-container --network my-network-p 8080:8080 bitnami/tomcat:latest  # Detached mode (-d), expose port
-
+        run: docker run -d --name tomcat-container --network my-network -p 8080:8080 bitnami/tomcat:latest  # Detached mode (-d), expose port
+             
       - name: Deploy your application  
         run: docker run -d --name app-container --network my-network -v staging/*.war:/usr/local/tomcat/webapps/web-app.war mspriya92/java-web-app:latest
       - name: Wait for tomcat to deploy
