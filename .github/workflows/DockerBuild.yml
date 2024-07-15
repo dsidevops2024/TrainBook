@@ -44,5 +44,5 @@ jobs:
           context: .
           file: ./Dockerfile
           push: true
-          tags: mspriya92/Java-web-app:latest
+          tags: mspriya92/java-web-app:latest
      
