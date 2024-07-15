@@ -7,7 +7,7 @@
 FROM openjdk:11
 WORKDIR /app  # Working directory within the container
 COPY target/*.war /app/ROOT.war  # Copy your WAR file from the target directory (adjust path if needed)
-EXPOSE 8080  # Expose the port for web traffic (adjust if your app uses a different port)
+EXPOSE 8080 
 ENTRYPOINT ["java", "-jar", "/app/ROOT.war"]  # Start the application on container startup
 
 
