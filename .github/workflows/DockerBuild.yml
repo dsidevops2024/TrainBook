@@ -2,10 +2,7 @@ name: DockerBuild
 
 on:
   workflow_dispatch:
-  # push:
-  #   branches: [ master ]
-  # pull_request:
-  #   branches: [ master ]
+  
 
 jobs:
   build:
@@ -46,27 +43,4 @@ jobs:
           push: true
           tags: larasai/maven-web-app:v1
 
-      - name: install the gcloud cli
-        uses: google-github-actions/setup-gcloud@v0
-        with:
-         project_id: ${{ secrets.GCLOUD_PROJECT_ID }}
-         service_account_key: ${{ secrets.GCLOUD_SA_KEY }}
-         export_default_credentials: true
-          
-      - name: Build and push Docker image to Google Artifact Registry
-        run: |
-          gcloud auth configure-docker us-central1-docker.pkg.dev 
-          docker pull larasai/maven-web-app:v1
-          docker tag larasai/maven-web-app:v1 us-central1-docker.pkg.dev/stone-trees-422304-p7/demo-app/maven-web-app:v1
-          docker push us-central1-docker.pkg.dev/stone-trees-422304-p7/demo-app/maven-web-app:v1
-
-      - name: Deploy to Cloud Run
-        uses: google-github-actions/deploy-cloudrun@v2
-        with:
-          service: maven-web-app
-          image: us-central1-docker.pkg.dev/stone-trees-422304-p7/demo-app/maven-web-app:v1
-          platform: managed
-          region: us-central1
-          project_id: ${{ secrets.GCLOUD_PROJECT_ID }}
-          service_account_key: ${{ secrets.GCLOUD_SA_KEY }}
-          flags: '--allow-unauthenticated'
+     
