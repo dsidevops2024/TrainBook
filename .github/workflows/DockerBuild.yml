@@ -50,16 +50,25 @@ jobs:
     needs: build
     steps:
       - name: Pull Tomcat image
-        run: docker pull tomcat:latest  # Or another Windows-compatible image (adjust tag if needed)
+        run: docker pull bitnami/tomcat:latest  # Or another Windows-compatible image (adjust tag if needed)
      
       - name: Run Tomcat container
-        run: docker run -d -p 8080:8080 bitnami/tomcat:latest  # Detached mode (-d), expose port
+        run: docker run -d --name tomcat-container -p 8080:8080 bitnami/tomcat:latest  # Detached mode (-d), expose port
 
-      - name: Pull your application image (assuming image push was successful in a previous step)
+      - name: Pull your application image 
         run: docker pull mspriya92/java-web-app:latest
+
+      - name: Copy WAR file to Tomcat webapps
+        run: |
+          docker cp staging/*.war tomcat-container:/bitnami/tomcat/webapps/
+
+      - name: Check if Tomcat is running
+        run: |
+          sleep 30
+          curl -I http://localhost:8080/app
        
-      - name: Run your application container
+      #- name: Run your application container
         #run: docker run -d -p 8081:8080 mspriya92/java-web-app:latest  # Detached mode (-d), map port (adjust if needed)
         #run: docker run -d -p 8080:8080 -v mspriya92/java-web-app:latest:/usr/local/tomcat/webapps bitnami/tomcat:latest
-        run: docker run -d -p 8080:8080 -v java-web-app:/usr/local/tomcat/webapps bitnami/tomcat:latest
+        #run: docker run -d -p 8080:8080 -v java-web-app:/usr/local/tomcat/webapps bitnami/tomcat:latest
      
