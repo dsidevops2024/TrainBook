@@ -59,6 +59,7 @@ jobs:
         run: docker pull mspriya92/java-web-app:latest
        
       - name: Run your application container
-        run: docker run -d -p 8081:8080 mspriya92/java-web-app:latest  # Detached mode (-d), map port (adjust if needed)
-        
+        #run: docker run -d -p 8081:8080 mspriya92/java-web-app:latest  # Detached mode (-d), map port (adjust if needed)
+        run: docker run -d -p 8080:8080 -v mspriya92/java-web-app:latest:/usr/local/tomcat/webapps bitnami/tomcat:latest
+
      
