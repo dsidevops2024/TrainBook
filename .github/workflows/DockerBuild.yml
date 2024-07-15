@@ -49,30 +49,28 @@ jobs:
     runs-on: ubuntu-latest
     needs: build
     steps:
-      - name: Download Build Artifact
-        uses: actions/download-artifact@v3
+      - name: Login to DockerHub
+        uses: docker/login-action@v2
         with:
-           name: web-app
-           path: staging
-      - name: Pull Tomcat image
-        run: docker pull bitnami/tomcat:latest  # Or another Windows-compatible image (adjust tag if needed)
-     
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+      - name: Pull application image
+        run: docker pull mspriya92/java-web-app:latest  # Or another Windows-compatible image (adjust tag if needed)
+      - name: Create docker network
+        run: docker network create my-network
+      - name: Pull tomcat image
+        run: docker pull bitnami/tomcat:latest
       - name: Run Tomcat container
-        run: docker run -d --name tomcat-container -p 8080:8080 bitnami/tomcat:latest  # Detached mode (-d), expose port
+        run: docker run -d --name tomcat-container --network my-network-p 8080:8080 bitnami/tomcat:latest  # Detached mode (-d), expose port
 
-      - name: Pull your application image 
-        run: docker pull mspriya92/java-web-app:latest
-
-      - name: Copy WAR file to Tomcat webapps
-        run: |
-          docker cp staging/*.war tomcat-container:/bitnami/tomcat/webapps/
-
-      - name: Check if Tomcat is running
-        run: |
-          sleep 30
-          curl -I http://localhost:8080 || exit 1
+      - name: Deploy your application  
+        run: docker run -d --name app-container --network my-network -v staging/*.war:/usr/local/tomcat/webapps/web-app.war mspriya92/java-web-app:latest
+      - name: Wait for tomcat to deploy
+        run: sleep 30
+      - name: Check if tomcat is running
+        run: docker exec tomcat-container curl -I http://localhost:8080/myapp || exit 1  
       - name: Check if my app is deployed
-        run: curl -I http://localhost:8080/myapp || exit 1
+        run: docker exec tomcat-container curl -I http://localhost:8080/myapp || exit 1
        
       #- name: Run your application container
         #run: docker run -d -p 8081:8080 mspriya92/java-web-app:latest  # Detached mode (-d), map port (adjust if needed)
