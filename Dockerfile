@@ -6,8 +6,8 @@
 #FROM openjdk:17-slim  # Base image with OpenJDK 17 (adjust if needed)
 FROM openjdk:11
 WORKDIR /app  # Working directory within the container
-COPY target/*.war /app/ROOT.war  # Copy your WAR file from the target directory (adjust path if needed)
+COPY staging/*.war /app/ROOT.war 
 EXPOSE 8080 
-ENTRYPOINT ["java", "-jar", "/app/ROOT.war"]  # Start the application on container startup
+ENTRYPOINT ["java", "-jar", "/app/ROOT.war"]  
 
 
