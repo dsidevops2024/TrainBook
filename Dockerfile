@@ -4,11 +4,11 @@
 #RUN javac Hello.java
 #CMD ["java", "Hello"]
 #FROM openjdk:17-slim  # Base image with OpenJDK 17 (adjust if needed)
-FROM tomcat:9.0-jdk-openjdk
+FROM openjdk:11
 WORKDIR /app  # Working directory within the container
-COPY staging/*.war /usr/local/tomcat/webapps/ROOT.war 
+COPY staging/*.war /app/ROOT.war
 EXPOSE 8080 
-#ENTRYPOINT ["java", "-jar", "/app/ROOT.war"]  
-CMD ["catalina.sh", "run"]
+ENTRYPOINT ["java", "-jar", "/app/ROOT.war"]  
+#CMD ["catalina.sh", "run"]
 
 
