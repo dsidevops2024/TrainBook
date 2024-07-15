@@ -45,7 +45,10 @@ jobs:
           file: ./Dockerfile
           push: true
           tags: mspriya92/java-web-app:latest
-
+  deploy:
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
       - name: Pull Tomcat image
         run: docker pull tomcat:latest  # Or another Windows-compatible image (adjust tag if needed)
      
@@ -55,7 +58,7 @@ jobs:
       - name: Pull your application image (assuming image push was successful in a previous step)
         run: docker pull mspriya92/java-web-app:latest
        
-     - name: Run your application container
-       run: docker run -d -p 8081:8080 your_username/your_app_name:latest  # Detached mode (-d), map port (adjust if needed)
-
+      - name: Run your application container
+        run: docker run -d -p 8081:8080 mspriya92/java-web-app:latest  # Detached mode (-d), map port (adjust if needed)
+        
      
