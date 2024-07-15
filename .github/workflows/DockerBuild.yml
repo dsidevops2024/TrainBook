@@ -1,0 +1,72 @@
+name: DockerBuild
+
+on:
+  workflow_dispatch:
+  # push:
+  #   branches: [ master ]
+  # pull_request:
+  #   branches: [ master ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Set up JDK 11
+        uses: actions/setup-java@v4
+        with:
+          java-version: '11'
+          distribution: 'adopt'
+          cache: maven
+
+      - name: Build with Maven
+        run: mvn -B package --file pom.xml
+
+      - name: Archive Artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: maven-web-application
+          path: /home/runner/work/maven-web-application/maven-web-application/target/maven-web-application.war
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v1
+
+      - name: Login to DockerHub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Build and push Docker image to DockerHub
+        uses: docker/build-push-action@v2
+        with:
+          context: .
+          file: ./Dockerfile
+          push: true
+          tags: larasai/maven-web-app:v1
+
+      - name: install the gcloud cli
+        uses: google-github-actions/setup-gcloud@v0
+        with:
+         project_id: ${{ secrets.GCLOUD_PROJECT_ID }}
+         service_account_key: ${{ secrets.GCLOUD_SA_KEY }}
+         export_default_credentials: true
+          
+      - name: Build and push Docker image to Google Artifact Registry
+        run: |
+          gcloud auth configure-docker us-central1-docker.pkg.dev 
+          docker pull larasai/maven-web-app:v1
+          docker tag larasai/maven-web-app:v1 us-central1-docker.pkg.dev/stone-trees-422304-p7/demo-app/maven-web-app:v1
+          docker push us-central1-docker.pkg.dev/stone-trees-422304-p7/demo-app/maven-web-app:v1
+
+      - name: Deploy to Cloud Run
+        uses: google-github-actions/deploy-cloudrun@v2
+        with:
+          service: maven-web-app
+          image: us-central1-docker.pkg.dev/stone-trees-422304-p7/demo-app/maven-web-app:v1
+          platform: managed
+          region: us-central1
+          project_id: ${{ secrets.GCLOUD_PROJECT_ID }}
+          service_account_key: ${{ secrets.GCLOUD_SA_KEY }}
+          flags: '--allow-unauthenticated'
