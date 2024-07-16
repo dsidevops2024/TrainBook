@@ -22,21 +22,28 @@
 # Start Tomcat server
 #CMD ["catalina.sh", "run"]
 
+ 
 FROM mcr.microsoft.com/openjdk:jdk-11-windowsservercore-ltsc2019
+
 # Set environment variables
 ENV CATALINA_HOME="C:\\tomcat"
 ENV PATH="%CATALINA_HOME%\\bin;%PATH%"
- 
+
 # Download and extract Tomcat
-RUN powershell -Command `
-    $ErrorActionPreference = 'Stop'; `
-    Invoke-WebRequest -Uri https://downloads.apache.org/tomcat/tomcat-9/v9.0.65/bin/apache-tomcat-9.0.65-windows-x64.zip -OutFile C:\tomcat.zip; `
-    Expand-Archive -Path C:\tomcat.zip -DestinationPath C:\; `
-    Rename-Item -Path C:\apache-tomcat-9.0.65 -NewName 'tomcat'; `
-    Remove-Item -Path C:\tomcat.zip
- 
+RUN powershell -ExecutionPolicy Bypass -Command {
+  # Download Tomcat ZIP
+  Invoke-WebRequest -Uri https://downloads.apache.org/tomcat/tomcat-9/v9.0.65/bin/apache-tomcat-9.0.65-windows-x64.zip -OutFile C:\tomcat.zip
+
+  # Extract Tomcat ZIP, rename folder (optional)
+  Expand-Archive -Path C:\tomcat.zip -DestinationPath C:\
+  Rename-Item -Path C:\apache-tomcat-9.0.65 -NewName 'tomcat'
+
+  # Remove ZIP file (optional)
+  Remove-Item -Path C:\tomcat.zip
+}
+
 # Expose the port Tomcat is running on
 EXPOSE 8080
- 
-# Start Tomcat
+
+# Start Tomcat (adjust command if needed)
 CMD ["catalina.bat", "run"]
