@@ -59,4 +59,4 @@ jobs:
         run: docker pull mspriya92/java-web-app:latest
        
       - name: Run your application container
-        run: docker run -d -p 8080:8080 -v java-web-app:/usr/local/tomcat/webapps bitnami/tomcat:latest
+        run: docker run -d -p 9000:9080 -v java-web-app:/usr/local/tomcat/webapps bitnami/tomcat:latest
