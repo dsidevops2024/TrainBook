@@ -43,4 +43,5 @@ jobs:
  
       - name: Deploy to Tomcat
         run: |
-            docker run --rm mspriya92/java-web-app /bin/bash -c 'curl -v -u DevOps:Digital2123 --upload-file staging/*.war http://tomcat_server:8080/manager/text/deploy?path=/myapp'
+            #docker run --rm mspriya92/java-web-app /bin/bash -c 'curl -v -u DevOps:Digital2123 --upload-file staging/*.war http://tomcat_server:8080/manager/text/deploy?path=/myapp'
+            curl -v -u DevOps:Digital2123 --upload-file staging/*.war http://localhost:8080/manager/text/deploy?path?=/myapp'
