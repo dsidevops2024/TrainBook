@@ -1,6 +1,6 @@
 [
   {
-   "name": "<DOCKER_USERNAME>",
+   "name": "${{ secrets.DOCKER_USERNAME }}",
    "version": "10"
   },
   {
