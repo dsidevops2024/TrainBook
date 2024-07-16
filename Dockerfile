@@ -30,10 +30,10 @@ ENV PATH="%CATALINA_HOME%\\bin;%PATH%"
 # Download and extract Tomcat
 RUN powershell -Command `
     $ErrorActionPreference = 'Stop'; `
-Invoke-WebRequest -Uri https://downloads.apache.org/tomcat/tomcat-9/v9.0.65/bin/apache-tomcat-9.0.65-windows-x64.zip -OutFile C:\tomcat.zip; `
-Expand-Archive -Path C:\tomcat.zip -DestinationPath C:\; `
-Rename-Item -Path C:\apache-tomcat-9.0.65 -NewName 'tomcat'; `
-Remove-Item -Path C:\tomcat.zip
+    Invoke-WebRequest -Uri https://downloads.apache.org/tomcat/tomcat-9/v9.0.65/bin/apache-tomcat-9.0.65-windows-x64.zip -OutFile C:\tomcat.zip; `
+    Expand-Archive -Path C:\tomcat.zip -DestinationPath C:\; `
+    Rename-Item -Path C:\apache-tomcat-9.0.65 -NewName 'tomcat'; `
+    Remove-Item -Path C:\tomcat.zip
  
 # Expose the port Tomcat is running on
 EXPOSE 8080
