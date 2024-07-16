@@ -15,7 +15,7 @@ FROM tomcat:9.0-jdk11-openjdk-slim
 # Maintainer information
 LABEL maintainer="priyadarshini.mahalingam@digitalsoftwareinc.in"
 # Copy the WAR file from your local machine into the container
-COPY ./staging/*.war /usr/local/tomcat/webapps/
+COPY staging/*.war /usr/local/tomcat/webapps/myapp.war
 # Expose the port that Tomcat is running on
 EXPOSE 8080
 # Start Tomcat server
