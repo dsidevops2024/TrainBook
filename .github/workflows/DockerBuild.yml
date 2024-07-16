@@ -55,6 +55,6 @@ jobs:
       - name: Run Tomcat container
         run: docker run -d -p 8080:8080 bitnami/tomcat:latest  # Detached mode (-d), expose port
 
-      - name: Copy WAR file to Tomcat container
-        run: |
-          docker cp mspriya92/java-web-app:latest /path/to/webapps/your_app.war bitnami/tomcat:latest
+      #- name: Copy WAR file to Tomcat container
+        #run: |
+         # docker cp mspriya92/java-web-app:latest /path/to/webapps/your_app.war bitnami/tomcat:latest
