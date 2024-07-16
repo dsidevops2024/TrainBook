@@ -53,7 +53,7 @@ jobs:
         run: docker pull tomcat:latest  # Or another Windows-compatible image (adjust tag if needed)
 
       - name: Run Tomcat container
-        run: docker run -d -p 8080:8080 bitnami/tomcat:latest  # Detached mode (-d), expose port
+        run: docker run -d -p 8090:8080 bitnami/tomcat:latest  # Detached mode (-d), expose port
       - name: Check if Tomcat container is running
         run: |
           container_id=$(docker ps -q --filter name=tomcat)  # Search by name (adjust if needed)
