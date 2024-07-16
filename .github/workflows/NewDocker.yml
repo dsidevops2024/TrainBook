@@ -1,12 +1,11 @@
 name: NewDocker
- 
+
 on:
- workflow_dispatch:
- 
+  workflow_dispatch:
+  
 jobs:
-  deploy:
+  build:
     runs-on: ubuntu-latest
- 
     steps:
       - uses: actions/checkout@v2
 
@@ -19,29 +18,51 @@ jobs:
 
       - name: Build with Maven
         run: mvn -B package --file pom.xml
-        
-      - name: Creates stagin directory and copy .war
-        run: |
-          mkdir staging
-          cp target/*.war staging/
-          
-      - name: Publish Artifact
-        uses: actions/upload-artifact@v3
+
+      - name: Archive Artifact
+        uses: actions/upload-artifact@v2
         with:
-          name: web-app
-          path: staging
+          name: maven-web-application
+          path: /home/runner/work/maven-web-application/maven-web-application/target/maven-web-application.war
+
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v1
-      - name: Login to Docker Hub
+
+      - name: Login to DockerHub
         uses: docker/login-action@v2
         with:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
- 
-      - name: Pull Docker image
-        run: docker pull mspriya92/java-web-app
- 
-      - name: Deploy to Tomcat
+
+      - name: Build and push Docker image to DockerHub
+        uses: docker/build-push-action@v2
+        with:
+          context: .
+          file: ./Dockerfile
+          push: true
+          tags: mspriya92/maven-web-app:v1
+
+      - name: install the gcloud cli
+        uses: google-github-actions/setup-gcloud@v0
+        with:
+         project_id: ${{ secrets.GCLOUD_PROJECT_ID }}
+         service_account_key: ${{ secrets.GCLOUD_SA_KEY }}
+         export_default_credentials: true
+          
+      - name: Build and push Docker image to Google Artifact Registry
         run: |
-            #docker run --rm mspriya92/java-web-app /bin/bash -c 'curl -v -u DevOps:Digital2123 --upload-file staging/*.war http://tomcat_server:8080/manager/text/deploy?path=/myapp'
-            curl -v -u DevOps:Digital2123 --upload-file staging/*.war http://localhost:8080/manager/text/deploy?path?=/myapp
+          gcloud auth configure-docker us-central1-docker.pkg.dev 
+          docker pull mspriya92/maven-web-app:v1
+          docker tag mspriya92/maven-web-app:v1 us-central1-docker.pkg.dev/stone-trees-422304-p7/demo-app/maven-web-app:v1
+          docker push us-central1-docker.pkg.dev/stone-trees-422304-p7/demo-app/maven-web-app:v1
+
+      - name: Deploy to Cloud Run
+        uses: google-github-actions/deploy-cloudrun@v2
+        with:
+          service: maven-web-app
+          image: us-central1-docker.pkg.dev/stone-trees-422304-p7/demo-app/maven-web-app:v1
+          platform: managed
+          region: us-central1
+          project_id: ${{ secrets.GCLOUD_PROJECT_ID }}
+          service_account_key: ${{ secrets.GCLOUD_SA_KEY }}
+          flags: '--allow-unauthenticated'
