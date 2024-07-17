@@ -6,9 +6,6 @@ on:
 jobs:
   update-json:
     runs-on: ubuntu-latest
-    env:
-      DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
-      DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v2
@@ -20,12 +17,8 @@ jobs:
 
       - name: Display updated nsi.json
         run: cat nsi.json
-      - name: Print Docker Username Length
-        run: echo "Docker Username Length:${#DOCKER_USERNAME}"
-
-      - name: Print Docker Password Length (Safer Option)
-        run: echo "Docker Password Length:${{ string-length(DOCKER_PASSWORD) }}" 
-
+      - name: Print Docker Username Hash (Safer)
+        run: echo "Docker Username Hash:$(echo -n ${{ secrets.DOCKER_USERNAME }} | sha256sum | cut -d' ' -f1)"
       - name: Commit and push changes
         run: |
           git config --global user.name "github-actions[bot]"
