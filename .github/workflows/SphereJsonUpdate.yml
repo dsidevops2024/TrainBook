@@ -9,11 +9,16 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v2
-
-      - name: Update nsi.json with secrets
+      - name: Download nsi.json artifact
+        uses: actions/download-artifact@v2
+        with:
+          name: update-nsi-json
+          path: artifacts
+      - name: Print downloaded nsi.json content 
+        run: cat artifacts/nsi.json
+      - name: Retrieve secrets
         run: |
-          sed -i "s|\$DOCKER_USERNAME|${{ secrets.DOCKER_USERNAME }}|g" nsi.json
-          sed -i "s|\$DOCKER_PASSWORD|${{ secrets.DOCKER_PASSWORD }}|g" nsi.json
-
-      - name: Display updated nsi.json
-        run: cat nsi.json
+          DOCKER_USERNAME=$(jq -r '.DockerUsername' artifacts/nsi.json)
+          DOCKER_PASSWORD=$(jq -r '.DockerPassword' artifacts/nsi.json)
+          echo "DOCKER_USERNAME: $DOCKER_USERNAME"
+          echo "DOCKER_PASSWORD: $DOCKER_PASSWORD"
