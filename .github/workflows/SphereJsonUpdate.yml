@@ -17,8 +17,8 @@ jobs:
 
       - name: Display updated nsi.json
         run: cat nsi.json
-      - name: Print Docker Username Hash (Safer)
-        run: echo "Docker Username Hash:$(echo -n ${{ secrets.DOCKER_USERNAME }} | sha256sum | cut -d' ' -f1)"
+      - name: Print Docker Username Length
+        run: echo "Docker Username Length:${#DOCKER_USERNAME}"
       - name: Commit and push changes
         run: |
           git config --global user.name "github-actions[bot]"
