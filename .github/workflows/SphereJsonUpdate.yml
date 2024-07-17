@@ -1,0 +1,28 @@
+name: SphereJsonUpdate
+ 
+on:
+  workflow_dispatch:
+ 
+jobs:
+  update-json:
+    runs-on: ubuntu-latest
+     steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+ 
+      - name: Update nsi.json with secrets
+        run: |
+          # Replace placeholders with secrets using sed
+          sed -i "s|\$DOCKER_USERNAME|${{ secrets.DOCKER_USERNAME }}|g" config/nsi.json
+          sed -i "s|\$DOCKER_PASSWORD|${{ secrets.DOCKER_PASSWORD }}|g" config/nsi.json
+ 
+      - name: Display updated nsi.json
+        run: cat config/nsi.json
+ 
+      - name: Commit and push changes
+        run: |
+         git config --global user.name "github-actions[bot]"
+         git config --global user.email "github-actions[bot]@users.noreply.github.com"
+         git add config/nsi.json
+         git commit -m "Update nsi.json with secrets"
+         git push
