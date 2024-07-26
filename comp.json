@@ -1,0 +1,12 @@
+[
+  {
+    "Phase": "1",
+    "code-repository": "mspriya92/sample",
+    "Branch": "main"
+    },
+  {
+    "Phase": "2",
+    "code-repository": "mspriya92/ProjectTest",
+    "Branch": "master"
+    }
+]
