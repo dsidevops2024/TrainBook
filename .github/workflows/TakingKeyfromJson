@@ -1,0 +1,50 @@
+name: TakingKeyfromJson
+ 
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Environment to use'
+        required: true
+      code-repository:
+        description: 'Provide Repo name'
+        required: true
+ 
+jobs:
+  update-json:
+    runs-on: self-hosted
+    environment: ${{ github.event.inputs.environment }}
+    
+    steps:
+      - name: Checkout entire repository
+        uses: actions/checkout@v2
+ 
+      - name: Read JSON file
+        id: read-json
+        run: |
+          $json = Get-Content component.json -Raw
+          echo "json=$json" >> $env:GITHUB_ENV
+        shell: pwsh
+ 
+      - name: Filter value from JSON
+        id: filter-json
+        run: |
+          $filtered_value = ($env:json | ConvertFrom-Json) | Where-Object { $_.Phase -eq 2 } | Select-Object -ExpandProperty Branch
+          echo "filtered_value=$filtered_value" >> $env:GITHUB_ENV
+        shell: pwsh
+ 
+      - name: Using workflow from another repo
+        uses: actions/checkout@v2
+        with:
+          repository: ${{ github.event.inputs.code-repository }}
+          ref: ${{ env.filtered_value }}
+          token: ${{ secrets.PAT_TOKEN }}
+          path: staging
+ 
+      - name: Download and update nsi.json with secrets
+        env:
+          DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+          prod_API_KEY: ${{ secrets.API_KEY }}
+        run: ./Scripts/scriptupdate.ps1
+        shell: pwsh
