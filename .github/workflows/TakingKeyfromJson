@@ -23,7 +23,7 @@ jobs:
         id: read-json
         shell: pwsh
         run: |
-          $json = Get-Content component.json -Raw
+          $json = Get-Content comp.json -Raw
           echo "json=$json" | Out-File -FilePath $env:GITHUB_ENV -Append
  
       - name: Filter value from JSON
