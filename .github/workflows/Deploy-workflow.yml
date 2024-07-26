@@ -14,10 +14,10 @@ jobs:
     steps:
       - name: Checkouts Repository
         uses: actions/checkout@v3  
-      - name: Copy Job Dependencies
-        run: |
-          mkdir -p job_dependencies  
-          cp .github/job_dependencies.json job_dependencies/  
+      #- name: Copy Job Dependencies
+        #run: |
+          #mkdir -p job_dependencies  
+          #cp .github/job_dependencies.json job_dependencies/  
       - name: Listing the directory
         run: ls -R 
       - name: List Job Dependencies
