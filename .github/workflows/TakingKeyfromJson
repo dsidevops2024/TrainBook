@@ -21,17 +21,18 @@ jobs:
  
       - name: Read JSON file
         id: read-json
+        shell: pwsh
         run: |
           $json = Get-Content component.json -Raw
-          echo "json=$json" >> $env:GITHUB_ENV
-        shell: pwsh
+          echo "json=$json" | Out-File -FilePath $env:GITHUB_ENV -Append
  
       - name: Filter value from JSON
         id: filter-json
-        run: |
-          $filtered_value = ($env:json | ConvertFrom-Json) | Where-Object { $_.Phase -eq 2 } | Select-Object -ExpandProperty Branch
-          echo "filtered_value=$filtered_value" >> $env:GITHUB_ENV
         shell: pwsh
+        run: |
+          $json = $env:json | ConvertFrom-Json
+          $filtered_value = ($json | Where-Object { $_.Phase -eq 2 }).Branch
+          echo "filtered_value=$filtered_value" | Out-File -FilePath $env:GITHUB_ENV -Append
  
       - name: Using workflow from another repo
         uses: actions/checkout@v2
@@ -41,10 +42,4 @@ jobs:
           token: ${{ secrets.PAT_TOKEN }}
           path: staging
  
-      - name: Download and update nsi.json with secrets
-        env:
-          DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
-          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
-          prod_API_KEY: ${{ secrets.API_KEY }}
-        run: ./Scripts/scriptupdate.ps1
-        shell: pwsh
+     
