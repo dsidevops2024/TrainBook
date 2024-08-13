@@ -9,15 +9,14 @@ on:
         
 jobs:
   #Call-workflow-for-build:
-    #uses: ./.github/workflows/Build-workflow.yml
+    #$uses: ./.github/workflows/Build-workflow.yml
     
   Call-workflow-for-deploy:
-    
     #needs: Call-workflow-for-build
-    #uses: ./.github/workflows/Deploy-workflow.yml
-    uses: ./.github/workflows/Test1.yml
-    with:
-          environment: ${{ github.event.inputs.environment }}
+    uses: ./.github/workflows/Deploy-workflow.yml   
+    #uses: ./.github/workflows/Test1.yml
+    #with:
+       #environment: ${{ github.event.inputs.environment }}
     
- 
+  
   
