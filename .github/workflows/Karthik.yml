@@ -1,0 +1,23 @@
+name: reusing output of one job
+on:
+  workflow_dispatch:
+jobs:
+  build:
+    runs-on: self-hosted
+    outputs:
+      BUILD_VERSION: ${{ steps.set_version.outputs.outputcheck }}
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set version
+        id: set_version
+        run: |
+          echo "outputcheck="Compo" >> $GITHUB_OUTPUT
+          #echo "version='1.2.3'" >> $GITHUB_OUTPUT
+ 
+  deploy:
+    needs: build
+    runs-on: self-hosted
+    steps:
+      - name: Print version
+        run: |
+          echo "Build version: ${{ needs.build.outputs.BUILD_VERSION }}"
