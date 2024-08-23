@@ -1,6 +1,7 @@
 name: Greetings Test
 
-on: workflow_call
+on: 
+ workflow_call:
 
 jobs:
   greeting:
