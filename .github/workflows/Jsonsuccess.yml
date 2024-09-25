@@ -33,12 +33,12 @@ jobs:
     continue-on-error: true
     strategy:
       matrix:
-         components: ${{ fromJSON(needs.copy_files.outputs.components-info) }}
+         env: ${{ fromJSON(needs.copy_files.outputs.components-info) }}
       fail-fast: false
-      max-parallel: 1
+      #max-parallel: 1
     env:
-      name: ${{ matrix.components.name }}
-      version: ${{ matrix.components.version }}
+      name: ${{ matrix.env.env }}
+      version: ${{ matrix.env.version }}
     steps:
       - name: checking matrix value
         run: |
