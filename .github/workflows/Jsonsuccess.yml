@@ -2,11 +2,11 @@ name: Jsonsuccess Workflow
  
 on:
   workflow_dispatch:
-    inputs:
-      environment:
-        description: 'Choose the env to deploy (Dev or Prod)?'
-        required: true
-        type: string
+    #inputs:
+      #environment:
+        #description: 'Choose the env to deploy (Dev or Prod)?'
+        #required: true
+        #type: string
  
 jobs:
  
