@@ -4,11 +4,11 @@
    "version": "10"
   },
   {
-   "name": "com2",
+   "name": "dev",
    "version": "11"
   },
   {
-   "name": "com3",
+   "name": "qa",
    "version": "12"
   }
 ]
