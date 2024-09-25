@@ -30,6 +30,8 @@ jobs:
   Comparison:
     runs-on: ubuntu-latest
     needs: copy_files
+    environment: 
+      name: ${{ matrix.env.env }}
     continue-on-error: true
     strategy:
       matrix:
