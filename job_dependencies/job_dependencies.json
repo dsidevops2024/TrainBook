@@ -1,14 +1,14 @@
 [
   {
-   "name": "${{ secrets.DOCKER_USERNAME }}",
+   "env": "${{ secrets.DOCKER_USERNAME }}",
    "version": "10"
   },
   {
-   "name": "dev",
+   "env": "dev",
    "version": "11"
   },
   {
-   "name": "qa",
+   "env": "prod",
    "version": "12"
   }
 ]
