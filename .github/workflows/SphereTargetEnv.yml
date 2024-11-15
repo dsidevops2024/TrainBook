@@ -46,6 +46,7 @@ jobs:
                 else
                   echo "env=$matching_env" >> $GITHUB_OUTPUT
                 fi
+            fi  
           else
             echo "env=`cat ./client-manifests/${{ inputs.environment }}-clients.json | jq -c`" >> $GITHUB_OUTPUT
           fi
