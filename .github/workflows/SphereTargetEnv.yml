@@ -3,65 +3,67 @@ name: SphereTargetEnv Workflow
 on:
   workflow_dispatch:
     inputs:
+      component:
+        description: 'Input the component to deploy full stack?'
+        required: true
+        type: string
       environment:
         description: 'Choose  env to deploy (Dev or Prod)?'
         required: true
-        type: string
-      Filters:
-        description: 'Choose the required component'
-        required: true
         type: choice
         options:
-          - com1
-          - com2
-          - com3
+          - dev
+          - prod
+      prod_sub_env:
+        description: 'specify the client you want to deploy'
+        required: true
+        type: string
              
 jobs:
  
-  copy_files:
-    runs-on: ubuntu-latest
-    environment: ${{ github.event.inputs.environment }} 
-    outputs:
-      components-info: ${{ steps.set-matrix.outputs.backend-components }}
-      filter-info: ${{ steps.filter-step.outputs.filteredData }}
-    steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v3  
-        
-     
-      - name: Set matrix data
-        id: set-matrix
-        working-directory: ./job_dependencies
-        run: |
-          echo "backend-components=`perl -pe 's/\s+//g' job_dependencies.json`" >> $GITHUB_OUTPUT
-      - name: Filtering JSON data
-        id: filter-step
-        run: |
-          chosencomponents="${{ github.event.inputs.Filters }}"
-          filteredData=$(jq -r --arg chosenCom "$chosencomponents" '.[] | select(.name == $chosenCom)' job_dependencies/job_dependencies.json)
-          for item in $filteredData; do
-            echo "Processing item: $item"
-            
-          done
-    
-  Comparison:
-    runs-on: self-hosted
-    needs: copy_files
-    continue-on-error: true
-    strategy:
-      matrix:
-         components: ${{ fromJSON(needs.copy_files.outputs.components-info) }}
-         filters: ${{ fromJSON(needs.copy_files.outputs.filter-info) }}
-      fail-fast: false
-      max-parallel: 1
-    env:
-      name: ${{ matrix.components.name }}
-      version: ${{ matrix.components.version }}
-      name1: ${{ matrix.filters.name }}
-      version1: ${{ matrix.filters.version }}
+  #check-component-input:
+    #runs-on: ubuntu-latest
+    #environment: ${{ inputs.environment }} 
+    #outputs:
+     # components: ${{ steps.component-input.outputs.components }}
       
-    steps:
-      - name: checking matrix value
+    #steps:
+      #- name: Checkout Repository
+       # uses: actions/checkout@v3  
+     
+     
+  create-environment-matrix:
+     
+     runs-on: ubuntu-latest
+     outputs:
+      env: ${{ steps.env-matix.outputs.env }}
+     steps: 
+      - name: get env input and created matrix 
+        id: env-matrix
+        shell: bash
         run: |
-          echo "$name"
-          echo "$version"
+          if [[ "${{ inputs.environment }}" == "prod" ]]; then
+             selected_env="${{ inputs.prod_sub_env }}"
+             matching_env=$(jq -r ".[] | select(.env == \"$selected_env\")" ./client-manifests/prod-clients.json)
+             if [[ -z "$matching_env" ]]; then
+               echo "Error:No matching"
+               exit 1
+             else
+               echo "env=$matching_env" >> $GITHUB_OUTPUT
+             fi
+           else
+             echo "env={}" >> $GITHUB_OUTPUT
+           fi
+           
+  check-component-input:
+     runs-on: ubuntu-latest
+     needs: create-environment-matrix
+     steps: 
+      - name: get env input and created matrix 
+        run: |
+           if [[ "${{ inputs.environment }}" == "prod" && -n "needs.create-environment-matrix.outputs.env" ]]; then
+              echo "env is set correctly"
+           else
+             echo "error throw"
+           fi
+          
