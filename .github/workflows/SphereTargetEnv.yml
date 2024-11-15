@@ -16,7 +16,7 @@ on:
           - prod
       prod_sub_env:
         description: 'specify the client you want to deploy'
-        required: true
+        required: false
         type: string
              
 jobs:
