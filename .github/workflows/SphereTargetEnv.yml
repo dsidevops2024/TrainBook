@@ -40,22 +40,26 @@ jobs:
      steps: 
       - name: Checkout Repository
         uses: actions/checkout@v3 
-      - name: get env input and created matrix 
+      - name: Get environment input and create matrix
         id: env-matrix
         shell: bash
         run: |
           if [[ "${{ inputs.environment }}" == "prod" ]]; then
-             selected_env="${{ inputs.prod_sub_env }}"
-             matching_env=$(jq -r ".[] | select(.env == \"$selected_env\")" ./client-manifests/prod-clients.json)
-             if [[ -z "$matching_env" ]]; then
-               echo "Error:No matching"
-               exit 1
-             else
-               echo "env=$matching_env" >> $GITHUB_OUTPUT
-             fi
-           else
-             echo "env={}" >> $GITHUB_OUTPUT
-           fi
+            selected_env="${{ inputs.prod_sub_env }}"
+            matching_env=$(jq -c ".[] | select(.env == \"$selected_env\")" ./client-manifests/prod-clients.json)
+ 
+            if [[ -z "$matching_env" ]]; then
+              echo "Error: No matching environment found for '$selected_env'"
+              exit 1
+            else
+              echo "Found matching environment: $matching_env"
+              # Write sanitized output to GITHUB_OUTPUT
+              echo "env=$matching_env" >> $GITHUB_OUTPUT
+            fi
+          else
+            echo "Not a prod environment or no sub-env provided."
+            echo "env={}" >> $GITHUB_OUTPUT
+          fi
       - name: Print the selected environment
         run: |
           echo "Selected environment: ${{ steps.env-matrix.outputs.env }}"
