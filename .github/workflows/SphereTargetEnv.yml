@@ -46,11 +46,12 @@ jobs:
                  exit 1
               else
                  echo "env=$matching_env" >> $GITHUB_OUTPUT
+                 echo "output=`cat ./client-manifests/${{ inputs.environment }}-clients.json | jq -c`"
               fi
             fi  
           else
             echo "env=`cat ./client-manifests/${{ inputs.environment }}-clients.json | jq -c`" >> $GITHUB_OUTPUT
-            echo "output=`cat ./client-manifests/${{ inputs.environment }}-clients.json | jq -c`"
+            
           fi
       - name: Print the selected environment
         run: |
