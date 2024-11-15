@@ -65,8 +65,8 @@ jobs:
         run: |
            if [[ "${{ inputs.environment }}" == "prod" ]]; then
            #&& -n "needs.create-environment-matrix.outputs.env" ]]; then
-              echo "runner-prod" >> $GITHUB_OUTPUT
+              echo "runner=prod" >> $GITHUB_OUTPUT
            else
-              echo "runner-Nonprod" >> $GITHUB_OUTPUT
+              echo "runner=Nonprod" >> $GITHUB_OUTPUT
            fi
           
