@@ -1,0 +1,8 @@
+[
+  {
+    "env": "citize01dev"
+    },
+  {
+    "env": "citize01prd"
+    }
+]
