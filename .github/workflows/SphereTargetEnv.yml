@@ -40,12 +40,12 @@ jobs:
               selected_env="${{ inputs.prod_sub_env }}"
               matching_env=$(jq -c ".[] | select(.env == \"$selected_env\")" ./client-manifests/prod-clients.json)
  
-                if [[ -z "$matching_env" ]]; then
-                   echo "Error: No matching environment found for '${{ inputs.environment }}'"
-                   exit 1
-                else
-                  echo "env=$matching_env" >> $GITHUB_OUTPUT
-                fi
+              if [[ -z "$matching_env" ]]; then
+                 echo "Error: No matching environment found for '${{ inputs.environment }}'"
+                 exit 1
+              else
+                 echo "env=$matching_env" >> $GITHUB_OUTPUT
+              fi
             fi  
           else
             echo "env=`cat ./client-manifests/${{ inputs.environment }}-clients.json | jq -c`" >> $GITHUB_OUTPUT
