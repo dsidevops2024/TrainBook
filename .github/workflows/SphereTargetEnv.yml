@@ -35,7 +35,7 @@ jobs:
         run: |
           if [[ "${{ inputs.environment }}" == "prod" ]]; then
             if [[ "${{ inputs.prod_sub_env }}" == "all" ]]; then
-               echo "env='cat ./client-manifests/${{ inputs.environment }}-clients.json | jq -c'" >> $GITHUB_OUTPUT"
+               echo "env=`cat ./client-manifests/${{ inputs.environment }}-clients.json | jq -c`" >> $GITHUB_OUTPUT
             else 
               selected_env="${{ inputs.prod_sub_env }}"
               matching_env=$(jq -c ".[] | select(.env == \"$selected_env\")" ./client-manifests/prod-clients.json)
@@ -47,7 +47,7 @@ jobs:
                   echo "env=$matching_env" >> $GITHUB_OUTPUT
                 fi
           else
-            echo "env='cat ./client-manifests/${{ inputs.environment }}-clients.json | jq -c'" >> $GITHUB_OUTPUT"
+            echo "env=`cat ./client-manifests/${{ inputs.environment }}-clients.json | jq -c`" >> $GITHUB_OUTPUT
           fi
       - name: Print the selected environment
         run: |
