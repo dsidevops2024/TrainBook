@@ -1,7 +1,14 @@
-[{
-"componentName": "Cyberworker"
-},{
-  "componentName": "worker"
-},{
-  "componentName": "DevOps"
-}]
+[
+  {
+    "Phase": 1,
+    "componentName": "Cyberworker",
+    "Branch": "main",
+    "code": "example"
+    },
+  {
+    "Phase": 2,
+    "componentName": "worker",
+    "Branch": "branch1",
+    "code": "example1"
+    }
+]
