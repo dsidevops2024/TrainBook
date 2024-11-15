@@ -54,6 +54,9 @@ jobs:
            else
              echo "env={}" >> $GITHUB_OUTPUT
            fi
+      - name: Print the selected environment
+        run: |
+          echo "Selected environment: ${{ steps.env-matrix.outputs.env }}"
            
   check-component-input:
      runs-on: ubuntu-latest
