@@ -18,23 +18,12 @@ on:
         description: 'specify the client you want to deploy'
         required: false
         type: string
+        default: 'all'
              
 jobs:
- 
-  #check-component-input:
-    #runs-on: ubuntu-latest
-    #environment: ${{ inputs.environment }} 
-    #outputs:
-     # components: ${{ steps.component-input.outputs.components }}
-      
-    #steps:
-      #- name: Checkout Repository
-       # uses: actions/checkout@v3  
-     
-     
   create-environment-matrix:
-     
      runs-on: ubuntu-latest
+     
      outputs:
       env: ${{ steps.env-matix.outputs.env }}
      steps: 
@@ -45,20 +34,20 @@ jobs:
         shell: bash
         run: |
           if [[ "${{ inputs.environment }}" == "prod" ]]; then
-            selected_env="${{ inputs.prod_sub_env }}"
-            matching_env=$(jq -c ".[] | select(.env == \"$selected_env\")" ./client-manifests/prod-clients.json)
+            if [[ "${{ inputs.prod_sub_env }}" == "all" ]]; then
+               echo "env='cat ./client-manifests/${{ inputs.environment }}-clients.json | jq -c'" >> $GITHUB_OUTPUT"
+            else 
+              selected_env="${{ inputs.prod_sub_env }}"
+              matching_env=$(jq -c ".[] | select(.env == \"$selected_env\")" ./client-manifests/prod-clients.json)
  
-            if [[ -z "$matching_env" ]]; then
-              echo "Error: No matching environment found for '$selected_env'"
-              exit 1
-            else
-              echo "Found matching environment: $matching_env"
-              # Write sanitized output to GITHUB_OUTPUT
-              echo "env=$matching_env" >> $GITHUB_OUTPUT
-            fi
+                if [[ -z "$matching_env" ]]; then
+                   echo "Error: No matching environment found for '${{ inputs.environment }}'"
+                   exit 1
+                else
+                  echo "env=$matching_env" >> $GITHUB_OUTPUT
+                fi
           else
-            echo "Not a prod environment or no sub-env provided."
-            echo "env={}" >> $GITHUB_OUTPUT
+            echo "env='cat ./client-manifests/${{ inputs.environment }}-clients.json | jq -c'" >> $GITHUB_OUTPUT"
           fi
       - name: Print the selected environment
         run: |
@@ -67,12 +56,16 @@ jobs:
   check-component-input:
      runs-on: ubuntu-latest
      needs: create-environment-matrix
+     outputs:
+      runner: ${{ steps.env-runner.outputs.runner }}
      steps: 
-      - name: get env input and created matrix 
+      - name: set runner group
+        id: env-runner
         run: |
-           if [[ "${{ inputs.environment }}" == "prod" && -n "needs.create-environment-matrix.outputs.env" ]]; then
-              echo "env is set correctly"
+           if [[ "${{ inputs.environment }}" == "prod" ]]; then
+           #&& -n "needs.create-environment-matrix.outputs.env" ]]; then
+              echo "runner-prod" >> $GITHUB_OUTPUT
            else
-             echo "error throw"
+              echo "runner-Nonprod" >> $GITHUB_OUTPUT
            fi
           
