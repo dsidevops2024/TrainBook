@@ -55,6 +55,8 @@ jobs:
               done
               # Remove trailing comma from selected_envs
               selected_envs="${selected_envs%,}"
+              #Set the output as the selected environments
+               echo "env=[$selected_envs]" >> $GITHUB_OUTPUT
             fi
           else
             # For dev environment, just read the entire file
@@ -62,7 +64,7 @@ jobs:
           fi
 
           # Set the output as the selected environments
-          echo "env=[$selected_envs]" >> $GITHUB_OUTPUT
+          #echo "env=[$selected_envs]" >> $GITHUB_OUTPUT
 
       - name: Print the selected environment(s)
         run: |
