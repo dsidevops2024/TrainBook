@@ -1,4 +1,4 @@
-name: TargetCheckNew Workflow
+name: ATargetCheck Workflow
 
 on:
   workflow_dispatch:
@@ -34,17 +34,20 @@ jobs:
         id: env-matrix
         shell: bash
         run: |
+          # Initialize the selected_envs variable as an empty string
           selected_envs=""
 
-          # For prod environment
+          # Check if the environment is 'prod'
           if [[ "${{ inputs.environment }}" == "prod" ]]; then
             if [[ "${{ inputs.prod_sub_env }}" == "all" ]]; then
-              # If 'all' is selected, output all environments from prod-clients.json
-              echo "env=$(jq -c '.[].env' ./client-manifests/${{ inputs.environment }}-clients.json)" >> $GITHUB_OUTPUT
+              # If 'all' is selected, output all environments from prod-clients.json as a valid JSON array
+              selected_envs=$(jq -c '.[].env' ./client-manifests/${{ inputs.environment }}-clients.json)
+              echo "env=$selected_envs" >> $GITHUB_OUTPUT
             else
               # If specific environments are selected in prod_sub_env, process the list of environments
               IFS=',' read -ra target_envs <<< "${{ inputs.prod_sub_env }}"
               for envs in "${target_envs[@]}"; do
+                # Get matching environments from prod-clients.json
                 matching_env=$(jq -c ".[] | select(.env == \"$envs\") | .env" ./client-manifests/${{ inputs.environment }}-clients.json)
                 if [[ -z "$matching_env" ]]; then
                   echo "Error: No matching environment found for '$envs' in '${{ inputs.environment }}'"
@@ -54,13 +57,14 @@ jobs:
                   selected_envs="$selected_envs,$matching_env"
                 fi
               done
-              # Remove leading comma and ensure it's a valid JSON array
+              # Format selected_envs as a JSON array
               selected_envs="[${selected_envs#,}]"
               echo "env=$selected_envs" >> $GITHUB_OUTPUT
             fi
           else
             # For dev environment, just read the entire file and format as a JSON array
-            echo "env=$(jq -c '.[].env' ./client-manifests/${{ inputs.environment }}-clients.json)" >> $GITHUB_OUTPUT
+            selected_envs=$(jq -c '.[].env' ./client-manifests/${{ inputs.environment }}-clients.json)
+            echo "env=$selected_envs" >> $GITHUB_OUTPUT
           fi
 
       - name: Print the selected environment(s)
