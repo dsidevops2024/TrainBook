@@ -35,7 +35,9 @@ jobs:
         shell: bash
         run: |
           # Initialize the selected_envs variable as an empty string
-          selected_envs=""
+          #selected_envs=""
+          selected_envs="[{}]"
+
 
           # Check if the environment is 'prod'
           if [[ "${{ inputs.environment }}" == "prod" ]]; then
