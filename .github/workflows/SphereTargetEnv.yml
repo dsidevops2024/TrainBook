@@ -15,7 +15,7 @@ on:
           - dev
           - prod
       prod_sub_env:
-        description: 'specify the client you want to deploy'
+        description: 'specify the client you want to deploy(comma-separated for multiple env)'
         required: false
         type: string
         default: 'all'
@@ -38,15 +38,18 @@ jobs:
                echo "env=`cat ./client-manifests/${{ inputs.environment }}-clients.json | jq -c`" >> $GITHUB_OUTPUT
                #echo "env=`cat ./client-manifests/${{ inputs.environment }}-clients.json | jq -c`"
             else 
-              selected_env="${{ inputs.prod_sub_env }}"
-              matching_env=$(jq -c ".[] | select(.env == \"$selected_env\")" ./client-manifests/prod-clients.json)
+              target_env=$(echo "${{ inputs.prod_sub_env }}" | tr ',' '')
+              for env in $target_env; do
+                matching_env=$(jq -c ".[] | select(.env == \"$env\")" ./client-manifests/${{ inputs.environment }}-clients.json)
+              #selected_env="${{ inputs.prod_sub_env }}"
+              #matching_env=$(jq -c ".[] | select(.env == \"$selected_env\")" ./client-manifests/${{ inputs.environment }}-clients.json)
  
               if [[ -z "$matching_env" ]]; then
-                 echo "Error: No matching environment found for '${{ inputs.environment }}'"
+                 echo "Error: No matching environment found for '$env' in '${{ inputs.environment }}'"
                  exit 1
               else
                  echo "env=$matching_env" >> $GITHUB_OUTPUT
-                 echo "env=$matching_env"
+                 #echo "env=$matching_env"
               fi
             fi  
           else
