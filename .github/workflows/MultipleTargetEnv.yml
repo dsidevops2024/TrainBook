@@ -1,4 +1,4 @@
-name:MultipleTargetEnv Workflow
+name: MultipleTargetEnv Workflow
 
 on:
   workflow_dispatch:
