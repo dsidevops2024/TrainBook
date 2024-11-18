@@ -1,4 +1,4 @@
-name: ATargetCheck Workflow
+name: AATargetCheck Workflow
 
 on:
   workflow_dispatch:
