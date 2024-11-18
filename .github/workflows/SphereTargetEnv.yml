@@ -35,27 +35,26 @@ jobs:
         run: |
           if [[ "${{ inputs.environment }}" == "prod" ]]; then
             if [[ "${{ inputs.prod_sub_env }}" == "all" ]]; then
-               echo "env=`cat ./client-manifests/${{ inputs.environment }}-clients.json | jq -c`" >> $GITHUB_OUTPUT
-               #echo "env=`cat ./client-manifests/${{ inputs.environment }}-clients.json | jq -c`"
+               echo "env=$(cat ./client-manifests/${{ inputs.environment }}-clients.json | jq -c)" >> $GITHUB_OUTPUT
             else 
-              target_env=$(echo "${{ inputs.prod_sub_env }}" | tr ',' '')
-              for env in $target_env; do
-                matching_env=$(jq -c ".[] | select(.env == \"$env\")" ./client-manifests/${{ inputs.environment }}-clients.json)
-              #selected_env="${{ inputs.prod_sub_env }}"
-              #matching_env=$(jq -c ".[] | select(.env == \"$selected_env\")" ./client-manifests/${{ inputs.environment }}-clients.json)
- 
-              if [[ -z "$matching_env" ]]; then
-                 echo "Error: No matching environment found for '$env' in '${{ inputs.environment }}'"
-                 exit 1
-              else
-                 echo "env=$matching_env" >> $GITHUB_OUTPUT
-                 #echo "env=$matching_env"
-              fi
+               # Split the comma-separated string into an array
+               IFS=',' read -ra target_env <<< "${{ inputs.prod_sub_env }}"
+
+               for env in "${target_env[@]}"; do
+                   matching_env=$(jq -c ".[] | select(.env == \"$env\")" ./client-manifests/${{ inputs.environment }}-clients.json)
+
+                  if [[ -z "$matching_env" ]]; then
+                    echo "Error: No matching environment found for '$env' in '${{ inputs.environment }}'"
+                    exit 1
+                  else
+                    echo "env=$matching_env" >> $GITHUB_OUTPUT
+                  fi
+               done
             fi  
           else
-            echo "env=`cat ./client-manifests/${{ inputs.environment }}-clients.json | jq -c`" >> $GITHUB_OUTPUT
-            
+            echo "env=$(cat ./client-manifests/${{ inputs.environment }}-clients.json | jq -c)" >> $GITHUB_OUTPUT
           fi
+          
       - name: Print the selected environment
         run: |
           echo "Selected environment: ${{ steps.env-matrix.outputs.env }}"
