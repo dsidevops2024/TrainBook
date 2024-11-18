@@ -39,18 +39,18 @@ jobs:
           if [[ "${{ inputs.environment }}" == "prod" ]]; then
             if [[ "${{ inputs.prod_sub_env }}" == "all" ]]; then
               # If 'all' is selected, include all environments from the prod-clients.json
-              selected_envs=$(cat ./client-manifests/${{ inputs.environment }}-clients.json | jq -c '.[]')
+              env=$(cat ./client-manifests/${{ inputs.environment }}-clients.json | jq -c '.[]') >> $GITHUB_OUTPUT
             else
               # Split the comma-separated string into an array and process each
               IFS=',' read -ra target_envs <<< "${{ inputs.prod_sub_env }}"
-              for env in "${target_envs[@]}"; do
-                matching_env=$(jq -c ".[] | select(.env == \"$env\")" ./client-manifests/${{ inputs.environment }}-clients.json)
+              for envs in "${target_envs[@]}"; do
+                matching_env=$(jq -c ".[] | select(.env == \"$envs\")" ./client-manifests/${{ inputs.environment }}-clients.json)
                 if [[ -z "$matching_env" ]]; then
                   echo "Error: No matching environment found for '$env' in '${{ inputs.environment }}'"
                   exit 1
                 else
                   # Append the matching environment to the selected_envs
-                  selected_envs="$selected_envs$matching_env,"
+                  selected_envs="$env$matching_env,"
                 fi
               done
               # Remove trailing comma from selected_envs
@@ -60,7 +60,7 @@ jobs:
             fi
           else
             # For dev environment, just read the entire file
-            selected_envs=$(cat ./client-manifests/${{ inputs.environment }}-clients.json | jq -c '.[]')
+            env=$(cat ./client-manifests/${{ inputs.environment }}-clients.json | jq -c '.[]') >> $GITHUB_OUTPUT
           fi
 
           # Set the output as the selected environments
