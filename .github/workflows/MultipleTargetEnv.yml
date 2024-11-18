@@ -82,3 +82,4 @@ jobs:
             echo "runner=prod" >> $GITHUB_OUTPUT
           else
             echo "runner=Nonprod" >> $GITHUB_OUTPUT
+          fi
