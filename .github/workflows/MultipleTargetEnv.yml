@@ -62,7 +62,7 @@ jobs:
           fi
 
           # Set the output as the selected environments
-          echo "env=$selected_envs" >> $GITHUB_OUTPUT
+          echo "env=[$selected_envs]" >> $GITHUB_OUTPUT
 
       - name: Print the selected environment(s)
         run: |
