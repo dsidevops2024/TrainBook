@@ -1,4 +1,4 @@
-name: ATargetCheck Workflow
+name: TargetCheckNew Workflow
 
 on:
   workflow_dispatch:
