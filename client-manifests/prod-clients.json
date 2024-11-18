@@ -4,5 +4,11 @@
     },
   {
     "env": "citize01prd"
+    },
+  {
+    "env": "citi01"
+    },
+  {
+    "env": "citi02"
     }
 ]
