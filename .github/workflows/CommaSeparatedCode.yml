@@ -35,9 +35,8 @@ jobs:
         id: env-matrix
         shell: bash
         run: |
-          Trim any leading or trailing spaces from the prod_sub_env input
-          prod_sub_env="${{ inputs.prod_sub_env }}"
-          prod_sub_env=$(echo "$prod_sub_env" | tr -d '[:blank:]') # This trims spaces
+          # Debugging: Check the raw prod_sub_env input
+          echo "Raw prod_sub_env input: '${{ inputs.prod_sub_env }}'"
           if [[ "${{ inputs.environment }}" == "prod" ]]; then
             if [[ "${{ inputs.prod_sub_env }}" == "all" ]]; then
               # Deploy all environments from prod-clients.json
@@ -45,15 +44,23 @@ jobs:
             else
               # Handle comma-separated multiple environments or single environment
               selected_envs="${{ inputs.prod_sub_env }}"
-               envs_to_deploy="["
+ 
+              selected_envs=$(echo "$selected_envs" | sed 's/[[:space:]]*,[[:space:]]*/,/g' | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')
+ 
+              # Debugging: Check the cleaned prod_sub_env value
+              echo "Cleaned prod_sub_env: '$selected_envs'"
+ 
               
+               envs_to_deploy="["
               # Split the input into an array if there are multiple environments
               IFS=',' read -ra ENV_ARRAY <<< "$selected_envs"
-              
               for env in "${ENV_ARRAY[@]}"; do
-                env=$(echo "$env" | tr -d '[:blank:]')
+                # Trim spaces around each environment name
+                env=$(echo "$env" | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')
+ 
+                # Debugging: Check the environment name being processed
+                echo "Processing environment: '$env'"
                 matching_env=$(jq -c ".[] | select(.env == \"$env\")" ./client-manifests/${{ inputs.environment }}-clients.json)
-                
                 if [[ -z "$matching_env" ]]; then
                   echo "Error: No matching environment found for '$env' in '${{ inputs.environment }}'"
                   exit 1
@@ -66,7 +73,6 @@ jobs:
                   fi
                 fi
               done
-              
               # Close the JSON array
               envs_to_deploy="$envs_to_deploy]"
               echo "env=$envs_to_deploy" >> $GITHUB_OUTPUT
