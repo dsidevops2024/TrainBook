@@ -46,10 +46,10 @@ jobs:
               # Handle comma-separated multiple environments or single environment
               selected_envs="${{ inputs.prod_sub_env }}"
               selected_envs=$(echo "$selected_envs" | sed 's/[[:space:]]*,[[:space:]]*/,/g' | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')
- 
+              
               # Debugging: Check the cleaned prod_sub_env value
               echo "Cleaned prod_sub_env: '$selected_envs'"
- 
+              
                envs_to_deploy="["
               # Split the input into an array if there are multiple environments
               IFS=',' read -ra ENV_ARRAY <<< "$selected_envs"
