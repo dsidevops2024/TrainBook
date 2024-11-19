@@ -35,9 +35,7 @@ jobs:
         id: env-matrix
         shell: bash
         run: |
-         Trim any leading or trailing spaces from the prod_sub_env input
-          prod_sub_env="${{ inputs.prod_sub_env }}"
-          prod_sub_env=$(echo "$prod_sub_env" | tr -d '[:blank:]') # This trims spaces
+         
           if [[ "${{ inputs.environment }}" == "prod" ]]; then
             if [[ "${{ inputs.prod_sub_env }}" == "all" ]]; then
               # Deploy all environments from prod-clients.json
