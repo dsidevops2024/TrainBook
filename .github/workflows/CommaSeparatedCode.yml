@@ -45,13 +45,16 @@ jobs:
             else
               # Handle comma-separated multiple environments or single environment
               selected_envs="${{ inputs.prod_sub_env }}"
+
+              selected_envs=$(echo "$selected_envs" | sed 's/[[:space:]]*,[[:space:]]*/,/g' | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')
+              
                envs_to_deploy="["
               
               # Split the input into an array if there are multiple environments
               IFS=',' read -ra ENV_ARRAY <<< "$selected_envs"
               
               for env in "${ENV_ARRAY[@]}"; do
-                env=$(echo "$env" | tr -d '[:blank:]')
+                
                 matching_env=$(jq -c ".[] | select(.env == \"$env\")" ./client-manifests/${{ inputs.environment }}-clients.json)
                 
                 if [[ -z "$matching_env" ]]; then
