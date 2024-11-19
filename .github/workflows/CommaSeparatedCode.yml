@@ -37,8 +37,10 @@ jobs:
         run: |
           # Trim any leading or trailing spaces from the prod_sub_env input
           prod_sub_env="${{ inputs.prod_sub_env }}"
-          prod_sub_env=$(echo "$prod_sub_env" | xargs) # This trims spaces
-
+          
+          # Remove extra spaces between comma-separated values
+          prod_sub_env=$(echo "$prod_sub_env" | sed 's/^[[:space:]]*//;s/[[:space:]]*$//;s/[[:space:]]*,[[:space:]]*/,/g')
+          
           if [[ "${{ inputs.environment }}" == "prod" ]]; then
             if [[ "${{ inputs.prod_sub_env }}" == "all" ]]; then
               # Deploy all environments from prod-clients.json
