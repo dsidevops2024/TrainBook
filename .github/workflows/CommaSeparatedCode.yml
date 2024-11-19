@@ -35,16 +35,13 @@ jobs:
         id: env-matrix
         shell: bash
         run: |
-          # Trim any leading or trailing spaces from the prod_sub_env input
-          #prod_sub_env="${{ inputs.prod_sub_env }}"
-          
-          # Remove extra spaces between comma-separated values
-          #prod_sub_env=$(echo "$prod_sub_env" | sed 's/^[[:space:]]*//;s/[[:space:]]*$//;s/[[:space:]]*,[[:space:]]*/,/g')
-          
+         Trim any leading or trailing spaces from the prod_sub_env input
+          prod_sub_env="${{ inputs.prod_sub_env }}"
+          prod_sub_env=$(echo "prod_sub_env" | tr -d '[:blank:]') # This trims spaces
           if [[ "${{ inputs.environment }}" == "prod" ]]; then
             if [[ "${{ inputs.prod_sub_env }}" == "all" ]]; then
               # Deploy all environments from prod-clients.json
-              echo "env=`cat ./client-manifests/${{ inputs.environment }}-clients.json | jq -c .`" >> $GITHUB_OUTPUT
+              echo "env=cat ./client-manifests/${{ inputs.environment }}-clients.json | jq -c ." >> $GITHUB_OUTPUT
             else
               # Handle comma-separated multiple environments or single environment
               selected_envs="${{ inputs.prod_sub_env }}"
@@ -54,9 +51,7 @@ jobs:
               IFS=',' read -ra ENV_ARRAY <<< "$selected_envs"
               
               for env in "${ENV_ARRAY[@]}"; do
-                env="${env//[[:space:]]/}"
-
-                #env=$(echo "$env" | xargs)
+                env=$(echo "$env" | tr -d '[:blank:]')
                 matching_env=$(jq -c ".[] | select(.env == \"$env\")" ./client-manifests/${{ inputs.environment }}-clients.json)
                 
                 if [[ -z "$matching_env" ]]; then
@@ -78,9 +73,8 @@ jobs:
             fi
           else
             # If environment is not prod, fetch all environments
-            echo "env=`cat ./client-manifests/${{ inputs.environment }}-clients.json | jq -c .`" >> $GITHUB_OUTPUT
+            echo "env=cat ./client-manifests/${{ inputs.environment }}-clients.json | jq -c ." >> $GITHUB_OUTPUT
           fi
-          
       - name: Print the selected environment
         run: |
           echo "Selected environment: ${{ steps.env-matrix.outputs.env }}"
