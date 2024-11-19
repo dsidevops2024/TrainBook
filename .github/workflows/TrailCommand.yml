@@ -33,29 +33,29 @@ jobs:
         id: env-matrix
         shell: bash
         run: |
-          # Clean and prepare prod_sub_env input
+          # Raw input from the user
           selected_envs="${{ inputs.prod_sub_env }}"
           
-          # Clean up spaces around commas using tr
+          # Clean up spaces around commas and replace multiple spaces with a single comma
           selected_envs=$(echo "$selected_envs" | tr -s ' ' ',')
-
-          # Remove leading and trailing spaces from the entire string
-          selected_envs=$(echo "$selected_envs" | tr -d '[:space:]')
+          
+          # Trim leading and trailing spaces from the entire string
+          selected_envs=$(echo "$selected_envs" | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')
 
           echo "Cleaned prod_sub_env: '$selected_envs'"
 
-          # Initialize an empty array for environments to deploy
+          # Initialize the JSON array that will hold the environments to deploy
           envs_to_deploy="["
-          
-          # If 'all' is selected, deploy all environments
+
+          # If 'all' is selected, deploy all environments from the prod-clients.json
           if [[ "${{ inputs.prod_sub_env }}" == "all" ]]; then
             envs_to_deploy=$(cat ./client-manifests/${{ inputs.environment }}-clients.json | jq -c .)
           else
             # Split and process multiple environments
             IFS=',' read -ra ENV_ARRAY <<< "$selected_envs"
             for env in "${ENV_ARRAY[@]}"; do
-              # Trim spaces around the environment name using tr (only for individual environments)
-              env=$(echo "$env" | tr -d '[:space:]')
+              # Trim spaces around the environment name using sed (only for individual environments)
+              env=$(echo "$env" | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')
 
               # Check if matching environment exists in prod-clients.json
               matching_env=$(jq -c ".[] | select(.env == \"$env\")" ./client-manifests/${{ inputs.environment }}-clients.json)
