@@ -35,6 +35,10 @@ jobs:
         id: env-matrix
         shell: bash
         run: |
+          # Trim any leading or trailing spaces from the prod_sub_env input
+          prod_sub_env="${{ inputs.prod_sub_env }}"
+          prod_sub_env=$(echo "$prod_sub_env" | xargs) # This trims spaces
+
           if [[ "${{ inputs.environment }}" == "prod" ]]; then
             if [[ "${{ inputs.prod_sub_env }}" == "all" ]]; then
               # Deploy all environments from prod-clients.json
@@ -48,6 +52,7 @@ jobs:
               IFS=',' read -ra ENV_ARRAY <<< "$selected_envs"
               
               for env in "${ENV_ARRAY[@]}"; do
+                env=$(echo "$env" | xargs)
                 matching_env=$(jq -c ".[] | select(.env == \"$env\")" ./client-manifests/${{ inputs.environment }}-clients.json)
                 
                 if [[ -z "$matching_env" ]]; then
