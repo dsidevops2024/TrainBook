@@ -1,4 +1,4 @@
-name: CommaSeparated Workflow
+name: TrailCommand Workflow
 
 on:
   workflow_dispatch:
