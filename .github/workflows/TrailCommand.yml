@@ -1,0 +1,98 @@
+name: CommaSeparated Workflow
+
+on:
+  workflow_dispatch:
+    inputs:
+      component:
+        description: 'Input the component to deploy full stack?'
+        required: true
+        type: string
+      environment:
+        description: 'Choose env to deploy (Dev or Prod)?'
+        required: true
+        type: choice
+        options:
+          - dev
+          - prod
+      prod_sub_env:
+        description: 'Specify the client(s) you want to deploy (comma-separated for multiple environments, "all" for all environments)?'
+        required: false
+        type: string
+        default: 'all'
+
+jobs:
+  create-environment-matrix:
+    runs-on: ubuntu-latest
+    outputs:
+      env: ${{ steps.env-matrix.outputs.env }}
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+
+      - name: Get environment input and create matrix
+        id: env-matrix
+        shell: bash
+        run: |
+          # Clean and prepare prod_sub_env input
+          selected_envs="${{ inputs.prod_sub_env }}"
+          
+          # Clean up spaces around commas using tr
+          selected_envs=$(echo "$selected_envs" | tr -s ' ' ',')
+
+          # Remove leading and trailing spaces from the entire string
+          selected_envs=$(echo "$selected_envs" | tr -d '[:space:]')
+
+          echo "Cleaned prod_sub_env: '$selected_envs'"
+
+          # Initialize an empty array for environments to deploy
+          envs_to_deploy="["
+          
+          # If 'all' is selected, deploy all environments
+          if [[ "${{ inputs.prod_sub_env }}" == "all" ]]; then
+            envs_to_deploy=$(cat ./client-manifests/${{ inputs.environment }}-clients.json | jq -c .)
+          else
+            # Split and process multiple environments
+            IFS=',' read -ra ENV_ARRAY <<< "$selected_envs"
+            for env in "${ENV_ARRAY[@]}"; do
+              # Trim spaces around the environment name using tr (only for individual environments)
+              env=$(echo "$env" | tr -d '[:space:]')
+
+              # Check if matching environment exists in prod-clients.json
+              matching_env=$(jq -c ".[] | select(.env == \"$env\")" ./client-manifests/${{ inputs.environment }}-clients.json)
+              if [[ -z "$matching_env" ]]; then
+                echo "Error: No matching environment found for '$env' in '${{ inputs.environment }}'"
+                exit 1
+              else
+                # Append the matching environment to the list
+                if [[ "$envs_to_deploy" == "[" ]]; then
+                  envs_to_deploy="$envs_to_deploy$matching_env"
+                else
+                  envs_to_deploy="$envs_to_deploy, $matching_env"
+                fi
+              fi
+            done
+            # Close the JSON array
+            envs_to_deploy="$envs_to_deploy]"
+          fi
+          
+          # Output the final environments to deploy
+          echo "env=$envs_to_deploy" >> $GITHUB_OUTPUT
+
+      - name: Print the selected environment
+        run: |
+          echo "Selected environment: ${{ steps.env-matrix.outputs.env }}"
+
+  check-component-input:
+    runs-on: ubuntu-latest
+    needs: create-environment-matrix
+    outputs:
+      runner: ${{ steps.env-runner.outputs.runner }}
+    steps:
+      - name: Set runner group
+        id: env-runner
+        run: |
+          if [[ "${{ inputs.environment }}" == "prod" ]]; then
+            echo "runner=prod" >> $GITHUB_OUTPUT
+          else
+            echo "runner=Nonprod" >> $GITHUB_OUTPUT
+          fi
