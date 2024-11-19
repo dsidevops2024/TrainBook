@@ -35,7 +35,9 @@ jobs:
         id: env-matrix
         shell: bash
         run: |
-         
+          # Debugging: Check the raw prod_sub_env input
+          echo "Raw prod_sub_env input: '${{ inputs.prod_sub_env }}'"
+          
           if [[ "${{ inputs.environment }}" == "prod" ]]; then
             if [[ "${{ inputs.prod_sub_env }}" == "all" ]]; then
               # Deploy all environments from prod-clients.json
@@ -45,6 +47,10 @@ jobs:
               selected_envs="${{ inputs.prod_sub_env }}"
 
               selected_envs=$(echo "$selected_envs" | sed 's/[[:space:]]*,[[:space:]]*/,/g' | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')
+
+              # Debugging: Check the cleaned prod_sub_env value
+              echo "Cleaned prod_sub_env: '$selected_envs'"
+
               
                envs_to_deploy="["
               
@@ -52,6 +58,11 @@ jobs:
               IFS=',' read -ra ENV_ARRAY <<< "$selected_envs"
               
               for env in "${ENV_ARRAY[@]}"; do
+                # Trim spaces around each environment name
+                env=$(echo "$env" | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')
+
+                # Debugging: Check the environment name being processed
+                echo "Processing environment: '$env'"
                 
                 matching_env=$(jq -c ".[] | select(.env == \"$env\")" ./client-manifests/${{ inputs.environment }}-clients.json)
                 
