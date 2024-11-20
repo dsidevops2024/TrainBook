@@ -41,7 +41,7 @@ jobs:
           if [[ "${{ inputs.environment }}" == "prod" ]]; then
             if [[ "${{ inputs.prod_sub_env }}" == "all" ]]; then
               # Deploy all environments from prod-clients.json
-              echo "env=cat ./client-manifests/${{ inputs.environment }}-clients.json | jq -c ." >> $GITHUB_OUTPUT
+              echo "env=`cat ./client-manifests/${{ inputs.environment }}-clients.json | jq -c`" >> $GITHUB_OUTPUT
             else
               # Handle comma-separated multiple environments or single environment
               selected_envs="${{ inputs.prod_sub_env }}"
@@ -77,7 +77,7 @@ jobs:
             fi
           else
             # If environment is not prod, fetch all environments
-            echo "env=cat ./client-manifests/${{ inputs.environment }}-clients.json | jq -c ." >> $GITHUB_OUTPUT
+            echo "env=`cat ./client-manifests/${{ inputs.environment }}-clients.json | jq -c`" >> $GITHUB_OUTPUT
           fi
       - name: Print the selected environment
         run: |
