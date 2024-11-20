@@ -37,7 +37,7 @@ jobs:
           selected_envs="${{ inputs.prod_sub_env }}"
           
           # Clean up spaces around commas and replace multiple spaces with a single comma
-          selected_envs=$(echo "$selected_envs" | tr -s ' ' ',')
+          selected_envs=$(echo "$selected_envs" | tr -s ' ' '!')
           
           # Trim leading and trailing spaces from the entire string
           selected_envs=$(echo "$selected_envs" | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')
