@@ -1,6 +1,36 @@
 name: Caller-workflow
 on:
   workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Choose the env to deploy (Dev and Prod)?'
+        required: true
+        type: environment
+        
+jobs:
+  Call-workflow-for-deploy:
+    uses: ./.github/workflows/Deploy-workflow.yml   
+    with:
+      environment: ${{ github.event.inputs.environment }}
+    secrets: inherit
+    id: deploy
+
+  Handle-deploy-result:
+    needs: Call-workflow-for-deploy
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check the output of deploy workflow
+        run: |
+          echo "Deploy Workflow Status: ${{ needs.Call-workflow-for-deploy.outputs.deploy_status }}"
+          if [[ "${{ needs.Call-workflow-for-deploy.outputs.deploy_status }}" != "success" ]]; then
+            echo "Deployment failed, exiting..."
+            exit 1
+          fi
+
+
+name: Caller-workflow
+on:
+  workflow_dispatch:
    inputs:
       environment:
         description: 'Choose the env to deploy (Dev and Prod)?'
@@ -15,8 +45,13 @@ jobs:
     #needs: Call-workflow-for-build
     uses: ./.github/workflows/Deploy-workflow.yml   
     #uses: ./.github/workflows/Test1.yml
-    #with:
-       #environment: ${{ github.event.inputs.environment }}
+    with:
+       environment: ${{ github.event.inputs.environment }}
+
+    secrets: inherit
+    outputs:
+      deploy-error: 
+    
     
   
   
