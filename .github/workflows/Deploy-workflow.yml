@@ -1,9 +1,6 @@
 name: Deploy Workflow
- 
 on:
   workflow_dispatch:
-
- 
 jobs:
   copy_files:
     runs-on: ubuntu-latest
@@ -11,13 +8,10 @@ jobs:
       #clientfile: "./job_dependencies/job_dependencies.json"
     outputs:
       component: ${{ steps.set-matrix.outputs.env }}
+      deploy_status: ${{ steps.set-deploy-status.outputs.deploy_status }}
     steps:
       - name: Checkouts Repository
         uses: actions/checkout@v3  
-      #- name: Copy Job Dependencies
-        #run: |
-          #mkdir -p job_dependencies  
-          #cp .github/job_dependencies.json job_dependencies/  
       - name: Listing the directory
         run: ls -R 
       - name: List Job Dependencies
@@ -33,12 +27,17 @@ jobs:
       - name: Deploy Step
         id: deploy-step
         run: |
-          # Your deployment logic here
-          # For example, if it fails, exit with a non-zero status
-          if [some condition]; then
-            exit 1
+          # Run the deployment command or script
+          ./deploy.sh
+
+            # Check if the deployment command succeeded
+          if [ $? -ne 0 ]; then
+             echo "Deployment failed!"
+             exit 1
+          else
+            echo "Deployment succeeded!"
           fi
       - name: Set deploy status output
-        run: echo "::set-output name=deploy_status::${{ job.status }}"
-      outputs:
-         deploy_status: ${{ steps.set-output.outputs.deploy_status }}
+        id: set-deploy-status   # You should set an id here to capture output
+        run: |
+          echo "deploy_status=${{ job.status }}" >> $GITHUB_ENV
