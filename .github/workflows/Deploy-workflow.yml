@@ -40,4 +40,5 @@ jobs:
           fi
       - name: Set deploy status output
         run: echo "::set-output name=deploy_status::${{ job.status }}"
-  
+      outputs:
+         deploy_status: ${{ steps.set-output.outputs.deploy_status }}
