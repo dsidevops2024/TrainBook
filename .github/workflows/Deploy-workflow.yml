@@ -29,4 +29,15 @@ jobs:
           echo "env=$(jq -r .env job_dependencies/job_dependencies.json)" >> $GITHUB_ENV
       - name: Check env value
         run: echo $component
+        
+      - name: Deploy Step
+        id: deploy-step
+        run: |
+          # Your deployment logic here
+          # For example, if it fails, exit with a non-zero status
+          if [some condition]; then
+            exit 1
+          fi
+      - name: Set deploy status output
+        run: echo "::set-output name=deploy_status::${{ job.status }}"
   
