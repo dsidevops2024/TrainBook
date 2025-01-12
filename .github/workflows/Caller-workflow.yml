@@ -26,32 +26,3 @@ jobs:
             echo "Deployment failed, exiting..."
             exit 1
           fi
-
-
-name: Caller-workflow
-on:
-  workflow_dispatch:
-   inputs:
-      environment:
-        description: 'Choose the env to deploy (Dev and Prod)?'
-        required: true
-        type: environment
-        
-jobs:
-  #Call-workflow-for-build:
-    #$uses: ./.github/workflows/Build-workflow.yml
-    
-  Call-workflow-for-deploy:
-    #needs: Call-workflow-for-build
-    uses: ./.github/workflows/Deploy-workflow.yml   
-    #uses: ./.github/workflows/Test1.yml
-    with:
-       environment: ${{ github.event.inputs.environment }}
-
-    secrets: inherit
-    outputs:
-      deploy-error: 
-    
-    
-  
-  
