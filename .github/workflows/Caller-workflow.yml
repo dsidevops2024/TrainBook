@@ -13,7 +13,7 @@ jobs:
     with:
       environment: ${{ github.event.inputs.environment }}
     secrets: inherit
-    id: deploy
+    
 
   Handle-deploy-result:
     needs: Call-workflow-for-deploy
