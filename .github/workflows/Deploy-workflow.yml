@@ -1,6 +1,6 @@
 name: Deploy Workflow
 on:
-  workflow_dispatch:
+  workflow_call:
 jobs:
   copy_files:
     runs-on: ubuntu-latest
