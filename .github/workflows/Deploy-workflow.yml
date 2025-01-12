@@ -27,17 +27,17 @@ jobs:
       - name: Deploy Step
         id: deploy-step
         run: |
-          # Run the deployment command or script
           ./deploy.sh
-
-            # Check if the deployment command succeeded
-          if [ $? -ne 0 ]; then
-             echo "Deployment failed!"
-             exit 1
+          EXIT_CODE=$?
+          echo "Deploy exit code: $EXIT_CODE"
+          if [ $EXIT_CODE -ne 0 ]; then
+            echo "Deployment failed!"
+            exit 1
           else
             echo "Deployment succeeded!"
           fi
       - name: Set deploy status output
         id: set-deploy-status   # You should set an id here to capture output
         run: |
-          echo "deploy_status=${{ job.status }}" >> $GITHUB_ENV
+          echo "::set-output name=deploy_status::${{ job.status }}"
+
