@@ -1,0 +1,9 @@
+name: Deploy Phase
+on:
+  workflow_call:
+   
+jobs:
+  call_deploy_workflow:
+    uses: ./.github/workflows/deploy-component.yml
+
+  
