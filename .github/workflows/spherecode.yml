@@ -127,6 +127,9 @@ jobs:
           else
             echo "runner=NonProd" >> $GITHUB_OUTPUT
           fi
+  call-deploy-workflow:
+     uses: ./.github/workflows/deploy-phase.yml
+
   report-job-status:
     needs: [check-component-input, create-environment-matrix, set-environment-runner]
     runs-on: ubuntu-latest
