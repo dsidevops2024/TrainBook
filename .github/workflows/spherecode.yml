@@ -133,7 +133,7 @@ jobs:
     steps:
       - name: Report job statuses
         run: |
-          echo "check-component-input job status: ${{ jobs.check-component-input.status }}"
-          echo "create-environment-matrix job status: ${{ jobs.create-environment-matrix.status }}"
-          echo "set-environment-runner job status: ${{ jobs.set-environment-runner.status }}"
+          echo "check-component-input job status: ${{ needs.check-component-input.result }}"
+          echo "create-environment-matrix job status: ${{ needs.create-environment-matrix.result }}"
+          echo "set-environment-runner job status: ${{ needs.set-environment-runner.result }}"
 
