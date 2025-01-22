@@ -1,9 +1,0 @@
-- version: "6.10.1.0"
-
--component: "AccountTypeEngine"
- repoPath: "dsidevops2024/TrainBook"
- filePath: pom.xml
- #localName:
- #destinationDir:
- renameWithVersion: false
- deployPath: "Engines"
