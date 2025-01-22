@@ -127,5 +127,13 @@ jobs:
           else
             echo "runner=NonProd" >> $GITHUB_OUTPUT
           fi
-
+  report-job-status:
+    needs: [check-component-input, create-environment-matrix, set-environment-runner]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Report job statuses
+        run: |
+          echo "check-component-input job status: ${{ jobs.check-component-input.status }}"
+          echo "create-environment-matrix job status: ${{ jobs.create-environment-matrix.status }}"
+          echo "set-environment-runner job status: ${{ jobs.set-environment-runner.status }}"
 
