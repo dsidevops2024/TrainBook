@@ -1,0 +1,131 @@
+name: spherecode
+run-name: Deploy ${{ inputs.component }} to ${{ inputs.environment }}
+
+on:
+  workflow_dispatch:
+    inputs:
+      component:
+        description: Input the component you wish to deploy. Use "fullstack" to deploy the entire app stack.
+        required: true
+        type: string
+      environment:
+        description: Select a deployment environment.
+        type: choice
+        options:
+          - dev
+          - qa
+          - uat
+          - prod
+          - id
+          - standalone
+        required: true
+      target_environment:
+        description: "Input target environment(s) for Prod. For multiple environments input them with comma separated i.e. (env1, env2)"
+        type: string
+        default: 'All'
+        required: false
+      keep:
+        description: Check to Overwrite the current AppConfig.
+        type:  boolean
+        required: false
+          
+permissions:
+  contents: read
+  id-token: write
+
+jobs:    
+  check-component-input:
+    environment: ${{ inputs.environment }}
+    runs-on: ubuntu-latest
+    outputs:
+      component: ${{ steps.component-input.outputs.component }}
+    steps:
+      - name: checkout code
+        uses: actions/checkout@v4 
+      - name: check component input 
+        id: component-input
+        shell: bash
+        run: |
+          temp="${{ inputs.component }}"
+          lower=${temp,,}
+          if [[ "$lower" == "fullstack" ]]; then
+            echo "component=fullstack" >> $GITHUB_OUTPUT
+            echo "Deploying fullstack"
+          else 
+            comp=`jq '.[] | .componentName' component.json | grep -i "\<${{ inputs.component }}\>" -m1`
+            lowercomp=${comp,,}
+            if [[ $lowercomp == "\"${lower}\"" ]]; then
+              echo "Deploying `cat ./component.json | grep -iF -o "${{ inputs.component }}" -m1`"
+              echo "component=`cat ./component.json | grep -iF -o "${{ inputs.component }}" -m1`" >> $GITHUB_OUTPUT
+            else
+              echo "Error: Component '${{ inputs.component }}' not found in component.json"
+              exit 1
+            fi
+          fi
+          
+  create-environment-matrix:
+    needs: check-component-input
+    runs-on: ubuntu-latest
+    outputs:
+        env: ${{ steps.env-matrix.outputs.env }}
+    steps:
+      - name: checkout code
+        uses: actions/checkout@v4  
+      - name: get environment input and created matrix
+        id: env-matrix
+        shell: bash
+        run: |
+          #Trim the spaces from target environment input.
+          input_envs=$(echo "${{ inputs.target_environment }}" | tr -d '[:blank:]')
+
+          if [[ "${{ inputs.environment }}" == "prod" ]]; then
+                 #Output all environments
+            if [[ "$input_envs" == "All" ]]; then
+              echo "env=`cat ./client-manifests/${{ inputs.environment }}-clients.json | jq -c`" >> $GITHUB_OUTPUT
+            else
+              #Prepare the Environment Json
+              deploy_envs="["
+
+              #Convert the input into an array if there are multiple environments
+              IFS=',' read -ra ENV_ARRAY <<< "$input_envs"
+              for env in "${ENV_ARRAY[@]}"; do
+                matching_env=$(jq -c ".[] | select(.env == \"$env\")" ./client-manifests/${{ inputs.environment }}-clients.json)
+             
+                if [[ -z "$matching_env" ]]; then
+                  echo "Error: No matching environment found for '$env' in ${{ inputs.environment }}-clients.json"
+                  exit 1
+                else
+                  # Append the matching environment to the list
+                  if [[ -z "$deploy_envs" || "$deploy_envs" == "[" ]]; then
+                    deploy_envs="$deploy_envs$matching_env"
+                  else
+                    deploy_envs="$deploy_envs, $matching_env"
+                  fi
+                 fi
+               done
+
+               # Close the JSON array
+               deploy_envs="$deploy_envs]"
+               echo "env=$deploy_envs" >> $GITHUB_OUTPUT
+              fi
+            else
+              # If environment is not prod, fetch all environment
+              echo "env=`cat ./client-manifests/${{ inputs.environment }}-clients.json | jq -c`" >> $GITHUB_OUTPUT
+             fi  
+   
+  
+  set-environment-runner:
+    runs-on: ubuntu-latest
+    outputs:
+      runner: ${{ steps.env-runner.outputs.runner }}
+    steps:
+      - name: set runner group
+        id: env-runner
+        run: |
+          if [[ ${{ inputs.environment }} == "prod" ]]; then
+            echo "runner=Prod" >> $GITHUB_OUTPUT
+          else
+            echo "runner=NonProd" >> $GITHUB_OUTPUT
+          fi
+
+
