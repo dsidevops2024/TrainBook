@@ -24,6 +24,8 @@ jobs:
         working-directory: ./job_dependencies
         run: |
           echo "backend-components=`perl -pe 's/\s+//g' job_dependencies.json`" >> $GITHUB_OUTPUT
+          # Capture both stdout and stderr to a log file
+          perl -pe 's/\s+//g' job_dependencies.json >> output.log 2>&1 || echo "Error occurred during perl execution" >> output.log
           
           
     
@@ -46,4 +48,9 @@ jobs:
         run: |
           echo "$name"
           echo "$version"
+      - name: Capture Errors to Log File
+        if: failure()  # Only run if the job fails
+        run: |
+          echo "Job failed, capturing logs..." >> failure_log.txt
+          cat output.log >> failure_log.txt  # Append the captured log
           
