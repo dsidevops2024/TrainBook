@@ -1,0 +1,14 @@
+[
+  {
+   "env": "${{ secrets.DOCKER_USERNAME }}",
+   "version": "10"
+  },
+  {
+   "env": "dev",
+   "version": "11"
+  },
+  {
+   "env": "prod",
+   "version": "12"
+  }
+]
