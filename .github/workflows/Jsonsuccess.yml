@@ -26,7 +26,11 @@ jobs:
           echo "backend-components=`perl -pe 's/\s+//g' job_dependencies.json`" >> $GITHUB_OUTPUT
           # Capture both stdout and stderr to a log file
           perl -pe 's/\s+//g' job_dependencies.json >> output.log 2>&1 || echo "Error occurred during perl execution" >> output.log
-          
+
+      - name: Display output.log content
+        run: |
+          echo "Displaying the content of output.log:"
+          cat output.log  # Display the content of the log file
           
     
   Comparison:
