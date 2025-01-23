@@ -1,7 +1,16 @@
 name: Deploy Phase
 on:
   workflow_call:
-   
+    inputs:
+      component:
+        type: string
+        required: true
+      environment:
+        type: string
+        required: true
+      runner:
+        type: string
+        required: true
 jobs:
   call_deploy_workflow-phase1:
     if: ${{ ! contains(inputs.component, 'fullstack') }}
