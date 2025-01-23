@@ -48,8 +48,8 @@ jobs:
     outputs: 
       phase1op: ${{ needs.report.outputs.Phase1status }}
       phase2op: ${{ needs.report.outputs.Phase2status }}
-      comp1op: ${{ needs.report.outputs.comp1status }}
-      comp2op: ${{ needs.report.outputs.comp1status }}
+      #comp1op: ${{ needs.report.outputs.comp1status }}
+      #comp2op: ${{ needs.report.outputs.comp1status }}
     steps:
       - name: Report job statuses
         id: report
