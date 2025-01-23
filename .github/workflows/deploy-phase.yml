@@ -56,6 +56,6 @@ jobs:
         run: |
           echo "Phase1status=${{ needs.Phase1.result }}" >> $GITHUB_OUTPUT
           echo "Phase2status=${{ needs.Phase2.result }}" >> $GITHUB_OUTPUT
-          echo "comp1status=${{ needs.Phase1.outputs.compstatus1 }}" >> $GITHUB_OUTPUT
-          echo "comp2status=${{ needs.Phase2.outputs.compstatus2 }}" >> $GITHUB_OUTPUT
+          echo "comp1status:${{ needs.Phase1.outputs.compstatus1 }}" 
+          echo "comp2status:${{ needs.Phase1.outputs.compstatus2 }}" 
          
