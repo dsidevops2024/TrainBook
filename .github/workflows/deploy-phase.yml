@@ -12,16 +12,16 @@ on:
         type: string
         required: true
     outputs:
-      comp status1:
+      compstatus1:
         description: "First output from the component"
         value: ${{ jobs.phase-status.outputs.comp1status }}
-      comp status2:
+      compstatus2:
         description: "Second output from the component"
         value: ${{ jobs.phase-status.outputs.comp2status }}
-      phase status1:
+      phasestatus1:
         description: "First output from the component"
         value: ${{ jobs.phase-status.outputs.phase1op }}
-      phase status2:
+      phasestatus2:
         description: "First output from the component"
         value: ${{ jobs.phase-status.outputs.phase2op }}
 jobs:
