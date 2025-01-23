@@ -14,48 +14,32 @@ on:
         required: true
     
 jobs:
-  create-component-matrix:
-    runs-on: ubuntu-latest
-    outputs:
-        component: ${{ steps.comp-matrix.outputs.component }}
-        error-message: ${{ steps.comp-matrix.outputs.error-message }}  # Capturing error message
-    steps:
-        - name: checkout code
-          uses: actions/checkout@v4
-        - name: check component input
-          if: ${{ inputs.component != 'fullstack' }}
-          id: check-input1
-          shell: bash
-          run: |
-            comp=`cat ./component.json | grep ${{ inputs.component }} -m1`
-            echo "comp=$comp" >> $GITHUB_OUTPUT
-        - name: create output
-          id: comp-matrix
-          shell: bash
-          run: |
-            if [[ ${{ inputs.component }} == "fullstack" ]]; then
-              component=`jq -c "map(select(.phase | contains (\"${{inputs.phase}}\"))) | map(select(.deployType!=\"Deploy-VM\"))" component.json`
-              echo $component
-              echo "component=$component" >> $GITHUB_OUTPUT
-            elif [[ -n "${{ steps.check-input.outputs.comp }}" ]]; then
-              single=`jq -c 'map(select(.deployType != "Deploy-VM")) | .[] | select(.componentName=="${{ inputs.component }}")' component.json`
-              single=`echo "[$single]"`
-              echo "component=$single" >> $GITHUB_OUTPUT
-            else
-              echo "Invalid component name."
-              echo "error-message=Invalid component name." >> $GITHUB_ENV  # Set error message if component name is invalid
-              exit 1
-            fi
   job1:
     runs-on: ubuntu-latest
-    needs: create-component-matrix
+      # We add an ID for the job
     steps:
-      - id: step1
-        run: echo "firstword=job1 from deploy component" 
+      - name: Job 1 step
+        id: step1
+        run: |
+          echo "firstword=job1 from deploy component" >> $GITHUB_OUTPUT
 
   job2:
     runs-on: ubuntu-latest
     needs: job1
     steps:
-      - id: step2
-        run: echo "secondword=job2 from deploy component" 
+      - name: Job 2 step
+        id: step2  # We add an ID for job2
+        run: |
+          echo "secondword=job2 from deploy component" >> $GITHUB_OUTPUT
+
+  report-job-status:
+    runs-on: ubuntu-latest
+    needs: [job1, job2]
+    outputs:
+      deploy-component-status: ${{ steps.report-status.outputs.status }}  # Pass the status as output
+    steps:
+      - name: Aggregate and report status
+        id: report-status
+        run: |
+          echo "status=success" >> $GITHUB_OUTPUT         
+ 
