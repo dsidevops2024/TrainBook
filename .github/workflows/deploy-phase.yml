@@ -14,10 +14,10 @@ on:
     outputs:
       comp status1:
         description: "First output from the component"
-        value: ${{ jobs.report-component-job-status.outputs.output1 }}
+        value: ${{ jobs.phase-status.outputs.comp1status }}
       comp status2:
         description: "Second output from the component"
-        value: ${{ jobs.report-component-job-status.outputs.output2 }}
+        value: ${{ jobs.phase-status.outputs.comp2status }}
       phase status1:
         description: "First output from the component"
         value: ${{ jobs.phase-status.outputs.phase1op }}
@@ -46,12 +46,16 @@ jobs:
     needs: [Phase1, Phase2]
     runs-on: ubuntu-latest
     outputs: 
-      phase1op: ${{ needs.report.outputs.Phase1status}}
-      phase2op: ${{ needs.report.outputs.Phase2status}}
+      phase1op: ${{ needs.report.outputs.Phase1status }}
+      phase2op: ${{ needs.report.outputs.Phase2status }}
+      comp1op: ${{ needs.report.outputs.comp1status }}
+      comp2op: ${{ needs.report.outputs.comp1status }}
     steps:
       - name: Report job statuses
         id: report
         run: |
           echo "Phase1status: ${{ needs.Phase1.result }}"
           echo "Phase2status: ${{ needs.Phase2.result }}"
+          echo "comp1status: ${{ needs.Phase1.outputs.comp status1 }}"
+          echo "comp2status: ${{ needs.Phase2.outputs.comp status2 }}"
          
