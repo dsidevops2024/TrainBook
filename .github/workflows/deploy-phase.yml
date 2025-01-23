@@ -12,7 +12,7 @@ on:
         type: string
         required: true
 jobs:
-  call_deploy_workflow-phase1:
+  Phase1:
     if: ${{ ! contains(inputs.component, 'fullstack') }}
     uses: ./.github/workflows/deploy-component.yml
     with: 
@@ -21,10 +21,24 @@ jobs:
       runner: ${{ inputs.runner }}
 
   
-  call_deploy_workflow-phase2:
+  Phase2:
     if: ${{  inputs.component == 'fullstack' }}
     uses: ./.github/workflows/deploy-component.yml
     with: 
       component: ${{ inputs.component }}
       environment: ${{ inputs.environment }}
       runner: ${{ inputs.runner }}
+      
+  report-phase-job-status:
+    needs: [Phase1, Phase2]
+    runs-on: ubuntu-latest
+    outputs: 
+      phase1op: ${{ needs.report.outputs.}}
+      phase2op
+    steps:
+      - name: Report job statuses
+        id: report
+        run: |
+          echo "Phase1 job status: ${{ needs.Phase1.result }}"
+          echo "Phase2 job status: ${{ needs.Phase2.result }}"
+         
