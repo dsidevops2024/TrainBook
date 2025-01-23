@@ -2,6 +2,16 @@ name: Deploy Component
 
 on:
   workflow_call:
+    inputs:
+      component:
+        type: string
+        required: true
+      environment:
+        type: string
+        required: true
+      runner:
+        type: string
+        required: true
     outputs:
       error1:
         description: "First output from the component"
