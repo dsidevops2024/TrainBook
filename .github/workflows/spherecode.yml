@@ -127,7 +127,7 @@ jobs:
           else
             echo "runner=NonProd" >> $GITHUB_OUTPUT
           fi
-  call-deploy-workflow:
+  call-phase:
      uses: ./.github/workflows/deploy-phase.yml
 
   report-job-status:
@@ -135,8 +135,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Report job statuses
+        id: report
         run: |
-          echo "check-component-input job status: ${{ needs.check-component-input.result }}"
-          echo "create-environment-matrix job status: ${{ needs.create-environment-matrix.result }}"
-          echo "set-environment-runner job status: ${{ needs.set-environment-runner.result }}"
+          echo "controller job1 status: ${{ needs.check-component-input.result }}"
+          echo "controller job2 status: ${{ needs.create-environment-matrix.result }}"
+          echo "controller job3 status: ${{ needs.set-environment-runner.result }}"
+          echo "Phase1status: ${{ needs.call-phase.outputs.phase status1 }}"
+          echo "Phase2status: ${{ needs.call-phase.outputs.phase status2 }}"
+          echo "comp1status: ${{ needs.call-phase.outputs.comp status1 }}"
+          echo "comp2status: ${{ needs.call-phase.outputs.comp status2 }}"
 
