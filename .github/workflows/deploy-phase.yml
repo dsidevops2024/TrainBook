@@ -3,7 +3,18 @@ on:
   workflow_call:
    
 jobs:
-  call_deploy_workflow:
+  call_deploy_workflow-phase1:
+    if: ${{ ! contains(inputs.component, 'fullstack') }}
     uses: ./.github/workflows/deploy-component.yml
-
-  
+    with: 
+      component: ${{ inputs.component }}
+      environment: ${{ inputs.environment }}
+      runner: ${{ inputs.runner }}
+    
+  call_deploy_workflow-phase2:
+    if: ${{  inputs.component == 'fullstack' }}
+    uses: ./.github/workflows/deploy-component.yml
+    with: 
+      component: ${{ inputs.component }}
+      environment: ${{ inputs.environment }}
+      runner: ${{ inputs.runner }}
