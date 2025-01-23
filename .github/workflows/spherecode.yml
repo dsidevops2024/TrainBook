@@ -135,13 +135,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Report job statuses
-        id: report
+        #id: report
         run: |
           echo "controller job1 status: ${{ needs.check-component-input.result }}"
           echo "controller job2 status: ${{ needs.create-environment-matrix.result }}"
           echo "controller job3 status: ${{ needs.set-environment-runner.result }}"
-          echo "Phase1status: ${{ needs.call-phase.outputs.phase status1 }}"
-          echo "Phase2status: ${{ needs.call-phase.outputs.phase status2 }}"
-          echo "comp1status: ${{ needs.call-phase.outputs.comp status1 }}"
-          echo "comp2status: ${{ needs.call-phase.outputs.comp status2 }}"
+          echo "Phase1status: ${{ needs.call-phase.outputs.phasestatus1 }}"
+          echo "Phase2status: ${{ needs.call-phase.outputs.phasestatus2 }}"
+          echo "comp1status: ${{ needs.call-phase.outputs.compstatus1 }}"
+          echo "comp2status: ${{ needs.call-phase.outputs.compstatus2 }}"
 
