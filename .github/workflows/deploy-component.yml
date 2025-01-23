@@ -15,10 +15,10 @@ on:
     outputs:
       comp status1:
         description: "First output from the component"
-        value: ${{ jobs.report-component-job-status.outputs.output1 }}
+        value: ${{ jobs.component-status.outputs.output1 }}
       comp status2:
         description: "Second output from the component"
-        value: ${{ jobs.report-component-job-status.outputs.output2 }}
+        value: ${{ jobs.component-status.outputs.output2 }}
     
 jobs:
   job1:
@@ -38,7 +38,7 @@ jobs:
         run: |
           echo "secondword=job2 from deploy component" 
   
-  report-component-job-status:
+  component-status:
     runs-on: ubuntu-latest
     needs: [job1, job2]
     outputs:
