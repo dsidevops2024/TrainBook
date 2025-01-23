@@ -13,10 +13,10 @@ on:
         type: string
         required: true
     outputs:
-      comp status1:
+      compstatus1:
         description: "First output from the component"
         value: ${{ jobs.component-status.outputs.output1 }}
-      comp status2:
+      compstatus2:
         description: "Second output from the component"
         value: ${{ jobs.component-status.outputs.output2 }}
     
