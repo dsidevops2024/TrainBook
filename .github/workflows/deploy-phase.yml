@@ -17,7 +17,7 @@ on:
         value: ${{ jobs.Phase1.outputs.compstatus1 }}
       comp-status2:
         description: "Second output from the component"
-        value: ${{ jobs.Phase1.outputs.compstatus1 }}
+        value: ${{ jobs.Phase1.outputs.compstatus2 }}
       phase-status1:
         description: "First output from the component"
         value: ${{ jobs.phase-status.outputs.phase1op }}
