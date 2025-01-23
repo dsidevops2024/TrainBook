@@ -14,10 +14,10 @@ on:
     outputs:
       compstatus1:
         description: "First output from the component"
-        value: ${{ jobs.phase-status.outputs.comp1status }}
+        value: ${{ jobs.Phase1.outputs.comp1status }}
       compstatus2:
         description: "Second output from the component"
-        value: ${{ jobs.phase-status.outputs.comp2status }}
+        value: ${{ jobs.Phase1.outputs.comp2status }}
       phasestatus1:
         description: "First output from the component"
         value: ${{ jobs.phase-status.outputs.phase1op }}
