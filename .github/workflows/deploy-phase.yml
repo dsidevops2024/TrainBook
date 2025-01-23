@@ -56,6 +56,6 @@ jobs:
         run: |
           echo "Phase1status: ${{ needs.Phase1.result }}"
           echo "Phase2status: ${{ needs.Phase2.result }}"
-          echo "comp1status: ${{ needs.Phase1.outputs.comp status1 }}"
-          echo "comp2status: ${{ needs.Phase2.outputs.comp status2 }}"
+          echo "comp1status: ${{ needs.Phase1.outputs.compstatus1 }}"
+          echo "comp2status: ${{ needs.Phase2.outputs.compstatus2 }}"
          
