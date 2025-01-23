@@ -128,6 +128,7 @@ jobs:
             echo "runner=NonProd" >> $GITHUB_OUTPUT
           fi
   call-phase:
+     needs: [check-component-input, create-environment-matrix]
      uses: ./.github/workflows/deploy-phase.yml
      with: 
       component: ${{ inputs.component }}
@@ -135,7 +136,7 @@ jobs:
       runner: ${{ inputs.runner }}
 
   report-job-status:
-    needs: [check-component-input, create-environment-matrix, set-environment-runner]
+    needs: [check-component-input, create-environment-matrix, set-environment-runner, call-phase]
     runs-on: ubuntu-latest
     steps:
       - name: Report job statuses
