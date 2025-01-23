@@ -11,6 +11,19 @@ on:
       runner:
         type: string
         required: true
+    outputs:
+      comp status1:
+        description: "First output from the component"
+        value: ${{ jobs.report-component-job-status.outputs.output1 }}
+      comp status2:
+        description: "Second output from the component"
+        value: ${{ jobs.report-component-job-status.outputs.output2 }}
+      phase status1:
+        description: "First output from the component"
+        value: ${{ jobs.phase-status.outputs.phase1op }}
+      phase status2:
+        description: "First output from the component"
+        value: ${{ jobs.phase-status.outputs.phase2op }}
 jobs:
   Phase1:
     if: ${{ ! contains(inputs.component, 'fullstack') }}
@@ -29,16 +42,16 @@ jobs:
       environment: ${{ inputs.environment }}
       runner: ${{ inputs.runner }}
       
-  report-phase-job-status:
+  phase-status:
     needs: [Phase1, Phase2]
     runs-on: ubuntu-latest
     outputs: 
-      phase1op: ${{ needs.report.outputs.}}
-      phase2op
+      phase1op: ${{ needs.report.outputs.Phase1status}}
+      phase2op: ${{ needs.report.outputs.Phase2status}}
     steps:
       - name: Report job statuses
         id: report
         run: |
-          echo "Phase1 job status: ${{ needs.Phase1.result }}"
-          echo "Phase2 job status: ${{ needs.Phase2.result }}"
+          echo "Phase1status: ${{ needs.Phase1.result }}"
+          echo "Phase2status: ${{ needs.Phase2.result }}"
          
