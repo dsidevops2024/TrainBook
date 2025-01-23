@@ -129,6 +129,10 @@ jobs:
           fi
   call-phase:
      uses: ./.github/workflows/deploy-phase.yml
+     with: 
+      component: ${{ inputs.component }}
+      environment: ${{ inputs.environment }}
+      runner: ${{ inputs.runner }}
 
   report-job-status:
     needs: [check-component-input, create-environment-matrix, set-environment-runner]
