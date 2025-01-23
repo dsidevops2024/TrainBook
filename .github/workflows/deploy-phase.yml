@@ -43,7 +43,7 @@ jobs:
       runner: ${{ inputs.runner }}
       
   phase-status:
-    needs: [Phase1, Phase2]
+    needs: Phase1
     runs-on: ubuntu-latest
     outputs: 
       phase1op: ${{ needs.report.outputs.Phase1status }}
