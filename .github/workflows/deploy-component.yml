@@ -12,6 +12,13 @@ on:
       runner:
         type: string
         required: true
+    outputs:
+      comp status1:
+        description: "First output from the component"
+        value: ${{ jobs.report-component-job-status.outputs.output1 }}
+      comp status2:
+        description: "Second output from the component"
+        value: ${{ jobs.report-component-job-status.outputs.output2 }}
     
 jobs:
   job1:
@@ -35,9 +42,8 @@ jobs:
     runs-on: ubuntu-latest
     needs: [job1, job2]
     outputs:
-      deploy-component-job1 status : ${{ steps.report-status.outputs.component job1 status }}
-      deploy-component-job2 status : ${{ steps.report-status.outputs.component job2 status }}
-      
+      output1: ${{ steps.report-status.outputs.component job1 status }}
+      output2: ${{ steps.report-status.outputs.component job2 status }}
     steps:
       - name: Report job statuses
         id: report-status
