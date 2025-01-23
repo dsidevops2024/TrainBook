@@ -46,8 +46,8 @@ jobs:
     needs: Phase1
     runs-on: ubuntu-latest
     outputs: 
-      phase1op: ${{ needs.report.outputs.Phase1status }}
-      phase2op: ${{ needs.report.outputs.Phase2status }}
+      phase1op: ${{ steps.report.outputs.Phase1status }}
+      phase2op: ${{ steps.report.outputs.Phase2status }}
       #comp1op: ${{ needs.report.outputs.comp1status }}
       #comp2op: ${{ needs.report.outputs.comp1status }}
     steps:
