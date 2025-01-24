@@ -20,10 +20,10 @@ on:
         value: ${{ jobs.Phase1.outputs.compstatus2 }}
       comp-status01:
         #description: "First output from the component"
-        value: ${{ jobs.Phase1.outputs.compstatus01 }}
+        value: ${{ jobs.Phase2.outputs.compstatus01 }}
       comp-status02:
         #description: "Second output from the component"
-        value: ${{ jobs.Phase1.outputs.compstatus02 }}
+        value: ${{ jobs.Phase2.outputs.compstatus02 }}
       phase-status1:
         #description: "First output from the component"
         value: ${{ jobs.phase-status.outputs.phase1op }}
