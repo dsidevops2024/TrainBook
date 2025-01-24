@@ -36,7 +36,7 @@ on:
       comp-status-phase1:
         value: ${{ jobs.Phase1.outputs.compstatus }}
       comp-status-phase2:
-        value: ${{ jobs.Phase1.outputs.compstatus }}
+        value: ${{ jobs.Phase2.outputs.compstatus }}
         
 jobs:
   Phase1:
