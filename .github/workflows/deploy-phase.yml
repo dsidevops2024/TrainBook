@@ -18,12 +18,19 @@ on:
       comp-status2:
         #description: "Second output from the component"
         value: ${{ jobs.Phase1.outputs.compstatus2 }}
+      comp-status01:
+        #description: "First output from the component"
+        value: ${{ jobs.Phase1.outputs.compstatus01 }}
+      comp-status02:
+        #description: "Second output from the component"
+        value: ${{ jobs.Phase1.outputs.compstatus02 }}
       phase-status1:
         #description: "First output from the component"
         value: ${{ jobs.phase-status.outputs.phase1op }}
       phase-status2:
         #description: "First output from the component"
         value: ${{ jobs.phase-status.outputs.phase2op }}
+      
 jobs:
   Phase1:
     if: ${{ ! contains(inputs.component, 'fullstack') }}
@@ -58,4 +65,6 @@ jobs:
           echo "Phase2status=${{ needs.Phase2.result }}" >> $GITHUB_OUTPUT
           echo "comp1status:${{ needs.Phase1.outputs.compstatus1 }}" 
           echo "comp2status:${{ needs.Phase1.outputs.compstatus2 }}" 
+          echo "comp01status:${{ needs.Phase2.outputs.compstatus1 }}" 
+          echo "comp02status:${{ needs.Phase2.outputs.compstatus2 }}"
          
