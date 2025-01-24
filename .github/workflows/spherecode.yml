@@ -156,7 +156,8 @@ jobs:
           controllerstatus+="job3 status: ${{ needs.set-environment-runner.result }}"
           echo "controllerstatus=$controllerstatus" 
           echo "Phasestatus: ${{ needs.call-phase.outputs.phase-status }}"
-          echo "compstatus1: ${{ needs.call-phase.outputs.comp-status-phase1 }}"
-          echo "compstatus2: ${{ needs.call-phase.outputs.comp-status-phase2 }}"
+          #echo "compstatus1: ${{ needs.call-phase.outputs.comp-status-phase1 }}"
+          #echo "compstatus2: ${{ needs.call-phase.outputs.comp-status-phase2 }}"
+          echo "compstatus: ${{ needs.call-phase.outputs.comp-status }}"
           
          
