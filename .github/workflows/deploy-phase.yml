@@ -51,6 +51,7 @@ jobs:
       
   phase-status:
     needs: [Phase1, Phase2]
+    if: always()
     runs-on: ubuntu-latest
     outputs: 
       phase1op: ${{ steps.report.outputs.Phase1status }}
