@@ -149,4 +149,6 @@ jobs:
           echo "Phase2status: ${{ needs.call-phase.outputs.phase-status2 }}"
           echo "comp1status: ${{ needs.call-phase.outputs.comp-status1 }}"
           echo "comp2status: ${{ needs.call-phase.outputs.comp-status2 }}"
+          echo "comp1status: ${{ needs.call-phase.outputs.comp-status01 }}"
+          echo "comp2status: ${{ needs.call-phase.outputs.comp-status02 }}"
 
