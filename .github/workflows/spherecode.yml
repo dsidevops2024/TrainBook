@@ -140,15 +140,23 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Report job statuses
-        #id: report
         run: |
-          echo "controller job1 status: ${{ needs.check-component-input.result }}"
-          echo "controller job2 status: ${{ needs.create-environment-matrix.result }}"
-          echo "controller job3 status: ${{ needs.set-environment-runner.result }}"
-          echo "Phase1status: ${{ needs.call-phase.outputs.phase-status1 }}"
-          echo "Phase2status: ${{ needs.call-phase.outputs.phase-status2 }}"
-          echo "comp1status: ${{ needs.call-phase.outputs.comp-status1 }}"
-          echo "comp2status: ${{ needs.call-phase.outputs.comp-status2 }}"
-          echo "comp01status: ${{ needs.call-phase.outputs.comp-status01 }}"
-          echo "comp02status: ${{ needs.call-phase.outputs.comp-status02 }}"
+          #echo "controller job1 status: ${{ needs.check-component-input.result }}"
+          #echo "controller job2 status: ${{ needs.create-environment-matrix.result }}"
+          #echo "controller job3 status: ${{ needs.set-environment-runner.result }}"
+          #echo "Phase1status: ${{ needs.call-phase.outputs.phase-status1 }}"
+          #echo "Phase2status: ${{ needs.call-phase.outputs.phase-status2 }}"
+          #echo "comp1status: ${{ needs.call-phase.outputs.comp-status1 }}"
+          #echo "comp2status: ${{ needs.call-phase.outputs.comp-status2 }}"
+          #echo "comp01status: ${{ needs.call-phase.outputs.comp-status01 }}"
+          #echo "comp02status: ${{ needs.call-phase.outputs.comp-status02 }}"
 
+          controllerstatus="job1 status: ${{ needs.check-component-input.result }}, "
+          controllerstatus+="job2 status: ${{ needs.create-environment-matrix.result }}, "
+          controllerstatus+="job3 status: ${{ needs.set-environment-runner.result }}"
+          echo "controllerstatus=$controllerstatus" 
+          echo "Phasestatus: ${{ needs.call-phase.outputs.phase-status }}"
+          echo "compstatus1: ${{ needs.call-phase.outputs.comp-status-phase1 }}"
+          echo "compstatus2: ${{ needs.call-phase.outputs.comp-status-phase2 }}"
+          
+         
