@@ -49,6 +49,25 @@ jobs:
       environment: ${{ inputs.environment }}
       runner: ${{ inputs.runner }}
       
+  #phase-status:
+    #needs: [Phase1, Phase2]
+    #if: always()
+    #runs-on: ubuntu-latest
+    #outputs: 
+      #phase1op: ${{ steps.report.outputs.Phase1status }}
+      #phase2op: ${{ steps.report.outputs.Phase2status }}
+      #comp1op: ${{ needs.report.outputs.comp1status }}
+      #comp2op: ${{ needs.report.outputs.comp1status }}
+    #steps:
+      #- name: Report job statuses
+        #id: report
+        #run: |
+          #echo "Phase1status=${{ needs.Phase1.result }}" >> $GITHUB_OUTPUT
+          #echo "Phase2status=${{ needs.Phase2.result }}" >> $GITHUB_OUTPUT
+          #echo "comp1status:${{ needs.Phase1.outputs.compstatus1 }}" 
+          #echo "comp2status:${{ needs.Phase1.outputs.compstatus2 }}" 
+          #echo "comp01status:${{ needs.Phase2.outputs.compstatus1 }}" 
+          #echo "comp02status:${{ needs.Phase2.outputs.compstatus2 }}"
   phase-status:
     needs: [Phase1, Phase2]
     if: always()
@@ -56,16 +75,60 @@ jobs:
     outputs: 
       phase1op: ${{ steps.report.outputs.Phase1status }}
       phase2op: ${{ steps.report.outputs.Phase2status }}
-      #comp1op: ${{ needs.report.outputs.comp1status }}
-      #comp2op: ${{ needs.report.outputs.comp1status }}
     steps:
       - name: Report job statuses
         id: report
         run: |
-          echo "Phase1status=${{ needs.Phase1.result }}" >> $GITHUB_OUTPUT
-          echo "Phase2status=${{ needs.Phase2.result }}" >> $GITHUB_OUTPUT
-          echo "comp1status:${{ needs.Phase1.outputs.compstatus1 }}" 
-          echo "comp2status:${{ needs.Phase1.outputs.compstatus2 }}" 
-          echo "comp01status:${{ needs.Phase2.outputs.compstatus1 }}" 
-          echo "comp02status:${{ needs.Phase2.outputs.compstatus2 }}"
+          # Phase 1 Status
+          if [[ "${{ needs.Phase1.result }}" == "skipped" ]]; then
+            echo "Phase1status=skipped" >> $GITHUB_OUTPUT
+          else
+            echo "Phase1status=${{ needs.Phase1.result }}" >> $GITHUB_OUTPUT
+          fi
+
+          # Phase 2 Status
+          if [[ "${{ needs.Phase2.result }}" == "skipped" ]]; then
+            echo "Phase2status=skipped" >> $GITHUB_OUTPUT
+          else
+            echo "Phase2status=${{ needs.Phase2.result }}" >> $GITHUB_OUTPUT
+          fi
+
+          # Handle comp1status (from Phase1)
+          if [[ -n "${{ needs.Phase1.outputs.compstatus1 }}" ]]; then
+            echo "comp1status=${{ needs.Phase1.outputs.compstatus1 }}"
+          elif [[ "${{ needs.Phase1.result }}" == "skipped" ]]; then
+            echo "comp1status=skipped"
+          else
+            echo "comp1status=not set"
+          fi
+
+          # Handle comp2status (from Phase1)
+          if [[ -n "${{ needs.Phase1.outputs.compstatus2 }}" ]]; then
+            echo "comp2status=${{ needs.Phase1.outputs.compstatus2 }}"
+          elif [[ "${{ needs.Phase1.result }}" == "skipped" ]]; then
+            echo "comp2status=skipped"
+          else
+            echo "comp2status=not set"
+          fi
+
+          # Handle comp01status (from Phase2)
+          if [[ "${{ needs.Phase2.result }}" == "skipped" ]]; then
+            echo "comp01status=skipped"
+          elif [[ -n "${{ needs.Phase2.outputs.compstatus1 }}" ]]; then
+            echo "comp01status=${{ needs.Phase2.outputs.compstatus1 }}"
+          else
+            echo "comp01status=not set"
+          fi
+
+          # Handle comp02status (from Phase2)
+          if [[ "${{ needs.Phase2.result }}" == "skipped" ]]; then
+            echo "comp02status=skipped"
+          elif [[ -n "${{ needs.Phase2.outputs.compstatus2 }}" ]]; then
+            echo "comp02status=${{ needs.Phase2.outputs.compstatus2 }}"
+          else
+            echo "comp02status=not set"
+          fi
+
+
+
          
