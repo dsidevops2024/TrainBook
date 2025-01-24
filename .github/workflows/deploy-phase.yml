@@ -33,10 +33,12 @@ on:
 
       phase-status:
         value: ${{ jobs.phase-status.outputs.phaseop }}
-      comp-status-phase1:
-        value: ${{ jobs.Phase1.outputs.compstatus }}
-      comp-status-phase2:
-        value: ${{ jobs.Phase2.outputs.compstatus }}
+      #comp-status-phase1:
+        #value: ${{ jobs.Phase1.outputs.compstatus }}
+      #comp-status-phase2:
+        #value: ${{ jobs.Phase2.outputs.compstatus }}
+      comp-status:
+        value: ${{ jobs.phase-status.outputs.combinedop }}
         
 jobs:
   Phase1:
@@ -65,6 +67,8 @@ jobs:
       #phase1op: ${{ steps.report.outputs.Phase1status }}
       #phase2op: ${{ steps.report.outputs.Phase2status }}
       phaseop: ${{ steps.report.outputs.Phasestatus }}
+      combinedop: ${{ steps.report.outputs.combinedcompstatus }}
+      
       
     steps:
       - name: Report job statuses
@@ -80,5 +84,6 @@ jobs:
           Phasestatus="phase 1 status: ${{ needs.Phase1.result }}, " 
           Phasestatus+="phase 2 status: ${{ needs.Phase2.result }}"
           echo "Phasestatus=$Phasestatus" >> $GITHUB_OUTPUT  
-          echo "compstatusforphase1:${{ needs.Phase1.outputs.compstatus }}" 
-          echo "compstatusforphase2:${{ needs.Phase2.outputs.compstatus }}" 
+          combinedcompstatus="compstatus for phase1: ${{ needs.Phase1.outputs.compstatus }}, " 
+          combinedcompstatus+="compstatus for phase2: ${{ needs.Phase2.outputs.compstatus }}" 
+          echo "combinedcompstatus=$combinedcompstatus" >> $GITHUB_OUTPUT 
