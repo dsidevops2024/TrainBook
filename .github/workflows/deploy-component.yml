@@ -14,10 +14,10 @@ on:
         required: true
     outputs:
       compstatus1:
-        description: "First output from the component"
+        #description: "First output from the component"
         value: ${{ jobs.component-status.outputs.output1 }}
       compstatus2:
-        description: "Second output from the component"
+        #description: "Second output from the component"
         value: ${{ jobs.component-status.outputs.output2 }}
     
 jobs:
