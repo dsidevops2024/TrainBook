@@ -146,10 +146,16 @@ jobs:
           #echo "comp01status: ${{ needs.call-phase.outputs.comp-status01 }}"
           #echo "comp02status: ${{ needs.call-phase.outputs.comp-status02 }}"
 
-          ControllerJobStatus="job1 status: ${{ needs.check-component-input.result }}, "
-          ControllerJobStatus+="job2 status: ${{ needs.create-environment-matrix.result }}, "
-          ControllerJobStatus+="job3 status: ${{ needs.set-environment-runner.result }}"
-          echo "ControllerJobStatus=$ControllerJobStatus" 
+          #ControllerJobStatus="job1 status: ${{ needs.check-component-input.result }}, "
+          #ControllerJobStatus+="job2 status: ${{ needs.create-environment-matrix.result }}, "
+          #ControllerJobStatus+="job3 status: ${{ needs.set-environment-runner.result }}"
+          #echo "ControllerJobStatus=$ControllerJobStatus" 
+
+          # Loop through each job and get its status dynamically
+          for job in check-component-input create-environment-matrix set-environment-runner call-phase; do
+            job_status="${{ needs.$job.result }}"
+            ControllerJobStatus+="$job status: $job_status\n"
+          done
 
           echo "OverallPhaseJobStatus:"
           echo "${{ needs.call-phase.outputs.phase-status }}" | tr ',' '\n'
@@ -163,3 +169,12 @@ jobs:
           echo "${{ needs.call-phase.outputs.comp-status-phase1 }}" | tr ',' '\n'
           echo "compstatus2:"
           echo "${{ needs.call-phase.outputs.comp-status-phase2 }}" | tr ',' '\n'
+
+           # Output the collected job statuses
+          echo "ControllerJobStatus=$ControllerJobStatus"
+          #echo "PhaseJobStatus=$PhaseJobStatus"
+          #echo "ComponentJobStatus=$ComponentJobStatus"
+        
+          echo "::set-output name=status::$ControllerJobStatus"
+          #echo "::set-output name=phase-job-statuses::$PhaseJobStatus"
+          #echo "::set-output name=component-job-statuses::$ComponentJobStatus"
