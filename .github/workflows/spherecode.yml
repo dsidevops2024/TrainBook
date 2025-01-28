@@ -139,55 +139,49 @@ jobs:
     needs: [check-component-input, create-environment-matrix, set-environment-runner, call-phase]
     runs-on: ubuntu-latest
     outputs:
-      OverallPhaseJobStatus: ${{ steps.report-status.outputs.OverallPhaseJobStatus }}
+       OverallPhaseJobStatus: ${{ steps.report-status.outputs.OverallPhaseJobStatus }}
+       ComponentJobStatusPhase1: ${{ steps.report-status.outputs.ComponentJobStatusPhase1 }}
+       ComponentJobStatusPhase2: ${{ steps.report-status.outputs.ComponentJobStatusPhase2 }}
+       ComponentJobStatusPhase3: ${{ steps.report-status.outputs.ComponentJobStatusPhase3 }}
     steps:
       - name: Report job statuses
         id: report-status
         run: |
           ControllerJobStatus=""
-          #echo "comp1status: ${{ needs.call-phase.outputs.comp-status1 }}"
-          #echo "comp2status: ${{ needs.call-phase.outputs.comp-status2 }}"
-          #echo "comp01status: ${{ needs.call-phase.outputs.comp-status01 }}"
-          #echo "comp02status: ${{ needs.call-phase.outputs.comp-status02 }}"
-
           ControllerJobStatus="job1 status: ${{ needs.check-component-input.result }}, "
           ControllerJobStatus+="job2 status: ${{ needs.create-environment-matrix.result }}, "
           ControllerJobStatus+="job3 status: ${{ needs.set-environment-runner.result }}"
-          
+
           # Print job statuses with each status on a new line
           echo "ControllerJobStatus:"
           echo "$ControllerJobStatus" | tr ',' '\n' | sed 's/^ *//;s/ *$//'
-         
 
           echo "OverallPhaseJobStatus:"
           echo "${{ needs.call-phase.outputs.phase-status }}" | tr ',' '\n' | sed 's/^ *//;s/ *$//'
 
-          #echo "OverallPhaseJobStatus=$(echo "${{ needs.call-phase.outputs.phase-status }}" | tr ',' '\n' | sed 's/^ *//;s/ *$//')" >> $GITHUB_OUTPUT
-          # Clean up and format phase status properly.
-          phase_status=$(echo "${{ needs.call-phase.outputs.phase-status }}" | tr ',' '\n' | sed 's/^ *//;s/ *$//')
-
-          # Check if the cleaned value has any issues.
-           echo "Phase Status Debugging:"
-           echo "$phase_status"
-
-          # Set the output with properly cleaned data.
-          echo "OverallPhaseJobStatus=$phase_status" >> $GITHUB_OUTPUT
-
-          #component status for phase 0 in a readable way
+          # Component job statuses for each phase with formatting (tr and sed)
           echo "ComponentJobStatus-for-Phase1:"
           echo "${{ needs.call-phase.outputs.comp-status-phase1 }}" | tr ',' '\n' | sed 's/^ *//;s/ *$//'
 
-          #component status for other phase in a readable way
           echo "ComponentJobStatus-for-Phase2:"
           echo "${{ needs.call-phase.outputs.comp-status-phase2 }}" | tr ',' '\n' | sed 's/^ *//;s/ *$//'
-          echo "ComponentJobStatus-for-Phase3"
+
+          echo "ComponentJobStatus-for-Phase3:"
           echo "${{ needs.call-phase.outputs.comp-status-phase3 }}" | tr ',' '\n' | sed 's/^ *//;s/ *$//'
 
-  Final-job-status:
-    needs: [check-component-input, create-environment-matrix, set-environment-runner, call-phase, report-job-status ]
+          # Set the outputs for the next job with formatting
+          echo "OverallPhaseJobStatus=${{ needs.call-phase.outputs.phase-status }}" >> $GITHUB_OUTPUT
+          echo "ComponentJobStatus-for-Phase1=$(echo '${{ needs.call-phase.outputs.comp-status-phase1 }}' | tr ',' '\n' | sed 's/^ *//;s/ *$//')" >> $GITHUB_OUTPUT
+          echo "ComponentJobStatus-for-Phase2=$(echo '${{ needs.call-phase.outputs.comp-status-phase2 }}' | tr ',' '\n' | sed 's/^ *//;s/ *$//')" >> $GITHUB_OUTPUT
+          echo "ComponentJobStatus-for-Phase3=$(echo '${{ needs.call-phase.outputs.comp-status-phase3 }}' | tr ',' '\n' | sed 's/^ *//;s/ *$//')" >> $GITHUB_OUTPUT
+
+  use-job-status:
+    needs: report-job-status
     runs-on: ubuntu-latest
     steps:
-      - name: Final job statuses
+      - name: Use Job Status Outputs
         run: |
-          Final-job=${{ needs.report-job-status.outputs.OverallPhaseJobStatus }}
-          echo $Final-job
+          echo "OverallPhaseJobStatus: ${{ needs.report-job-status.outputs.OverallPhaseJobStatus }}"
+          echo "ComponentJobStatus for Phase 1: ${{ needs.report-job-status.outputs.ComponentJobStatus-for-Phase1 }}"
+          echo "ComponentJobStatus for Phase 2: ${{ needs.report-job-status.outputs.ComponentJobStatus-for-Phase2 }}"
+          echo "ComponentJobStatus for Phase 3: ${{ needs.report-job-status.outputs.ComponentJobStatus-for-Phase3 }}"
