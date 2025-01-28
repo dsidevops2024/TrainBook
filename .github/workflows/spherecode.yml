@@ -160,7 +160,7 @@ jobs:
           echo "${{ needs.call-phase.outputs.comp-status-phase1 }}" | tr ',' '\n'
 
           #component status for other phase in a readable way
-          echo "compstatus1:"
-          echo "${{ needs.call-phase.outputs.comp-status-phase1 }}" | tr ',' '\n'
-          echo "compstatus2:"
+          echo "ComponentJobStatus-for-Phase2:"
           echo "${{ needs.call-phase.outputs.comp-status-phase2 }}" | tr ',' '\n'
+          echo "ComponentJobStatus-for-Phase3"
+          echo "${{ needs.call-phase.outputs.comp-status-phase3 }}" | tr ',' '\n'
