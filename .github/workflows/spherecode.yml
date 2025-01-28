@@ -147,39 +147,34 @@ jobs:
       - name: Report job statuses
         id: report-status
         run: |
-          ControllerJobStatus=""
-          ControllerJobStatus="job1 status: ${{ needs.check-component-input.result }}, "
-          ControllerJobStatus+="job2 status: ${{ needs.create-environment-matrix.result }}, "
-          ControllerJobStatus+="job3 status: ${{ needs.set-environment-runner.result }}"
+         run: |
+          # Collect controller job statuses
+          controller-job-status="job1 status: ${{ needs.check-component-input.result }}, "
+          controller-job-status+="job2 status: ${{ needs.create-environment-matrix.result }}, "
+          controller-job-status+="job3 status: ${{ needs.set-environment-runner.result }}"
 
-          # Print job statuses with each status on a new line
+          # Print controller job statuses (for debugging)
           echo "ControllerJobStatus:"
-          echo "$ControllerJobStatus" | tr ',' '\n' | sed 's/^ *//;s/ *$//'
+          echo "$controller-job-status" | tr ',' '\n' | sed 's/^ *//;s/ *$//'
 
-          echo "OverallPhaseJobStatus:"
-          echo "${{ needs.call-phase.outputs.phase-status }}" | tr ',' '\n' | sed 's/^ *//;s/ *$//'
+          # Extract and format phase job statuses
+          overall-phase-job-status="${{ needs.call-phase.outputs.phase-status }}"
+          component-job-status-phase-1="${{ needs.call-phase.outputs.comp-status-phase1 }}" | tr ',' '\n' | sed 's/^ *//;s/ *$//'
+          component-job-status-phase-2="${{ needs.call-phase.outputs.comp-status-phase2 }}" | tr ',' '\n' | sed 's/^ *//;s/ *$//'
+          component-job-status-phase-3="${{ needs.call-phase.outputs.comp-status-phase3 }}" | tr ',' '\n' | sed 's/^ *//;s/ *$//'
 
-          # Component job statuses for each phase with formatting (tr and sed)
-          echo "ComponentJobStatus-for-Phase1:"
-          echo "${{ needs.call-phase.outputs.comp-status-phase1 }}" | tr ',' '\n' | sed 's/^ *//;s/ *$//'
+          # Sanitize outputs for GitHub Actions
+          sanitized_overall_phase_status=$(echo "$overall-phase-job-status" | sed 's/[[:cntrl:]]//g')
+          sanitized_phase1_status=$(echo "$component-job-status-phase-1" | sed 's/[[:cntrl:]]//g')
+          sanitized_phase2_status=$(echo "$component-job-status-phase-2" | sed 's/[[:cntrl:]]//g')
+          sanitized_phase3_status=$(echo "$component-job-status-phase-3" | sed 's/[[:cntrl:]]//g')
 
-          echo "ComponentJobStatus-for-Phase2:"
-          echo "${{ needs.call-phase.outputs.comp-status-phase2 }}" | tr ',' '\n' | sed 's/^ *//;s/ *$//'
+          # Output sanitized statuses to GitHub Actions
+          echo "overall-phase-job-status=${sanitized_overall_phase_status}" >> $GITHUB_OUTPUT
+          echo "component-job-status-phase-1=${sanitized_phase1_status}" >> $GITHUB_OUTPUT
+          echo "component-job-status-phase-2=${sanitized_phase2_status}" >> $GITHUB_OUTPUT
+          echo "component-job-status-phase-3=${sanitized_phase3_status}" >> $GITHUB_OUTPUT
 
-          echo "ComponentJobStatus-for-Phase3:"
-          echo "${{ needs.call-phase.outputs.comp-status-phase3 }}" | tr ',' '\n' | sed 's/^ *//;s/ *$//'
-
-           # Sanitize by removing problematic characters (newlines, colons, etc.) for GitHub output
-          sanitized_overall_phase="${{ needs.call-phase.outputs.phase-status }}"        
-          sanitized_phase1=$(echo "${{ needs.call-phase.outputs.comp-status-phase1 }}" | tr ',' '\n' | sed 's/^ *//;s/ *$//')
-          sanitized_phase2=$(echo "${{ needs.call-phase.outputs.comp-status-phase2 }}" | tr ',' '\n' | sed 's/^ *//;s/ *$//')
-          sanitized_phase3=$(echo "${{ needs.call-phase.outputs.comp-status-phase3 }}" | tr ',' '\n' | sed 's/^ *//;s/ *$//')
-
-          # Output each value with newlines safely
-          echo "OverallPhaseJobStatus=${sanitized_overall_phase}" >> $GITHUB_OUTPUT
-          echo "ComponentJobStatus-for-Phase1=${sanitized_phase1}" >> $GITHUB_OUTPUT
-          echo "ComponentJobStatus-for-Phase2=${sanitized_phase2}" >> $GITHUB_OUTPUT
-          echo "ComponentJobStatus-for-Phase3=${sanitized_phase3}" >> $GITHUB_OUTPUT
   use-job-status:
     needs: report-job-status
     runs-on: ubuntu-latest
