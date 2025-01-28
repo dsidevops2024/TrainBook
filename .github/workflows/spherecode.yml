@@ -153,18 +153,18 @@ jobs:
           
           # Print job statuses with each status on a new line
           echo "ControllerJobStatus:"
-          echo "$ControllerJobStatus" | tr ',' '\n'
+          echo "$ControllerJobStatus" | tr ',' '\n' | sed 's/^ *//;s/ *$//'
          
 
           echo "OverallPhaseJobStatus:"
-          echo "${{ needs.call-phase.outputs.phase-status }}" | tr ',' '\n'
+          echo "${{ needs.call-phase.outputs.phase-status }}" | tr ',' '\n' | sed 's/^ *//;s/ *$//'
 
           #component status for phase 0 in a readable way
           echo "ComponentJobStatus-for-Phase1:"
-          echo "${{ needs.call-phase.outputs.comp-status-phase1 }}" | tr ',' '\n'
+          echo "${{ needs.call-phase.outputs.comp-status-phase1 }}" | tr ',' '\n' | sed 's/^ *//;s/ *$//'
 
           #component status for other phase in a readable way
           echo "ComponentJobStatus-for-Phase2:"
-          echo "${{ needs.call-phase.outputs.comp-status-phase2 }}" | tr ',' '\n'
+          echo "${{ needs.call-phase.outputs.comp-status-phase2 }}" | tr ',' '\n' | sed 's/^ *//;s/ *$//'
           echo "ComponentJobStatus-for-Phase3"
-          echo "${{ needs.call-phase.outputs.comp-status-phase3 }}" | tr ',' '\n'
+          echo "${{ needs.call-phase.outputs.comp-status-phase3 }}" | tr ',' '\n' | sed 's/^ *//;s/ *$//'
