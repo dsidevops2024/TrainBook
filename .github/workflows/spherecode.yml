@@ -148,8 +148,8 @@ jobs:
           #echo "comp02status: ${{ needs.call-phase.outputs.comp-status02 }}"
 
           ControllerJobStatus="job1 status: ${{ needs.check-component-input.result }}, "
-          ControllerJobStatus+="job2 status: ${{ needs.create-environment-matrix.result }}, "
-          ControllerJobStatus+="job3 status: ${{ needs.set-environment-runner.result }}"
+          ControllerJobStatus+="\njob2 status: ${{ needs.create-environment-matrix.result }}, "
+          ControllerJobStatus+="\njob3 status: ${{ needs.set-environment-runner.result }}"
           echo "ControllerJobStatus=$ControllerJobStatus" 
 
           echo "OverallPhaseJobStatus:"
