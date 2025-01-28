@@ -138,8 +138,11 @@ jobs:
   report-job-status:
     needs: [check-component-input, create-environment-matrix, set-environment-runner, call-phase]
     runs-on: ubuntu-latest
+    outputs:
+      OverallPhaseJobStatus: ${{ steps.report-status.outputs.OverallPhaseJobStatus }}
     steps:
       - name: Report job statuses
+        id: report-status
         run: |
           ControllerJobStatus=""
           #echo "comp1status: ${{ needs.call-phase.outputs.comp-status1 }}"
@@ -159,6 +162,8 @@ jobs:
           echo "OverallPhaseJobStatus:"
           echo "${{ needs.call-phase.outputs.phase-status }}" | tr ',' '\n' | sed 's/^ *//;s/ *$//'
 
+          echo "OverallPhaseJobStatus=$(echo "${{ needs.call-phase.outputs.phase-status }}" | tr ',' '\n' | sed 's/^ *//;s/ *$//') >> $GITHUB_OUTPUT
+          
           #component status for phase 0 in a readable way
           echo "ComponentJobStatus-for-Phase1:"
           echo "${{ needs.call-phase.outputs.comp-status-phase1 }}" | tr ',' '\n' | sed 's/^ *//;s/ *$//'
@@ -168,3 +173,12 @@ jobs:
           echo "${{ needs.call-phase.outputs.comp-status-phase2 }}" | tr ',' '\n' | sed 's/^ *//;s/ *$//'
           echo "ComponentJobStatus-for-Phase3"
           echo "${{ needs.call-phase.outputs.comp-status-phase3 }}" | tr ',' '\n' | sed 's/^ *//;s/ *$//'
+
+  Final-job-status:
+    needs: [check-component-input, create-environment-matrix, set-environment-runner, call-phase, report-job-status ]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Final job statuses
+        run: |
+          Final-job=${{ needs.report-job-status.outputs.OverallPhaseJobStatus }}
+          echo $Final-job
