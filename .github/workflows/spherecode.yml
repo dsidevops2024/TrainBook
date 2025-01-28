@@ -162,8 +162,17 @@ jobs:
           echo "OverallPhaseJobStatus:"
           echo "${{ needs.call-phase.outputs.phase-status }}" | tr ',' '\n' | sed 's/^ *//;s/ *$//'
 
-          echo "OverallPhaseJobStatus=$(echo "${{ needs.call-phase.outputs.phase-status }}" | tr ',' '\n' | sed 's/^ *//;s/ *$//')" >> $GITHUB_OUTPUT
-          
+          #echo "OverallPhaseJobStatus=$(echo "${{ needs.call-phase.outputs.phase-status }}" | tr ',' '\n' | sed 's/^ *//;s/ *$//')" >> $GITHUB_OUTPUT
+          # Clean up and format phase status properly.
+          phase_status=$(echo "${{ needs.call-phase.outputs.phase-status }}" | tr ',' '\n' | sed 's/^ *//;s/ *$//')
+
+          # Check if the cleaned value has any issues.
+           echo "Phase Status Debugging:"
+           echo "$phase_status"
+
+          # Set the output with properly cleaned data.
+          echo "OverallPhaseJobStatus=$phase_status" >> $GITHUB_OUTPUT
+
           #component status for phase 0 in a readable way
           echo "ComponentJobStatus-for-Phase1:"
           echo "${{ needs.call-phase.outputs.comp-status-phase1 }}" | tr ',' '\n' | sed 's/^ *//;s/ *$//'
