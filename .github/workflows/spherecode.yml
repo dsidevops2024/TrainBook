@@ -150,7 +150,11 @@ jobs:
           ControllerJobStatus="job1 status: ${{ needs.check-component-input.result }}, "
           ControllerJobStatus+="job2 status: ${{ needs.create-environment-matrix.result }}, "
           ControllerJobStatus+="job3 status: ${{ needs.set-environment-runner.result }}"
-          echo "ControllerJobStatus=$ControllerJobStatus" | tr ',' '\n'
+          
+          # Print job statuses with each status on a new line
+          echo "ControllerJobStatus:"
+          echo "$ControllerJobStatus" | tr ',' '\n'
+         
 
           echo "OverallPhaseJobStatus:"
           echo "${{ needs.call-phase.outputs.phase-status }}" | tr ',' '\n'
