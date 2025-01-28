@@ -169,12 +169,17 @@ jobs:
           echo "ComponentJobStatus-for-Phase3:"
           echo "${{ needs.call-phase.outputs.comp-status-phase3 }}" | tr ',' '\n' | sed 's/^ *//;s/ *$//'
 
-          # Set the outputs for the next job with formatting
-          echo "OverallPhaseJobStatus=${{ needs.call-phase.outputs.phase-status }}" >> $GITHUB_OUTPUT
-          echo "ComponentJobStatus-for-Phase1=$(echo '${{ needs.call-phase.outputs.comp-status-phase1 }}' | tr ',' '\n' | sed 's/^ *//;s/ *$//')" >> $GITHUB_OUTPUT
-          echo "ComponentJobStatus-for-Phase2=$(echo '${{ needs.call-phase.outputs.comp-status-phase2 }}' | tr ',' '\n' | sed 's/^ *//;s/ *$//')" >> $GITHUB_OUTPUT
-          echo "ComponentJobStatus-for-Phase3=$(echo '${{ needs.call-phase.outputs.comp-status-phase3 }}' | tr ',' '\n' | sed 's/^ *//;s/ *$//')" >> $GITHUB_OUTPUT
+           # Sanitize by removing problematic characters (newlines, colons, etc.) for GitHub output
+          sanitized_overall_phase="${{ needs.call-phase.outputs.phase-status }}"        
+          sanitized_phase1=$(echo "${{ needs.call-phase.outputs.comp-status-phase1 }}" | tr ',' '\n' | sed 's/^ *//;s/ *$//')
+          sanitized_phase2=$(echo "${{ needs.call-phase.outputs.comp-status-phase2 }}" | tr ',' '\n' | sed 's/^ *//;s/ *$//')
+          sanitized_phase3=$(echo "${{ needs.call-phase.outputs.comp-status-phase3 }}" | tr ',' '\n' | sed 's/^ *//;s/ *$//')
 
+          # Output each value with newlines safely
+          echo "OverallPhaseJobStatus=${sanitized_overall_phase}" >> $GITHUB_OUTPUT
+          echo "ComponentJobStatus-for-Phase1=${sanitized_phase1}" >> $GITHUB_OUTPUT
+          echo "ComponentJobStatus-for-Phase2=${sanitized_phase2}" >> $GITHUB_OUTPUT
+          echo "ComponentJobStatus-for-Phase3=${sanitized_phase3}" >> $GITHUB_OUTPUT
   use-job-status:
     needs: report-job-status
     runs-on: ubuntu-latest
