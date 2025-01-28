@@ -37,6 +37,8 @@ on:
         value: ${{ jobs.Phase1.outputs.compstatus }}
       comp-status-phase2:
         value: ${{ jobs.Phase2.outputs.compstatus }}
+      comp-status-phase3:
+        value: ${{ jobs.Phase3.outputs.compstatus }}
         
 jobs:
   Phase1:
@@ -50,6 +52,16 @@ jobs:
   
   Phase2:
     if: ${{  inputs.component == 'fullstack' }}
+    #needs: Phase1
+    uses: ./.github/workflows/deploy-component.yml
+    with: 
+      component: ${{ inputs.component }}
+      environment: ${{ inputs.environment }}
+      runner: ${{ inputs.runner }}
+
+  Phase3:
+    if: ${{  inputs.component == 'fullstack' }}
+    needs: Phase2
     uses: ./.github/workflows/deploy-component.yml
     with: 
       component: ${{ inputs.component }}
@@ -57,7 +69,7 @@ jobs:
       runner: ${{ inputs.runner }}
       
   phase-status:
-    needs: [Phase1, Phase2]
+    needs: [Phase1, Phase2, Phase3]
     if: always()
     continue-on-error: true
     runs-on: ubuntu-latest
@@ -79,5 +91,6 @@ jobs:
 
           Phasestatus="phase 1 status: ${{ needs.Phase1.result }}, " 
           Phasestatus+="phase 2 status: ${{ needs.Phase2.result }}"
+          Phasestatus+="phase 3 status: ${{ needs.Phase3.result }}"
           echo "Phasestatus=$Phasestatus" >> $GITHUB_OUTPUT  
           
