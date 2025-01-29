@@ -175,15 +175,31 @@ jobs:
            comp_status_phase3="${{ needs.call-phase.outputs.comp-status-phase3 }}"
            echo "$comp_status_phase3" | tr ',' '\n' | sed 's/^ *//;s/ *$//'
            echo "::set-output name=comp-status-phase3::$comp_status_phase3"
-
   next-job:
-     needs: report-job-status
-     runs-on: ubuntu-latest
-     steps:
-       - name: Use the outputs from report-job-status
-         run: |
-           echo "OverallPhaseJobStatus: ${{ needs.report-job-status.outputs.OverallPhaseJobStatus }}" | tr ',' '\n'
-           echo "ComponentJobStatus-for-Phase1: ${{ needs.report-job-status.outputs.ComponentJobStatus-for-Phase1 }}" | tr ',' '\n'
-           echo "ComponentJobStatus-for-Phase2: ${{ needs.report-job-status.outputs.ComponentJobStatus-for-Phase2 }}" | tr ',' '\n'
-           echo "ComponentJobStatus-for-Phase3: ${{ needs.report-job-status.outputs.ComponentJobStatus-for-Phase3 }}" | tr ',' '\n'
+    needs: report-job-status
+    runs-on: ubuntu-latest
+    steps:
+      - name: Use the outputs from report-job-status
+        run: |
+          echo "OverallPhaseJobStatus:"
+          echo "${{ needs.report-job-status.outputs.OverallPhaseJobStatus }}"
+          
+          echo "ComponentJobStatus-for-Phase1:"
+          echo "${{ needs.report-job-status.outputs.ComponentJobStatus-for-Phase1 }}"
+
+          echo "ComponentJobStatus-for-Phase2:"
+          echo "${{ needs.report-job-status.outputs.ComponentJobStatus-for-Phase2 }}"
+          
+          echo "ComponentJobStatus-for-Phase3:"
+          echo "${{ needs.report-job-status.outputs.ComponentJobStatus-for-Phase3 }}"
+  #next-job:
+     #needs: report-job-status
+     #runs-on: ubuntu-latest
+     #steps:
+       #- name: Use the outputs from report-job-status
+         #run: |
+           #echo "OverallPhaseJobStatus: ${{ needs.report-job-status.outputs.OverallPhaseJobStatus }}" | tr ',' '\n'
+           #echo "ComponentJobStatus-for-Phase1: ${{ needs.report-job-status.outputs.ComponentJobStatus-for-Phase1 }}" | tr ',' '\n'
+           #echo "ComponentJobStatus-for-Phase2: ${{ needs.report-job-status.outputs.ComponentJobStatus-for-Phase2 }}" | tr ',' '\n'
+           #echo "ComponentJobStatus-for-Phase3: ${{ needs.report-job-status.outputs.ComponentJobStatus-for-Phase3 }}" | tr ',' '\n'
   
