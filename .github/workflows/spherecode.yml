@@ -140,12 +140,9 @@ jobs:
      runs-on: ubuntu-latest
      outputs:
         OverallPhaseJobStatus: ${{ steps.report-status.outputs.overall-phase-status }}
-        ComponentJobStatus-for-Phase0: ${{ steps.report-status.outputs.comp-status-phase0 }}
         ComponentJobStatus-for-Phase1: ${{ steps.report-status.outputs.comp-status-phase1 }}
         ComponentJobStatus-for-Phase2: ${{ steps.report-status.outputs.comp-status-phase2 }}
         ComponentJobStatus-for-Phase3: ${{ steps.report-status.outputs.comp-status-phase3 }}
-        ComponentJobStatus-for-Phase4: ${{ steps.report-status.outputs.comp-status-phase4 }}
-        ComponentJobStatus-for-Phase5: ${{ steps.report-status.outputs.comp-status-phase5 }}
      steps:
        - name: Report job statuses
          id: report-status
@@ -164,12 +161,6 @@ jobs:
            echo "$phase_status" | tr ',' '\n' | sed 's/^ *//;s/ *$//'
            echo "::set-output name=overall-phase-status::$phase_status"
 
-           # Component job statuses for each phase with formatting (tr and sed)
-           echo "ComponentJobStatus-for-Phase0:"
-           comp_status_phase0="${{ needs.call-phase.outputs.comp-status-phase0 }}"
-           echo "$comp_status_phase0" | tr ',' '\n' | sed 's/^ *//;s/ *$//'
-           echo "::set-output name=comp-status-phase0::$comp_status_phase0"
-
            echo "ComponentJobStatus-for-Phase1:"
            comp_status_phase1="${{ needs.call-phase.outputs.comp-status-phase1 }}"
            echo "$comp_status_phase1" | tr ',' '\n' | sed 's/^ *//;s/ *$//'
@@ -185,27 +176,14 @@ jobs:
            echo "$comp_status_phase3" | tr ',' '\n' | sed 's/^ *//;s/ *$//'
            echo "::set-output name=comp-status-phase3::$comp_status_phase3"
 
-           echo "ComponentJobStatus-for-Phase4:"
-           comp_status_phase4="${{ needs.call-phase.outputs.comp-status-phase4 }}"
-           echo "$comp_status_phase4" | tr ',' '\n' | sed 's/^ *//;s/ *$//'
-           echo "::set-output name=comp-status-phase4::$comp_status_phase4"
-
-           echo "ComponentJobStatus-for-Phase5:"
-           comp_status_phase5="${{ needs.call-phase.outputs.comp-status-phase5 }}"
-           echo "$comp_status_phase5" | tr ',' '\n' | sed 's/^ *//;s/ *$//'
-           echo "::set-output name=comp-status-phase5::$comp_status_phase5"
   next-job:
      needs: report-job-status
      runs-on: ubuntu-latest
      steps:
        - name: Use the outputs from report-job-status
          run: |
-           echo "OverallPhaseJobStatus: ${{ needs.report-job-status.outputs.OverallPhaseJobStatus }}"
-           echo "ComponentJobStatus-for-Phase0: ${{ needs.report-job-status.outputs.ComponentJobStatus-for-Phase0 }}"
-           echo "ComponentJobStatus-for-Phase1: ${{ needs.report-job-status.outputs.ComponentJobStatus-for-Phase1 }}"
-           echo "ComponentJobStatus-for-Phase2: ${{ needs.report-job-status.outputs.ComponentJobStatus-for-Phase2 }}"
-           echo "ComponentJobStatus-for-Phase3: ${{ needs.report-job-status.outputs.ComponentJobStatus-for-Phase3 }}"
-           echo "ComponentJobStatus-for-Phase4: ${{ needs.report-job-status.outputs.ComponentJobStatus-for-Phase4 }}"
-           echo "ComponentJobStatus-for-Phase5: ${{ needs.report-job-status.outputs.ComponentJobStatus-for-Phase5 }}"
-
+           echo "OverallPhaseJobStatus: ${{ needs.report-job-status.outputs.OverallPhaseJobStatus }}" | tr ',' '\n'
+           echo "ComponentJobStatus-for-Phase1: ${{ needs.report-job-status.outputs.ComponentJobStatus-for-Phase1 }}" | tr ',' '\n'
+           echo "ComponentJobStatus-for-Phase2: ${{ needs.report-job-status.outputs.ComponentJobStatus-for-Phase2 }}" | tr ',' '\n'
+           echo "ComponentJobStatus-for-Phase3: ${{ needs.report-job-status.outputs.ComponentJobStatus-for-Phase3 }}" | tr ',' '\n'
   
