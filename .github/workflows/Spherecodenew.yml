@@ -1,4 +1,4 @@
-name: spherecode
+name: spherecode new
 run-name: Deploy ${{ inputs.component }} to ${{ inputs.environment }}
 
 on:
