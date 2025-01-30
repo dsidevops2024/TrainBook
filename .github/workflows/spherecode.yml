@@ -140,9 +140,9 @@ jobs:
      runs-on: ubuntu-latest
      outputs:
         OverallPhaseJobStatus: ${{ steps.report-status.outputs.overall-phase-status }}
-        ComponentJobStatus-for-Phase1: ${{ steps.report-status.outputs.component-status-phase1 }}
-        ComponentJobStatus-for-Phase2: ${{ steps.report-status.outputs.component-status-phase2 }}
-        ComponentJobStatus-for-Phase3: ${{ steps.report-status.outputs.component-status-phase3 }}
+        ComponentJobStatus-for-Phase1: ${{ steps.report-status.outputs.comp-status-phase1 }}
+        ComponentJobStatus-for-Phase2: ${{ steps.report-status.outputs.comp-status-phase2 }}
+        ComponentJobStatus-for-Phase3: ${{ steps.report-status.outputs.comp-status-phase3 }}
      steps:
        - name: Report job statuses
          id: report-status
