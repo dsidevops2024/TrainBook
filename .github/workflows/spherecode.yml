@@ -156,13 +156,13 @@ jobs:
            echo "ControllerJobStatus:"
            echo "$ControllerJobStatus" | tr ',' '\n' | sed 's/^ *//;s/ *$//'
 
+           
            # Format OverallPhaseJobStatus
            echo "OverallPhaseJobStatus:"
            phase_status="${{ needs.call-phase.outputs.phase-status }}"
-           # Convert comma separated status into new lines
            formatted_phase_status=$(echo "$phase_status" | sed 's/,/\n/g' | sed 's/^ *//;s/ *$//')
            echo "$formatted_phase_status"
-           echo "::set-output name=overall-phase-status::$formatted_phase_status"
+           echo "OVERALL_PHASE_STATUS=$formatted_phase_status" >> $GITHUB_ENV  # Set the output using the environment file
            echo "DEBUG: OverallPhaseJobStatus is $formatted_phase_status"
            
            # Format ComponentJobStatus-for-Phase1
@@ -170,41 +170,52 @@ jobs:
            comp_status_phase1="${{ needs.call-phase.outputs.comp-status-phase1 }}"
            formatted_comp_status_phase1=$(echo "$comp_status_phase1" | sed 's/,/\n/g' | sed 's/^ *//;s/ *$//')
            echo "$formatted_comp_status_phase1"
-           echo "::set-output name=comp-status-phase1::$formatted_comp_status_phase1"
+           echo "COMP_STATUS_PHASE1=$formatted_comp_status_phase1" >> $GITHUB_ENV  # Set the output using the environment file
            echo "DEBUG: ComponentJobStatus-for-Phase1 is $formatted_comp_status_phase1"
-
+           
            # Format ComponentJobStatus-for-Phase2
            echo "ComponentJobStatus-for-Phase2:"
            comp_status_phase2="${{ needs.call-phase.outputs.comp-status-phase2 }}"
            formatted_comp_status_phase2=$(echo "$comp_status_phase2" | sed 's/,/\n/g' | sed 's/^ *//;s/ *$//')
            echo "$formatted_comp_status_phase2"
-           echo "::set-output name=comp-status-phase2::$formatted_comp_status_phase2"
+           echo "COMP_STATUS_PHASE2=$formatted_comp_status_phase2" >> $GITHUB_ENV  # Set the output using the environment file
            echo "DEBUG: ComponentJobStatus-for-Phase2 is $formatted_comp_status_phase2"
-
+           
            # Format ComponentJobStatus-for-Phase3
            echo "ComponentJobStatus-for-Phase3:"
            comp_status_phase3="${{ needs.call-phase.outputs.comp-status-phase3 }}"
            formatted_comp_status_phase3=$(echo "$comp_status_phase3" | sed 's/,/\n/g' | sed 's/^ *//;s/ *$//')
            echo "$formatted_comp_status_phase3"
-           echo "::set-output name=comp-status-phase3::$formatted_comp_status_phase3"
+           echo "COMP_STATUS_PHASE3=$formatted_comp_status_phase3" >> $GITHUB_ENV  # Set the output using the environment file
            echo "DEBUG: ComponentJobStatus-for-Phase3 is $formatted_comp_status_phase3"
+           
   next-job:
-    needs: report-job-status
     runs-on: ubuntu-latest
+    needs: report-job-status
     steps:
-      - name: Use the outputs from report-job-status
+      - name: Access outputs
         run: |
-          echo "OverallPhaseJobStatus:"
-          echo "${{ needs.report-job-status.outputs.OverallPhaseJobStatus }}"
+          echo "OverallPhaseJobStatus: ${{ env.OVERALL_PHASE_STATUS }}"
+          echo "ComponentJobStatus-for-Phase1: ${{ env.COMP_STATUS_PHASE1 }}"
+          echo "ComponentJobStatus-for-Phase2: ${{ env.COMP_STATUS_PHASE2 }}"
+          echo "ComponentJobStatus-for-Phase3: ${{ env.COMP_STATUS_PHASE3 }}"
+  #next-job:
+    #needs: report-job-status
+    #runs-on: ubuntu-latest
+    #steps:
+      #- name: Use the outputs from report-job-status
+        #run: |
+          #echo "OverallPhaseJobStatus:"
+          #echo "${{ needs.report-job-status.outputs.OverallPhaseJobStatus }}"
           
-          echo "ComponentJobStatus-for-Phase1:"
-          echo "${{ needs.report-job-status.outputs.ComponentJobStatus-for-Phase1 }}"
+          #echo "ComponentJobStatus-for-Phase1:"
+          #echo "${{ needs.report-job-status.outputs.ComponentJobStatus-for-Phase1 }}"
 
-          echo "ComponentJobStatus-for-Phase2:"
-          echo "${{ needs.report-job-status.outputs.ComponentJobStatus-for-Phase2 }}"
+          #echo "ComponentJobStatus-for-Phase2:"
+          #echo "${{ needs.report-job-status.outputs.ComponentJobStatus-for-Phase2 }}"
           
-          echo "ComponentJobStatus-for-Phase3:"
-          echo "${{ needs.report-job-status.outputs.ComponentJobStatus-for-Phase3 }}"
+          #echo "ComponentJobStatus-for-Phase3:"
+          #echo "${{ needs.report-job-status.outputs.ComponentJobStatus-for-Phase3 }}"
   #next-job:
      #needs: report-job-status
      #runs-on: ubuntu-latest
