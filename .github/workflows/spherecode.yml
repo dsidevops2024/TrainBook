@@ -163,13 +163,15 @@ jobs:
            formatted_phase_status=$(echo "$phase_status" | sed 's/,/\n/g' | sed 's/^ *//;s/ *$//')
            echo "$formatted_phase_status"
            echo "::set-output name=overall-phase-status::$formatted_phase_status"
-
+           echo "DEBUG: OverallPhaseJobStatus is $formatted_phase_status"
+           
            # Format ComponentJobStatus-for-Phase1
            echo "ComponentJobStatus-for-Phase1:"
            comp_status_phase1="${{ needs.call-phase.outputs.comp-status-phase1 }}"
            formatted_comp_status_phase1=$(echo "$comp_status_phase1" | sed 's/,/\n/g' | sed 's/^ *//;s/ *$//')
            echo "$formatted_comp_status_phase1"
            echo "::set-output name=comp-status-phase1::$formatted_comp_status_phase1"
+           echo "DEBUG: ComponentJobStatus-for-Phase1 is $formatted_comp_status_phase1"
 
            # Format ComponentJobStatus-for-Phase2
            echo "ComponentJobStatus-for-Phase2:"
@@ -177,6 +179,7 @@ jobs:
            formatted_comp_status_phase2=$(echo "$comp_status_phase2" | sed 's/,/\n/g' | sed 's/^ *//;s/ *$//')
            echo "$formatted_comp_status_phase2"
            echo "::set-output name=comp-status-phase2::$formatted_comp_status_phase2"
+           echo "DEBUG: ComponentJobStatus-for-Phase2 is $formatted_comp_status_phase2"
 
            # Format ComponentJobStatus-for-Phase3
            echo "ComponentJobStatus-for-Phase3:"
@@ -184,6 +187,7 @@ jobs:
            formatted_comp_status_phase3=$(echo "$comp_status_phase3" | sed 's/,/\n/g' | sed 's/^ *//;s/ *$//')
            echo "$formatted_comp_status_phase3"
            echo "::set-output name=comp-status-phase3::$formatted_comp_status_phase3"
+          echo "DEBUG: ComponentJobStatus-for-Phase3 is $formatted_comp_status_phase3"
   next-job:
     needs: report-job-status
     runs-on: ubuntu-latest
