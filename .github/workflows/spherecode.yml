@@ -159,19 +159,27 @@ jobs:
            echo "ControllerJobStatus:"
            echo "$ControllerJobStatus" | tr ',' '\n' | sed 's/^ *//;s/ *$//'
 
-           echo "OverallPhaseJobStatus:"
+           #echo "OverallPhaseJobStatus:"
+           #phase_status="${{ needs.call-phase.outputs.phase-status }}"
+           #echo "$phase_status" | tr ',' '\n' | sed 's/^ *//;s/ *$//'
+           #echo "::set-output name=overall-phase-status::$phase_status"
+
            phase_status="${{ needs.call-phase.outputs.phase-status }}"
-           echo "$phase_status" | tr ',' '\n' | sed 's/^ *//;s/ *$//'
+           echo "OverallPhaseJobStatus:"
+           echo "$phase_status"
            echo "::set-output name=overall-phase-status::$phase_status"
 
+           #set phase1 status
+           phase1_status=$(echo "$phase_status" | grep -o "phase 1 status: [^,]*")
+           echo "::set-output name=overall-job-status-phase1::$phase1_status"
            #split into individual job
            #IFS=', ' read -r -a phase_array <<< "$phase_status"
            phase_statuses=($phase_status)
 
-           for i in "${!phase_statuses[@]}";do
-             phase_index=$((i+1))
-             echo "::set-output name=overall-job-status-phase$phase_index::${phase_statuses[$i]}"
-           done
+           #for i in "${!phase_statuses[@]}";do
+             #phase_index=$((i+1))
+             #echo "::set-output name=overall-job-status-phase$phase_index::${phase_statuses[$i]}"
+           #done
 
            echo "ComponentJobStatus-for-Phase1:"
            comp_status_phase1="${{ needs.call-phase.outputs.comp-status-phase1 }}"
