@@ -184,11 +184,26 @@ jobs:
            phase3_status=$(echo "$phase_status" | grep -o "phase 3 status: [^,]*")
            echo "::set-output name=overall-job-status-phase3::$phase3_status"
 
+           phase_status="${{ needs.call-phase.outputs.phase-status }}"
+           echo "OverallPhaseJobStatus:"
+           echo "$phase_status"
+           echo "::set-output name=overall-phase-status::$phase_status"
+
+           #set phase1 status
+           phase1_status=$(echo "$phase_status" | grep -o "phase 1 status: [^,]*")
+           echo "::set-output name=overall-job-status-phase1::$phase1_status"
+           
            comp_status_phase1="${{ needs.call-phase.outputs.comp-status-phase1 }}"
            echo "ComponentJobStatus-for-Phase1:"
            echo "$comp_status_phase1"
            echo "::set-output name=comp-status-phase1::$comp_status_phase1"
 
+           comp_status_phase1_job1=$(echo "$comp_status_phase1" | grep -o "job1 status: [^,]*")
+           echo "::set-output name=comp-status-phase1-job1::$comp_status_phase1_job1"
+           comp_status_phase1_job2=$(echo "$comp_status_phase1" | grep -o "job2 status: [^,]*")
+           echo "::set-output name=comp-status-phase1-job2::$comp_status_phase1_job2"
+           
+           
            echo "ComponentJobStatus-for-Phase2:"
            comp_status_phase2="${{ needs.call-phase.outputs.comp-status-phase2 }}"
            echo "$comp_status_phase2" | tr ',' '\n' | sed 's/^ *//;s/ *$//'
@@ -198,11 +213,6 @@ jobs:
            comp_status_phase3="${{ needs.call-phase.outputs.comp-status-phase3 }}"
            echo "$comp_status_phase3" | tr ',' '\n' | sed 's/^ *//;s/ *$//'
            echo "::set-output name=comp-status-phase3::$comp_status_phase3"
-           
-           comp_status_phase1_job1=$(echo "$comp_status_phase1" | grep -o "job1 status: [^,]*")
-           comp_status_phase1_job2=$(echo "$comp_status_phase1" | grep -o "job2 status: [^,]*")
-           echo "::set-output name=comp-status-phase1-job1::$comp_status_phase1_job1"
-           echo "::set-output name=comp-status-phase1-job2::$comp_status_phase1_job2"
            
            #echo "$comp_status_phase1" | tr ',' '\n' | sed 's/^ *//;s/ *$//'
            #echo "::set-output name=comp-status-phase1::$comp_status_phase1"
