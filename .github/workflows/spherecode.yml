@@ -187,7 +187,7 @@ jobs:
            formatted_comp_status_phase3=$(echo "$comp_status_phase3" | sed 's/,/\n/g' | sed 's/^ *//;s/ *$//')
            echo "$formatted_comp_status_phase3"
            echo "::set-output name=comp-status-phase3::$formatted_comp_status_phase3"
-          echo "DEBUG: ComponentJobStatus-for-Phase3 is $formatted_comp_status_phase3"
+           echo "DEBUG: ComponentJobStatus-for-Phase3 is $formatted_comp_status_phase3"
   next-job:
     needs: report-job-status
     runs-on: ubuntu-latest
