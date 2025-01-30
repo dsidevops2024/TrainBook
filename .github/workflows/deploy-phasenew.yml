@@ -1,0 +1,96 @@
+name: Deploy Phase new
+on:
+  workflow_call:
+    inputs:
+      component:
+        type: string
+        required: true
+      environment:
+        type: string
+        required: true
+      runner:
+        type: string
+        required: true
+    outputs:
+      #comp-status1:
+        #description: "First output from the component"
+        #value: ${{ jobs.Phase1.outputs.compstatus1 }}
+      #comp-status2:
+        #description: "Second output from the component"
+        #value: ${{ jobs.Phase1.outputs.compstatus2 }}
+      #comp-status01:
+        #description: "First output from the component"
+        #value: ${{ jobs.Phase2.outputs.compstatus01 }}
+      #comp-status02:
+        #description: "Second output from the component"
+        #value: ${{ jobs.Phase2.outputs.compstatus02 }}
+      #phase-status1:
+        #description: "First output from the component"
+        #value: ${{ jobs.phase-status.outputs.phase1op }}
+      #phase-status2:
+        #description: "First output from the component"
+        #value: ${{ jobs.phase-status.outputs.phase2op }}
+
+      phase-status:
+        value: ${{ jobs.phase-status.outputs.phaseop }}
+      comp-status-phase1:
+        value: ${{ jobs.Phase1.outputs.compstatus }}
+      comp-status-phase2:
+        value: ${{ jobs.Phase2.outputs.compstatus }}
+      comp-status-phase3:
+        value: ${{ jobs.Phase3.outputs.compstatus }}
+        
+jobs:
+  Phase1:
+    if: ${{ ! contains(inputs.component, 'fullstack') }}
+    uses: ./.github/workflows/deploy-component.yml
+    with: 
+      component: ${{ inputs.component }}
+      environment: ${{ inputs.environment }}
+      runner: ${{ inputs.runner }}
+
+  
+  Phase2:
+    if: ${{  inputs.component == 'fullstack' }}
+    #needs: Phase1
+    uses: ./.github/workflows/deploy-component.yml
+    with: 
+      component: ${{ inputs.component }}
+      environment: ${{ inputs.environment }}
+      runner: ${{ inputs.runner }}
+
+  Phase3:
+    if: ${{  inputs.component == 'fullstack' }}
+    needs: Phase2
+    uses: ./.github/workflows/deploy-component.yml
+    with: 
+      component: ${{ inputs.component }}
+      environment: ${{ inputs.environment }}
+      runner: ${{ inputs.runner }}
+      
+  phase-status:
+    needs: [Phase1, Phase2, Phase3]
+    if: always()
+    continue-on-error: true
+    runs-on: ubuntu-latest
+    outputs: 
+      #phase1op: ${{ steps.report.outputs.Phase1status }}
+      #phase2op: ${{ steps.report.outputs.Phase2status }}
+      phaseop: ${{ steps.report.outputs.Phasestatus }}
+          
+    steps:
+      - name: Report job statuses
+        id: report
+        run: |
+          #echo "Phase1status=${{ needs.Phase1.result }}" >> $GITHUB_OUTPUT
+          #echo "Phase2status=${{ needs.Phase2.result }}" >> $GITHUB_OUTPUT
+          #echo "comp1status:${{ needs.Phase1.outputs.compstatus1 }}" 
+          #echo "comp2status:${{ needs.Phase1.outputs.compstatus2 }}" 
+          #echo "comp01status:${{ needs.Phase2.outputs.compstatus1 }}" 
+          #echo "comp02status:${{ needs.Phase2.outputs.compstatus2 }}"
+
+          Phasestatus="phase 1 status: ${{ needs.Phase1.result }}, " 
+          Phasestatus+="phase 2 status: ${{ needs.Phase2.result }}, "
+          Phasestatus+="phase 3 status: ${{ needs.Phase3.result }}"
+          echo "Phasestatus=$Phasestatus" >> $GITHUB_OUTPUT  
+          
