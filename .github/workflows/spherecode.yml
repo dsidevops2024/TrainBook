@@ -156,41 +156,41 @@ jobs:
            echo "ControllerJobStatus:"
            echo "$ControllerJobStatus" | tr ',' '\n' | sed 's/^ *//;s/ *$//'
 
-           phase_status="${{ needs.call-phase.outputs.phase-status }}"
-           phase_status_cleaned=$(echo "$phase_status" | tr ',' '\n' | sed 's/^ *//;s/ *$//')
-           echo "::set-output name=overall-phase-status::$phase_status_cleaned"
-
-           #echo "OverallPhaseJobStatus:"
            #phase_status="${{ needs.call-phase.outputs.phase-status }}"
-           #echo "$phase_status" | tr ',' '\n' | sed 's/^ *//;s/ *$//'
-           #echo "::set-output name=overall-phase-status::$phase_status"
+           #phase_status_cleaned=$(echo "$phase_status" | tr ',' '\n' | sed 's/^ *//;s/ *$//')
+           #echo "::set-output name=overall-phase-status::$phase_status_cleaned"
 
-           comp_status_phase1="${{ needs.call-phase.outputs.comp-status-phase1 }}"
-           comp_status_phase1_cleaned=$(echo "$comp_status_phase1" | tr ',' '\n' | sed 's/^ *//;s/ *$//')
-           echo "::set-output name=component-status-phase1::$comp_status_phase1_cleaned"
-           
-           #echo "ComponentJobStatus-for-Phase1:"
+           echo "OverallPhaseJobStatus:"
+           phase_status="${{ needs.call-phase.outputs.phase-status }}"
+           echo "$phase_status" | tr ',' '\n' | sed 's/^ *//;s/ *$//'
+           echo "::set-output name=overall-phase-status::$phase_status"
+
            #comp_status_phase1="${{ needs.call-phase.outputs.comp-status-phase1 }}"
-           #echo "$comp_status_phase1" | tr ',' '\n' | sed 's/^ *//;s/ *$//'
-           #echo "::set-output name=comp-status-phase1::$comp_status_phase1"
-
-           comp_status_phase2="${{ needs.call-phase.outputs.comp-status-phase2 }}"
-           comp_status_phase2_cleaned=$(echo "$comp_status_phase2" | tr ',' '\n' | sed 's/^ *//;s/ *$//')
-           echo "::set-output name=component-status-phase2::$comp_status_phase2_cleaned"
+           #comp_status_phase1_cleaned=$(echo "$comp_status_phase1" | tr ',' '\n' | sed 's/^ *//;s/ *$//')
+           #echo "::set-output name=component-status-phase1::$comp_status_phase1_cleaned"
            
-           #echo "ComponentJobStatus-for-Phase2:"
+           echo "ComponentJobStatus-for-Phase1:"
+           comp_status_phase1="${{ needs.call-phase.outputs.comp-status-phase1 }}"
+           echo "$comp_status_phase1" | tr ',' '\n' | sed 's/^ *//;s/ *$//'
+           echo "::set-output name=comp-status-phase1::$comp_status_phase1"
+
            #comp_status_phase2="${{ needs.call-phase.outputs.comp-status-phase2 }}"
-           #echo "$comp_status_phase2" | tr ',' '\n' | sed 's/^ *//;s/ *$//'
-           #echo "::set-output name=comp-status-phase2::$comp_status_phase2"
-
-           comp_status_phase3="${{ needs.call-phase.outputs.comp-status-phase3 }}"
-           comp_status_phase3_cleaned=$(echo "$comp_status_phase3" | tr ',' '\n' | sed 's/^ *//;s/ *$//')
-           echo "::set-output name=component-status-phase3::$comp_status_phase3_cleaned"
+           #comp_status_phase2_cleaned=$(echo "$comp_status_phase2" | tr ',' '\n' | sed 's/^ *//;s/ *$//')
+           #echo "::set-output name=component-status-phase2::$comp_status_phase2_cleaned"
            
-           #echo "ComponentJobStatus-for-Phase3:"
+           echo "ComponentJobStatus-for-Phase2:"
+           comp_status_phase2="${{ needs.call-phase.outputs.comp-status-phase2 }}"
+           echo "$comp_status_phase2" | tr ',' '\n' | sed 's/^ *//;s/ *$//'
+           echo "::set-output name=comp-status-phase2::$comp_status_phase2"
+
            #comp_status_phase3="${{ needs.call-phase.outputs.comp-status-phase3 }}"
-           #echo "$comp_status_phase3" | tr ',' '\n' | sed 's/^ *//;s/ *$//'
-           #echo "::set-output name=comp-status-phase3::$comp_status_phase3"
+           #comp_status_phase3_cleaned=$(echo "$comp_status_phase3" | tr ',' '\n' | sed 's/^ *//;s/ *$//')
+           #echo "::set-output name=component-status-phase3::$comp_status_phase3_cleaned"
+           
+           echo "ComponentJobStatus-for-Phase3:"
+           comp_status_phase3="${{ needs.call-phase.outputs.comp-status-phase3 }}"
+           echo "$comp_status_phase3" | tr ',' '\n' | sed 's/^ *//;s/ *$//'
+           echo "::set-output name=comp-status-phase3::$comp_status_phase3"
            
   next-job:
     needs: report-job-status
