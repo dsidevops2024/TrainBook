@@ -172,6 +172,14 @@ jobs:
            #set phase1 status
            phase1_status=$(echo "$phase_status" | grep -o "phase 1 status: [^,]*")
            echo "::set-output name=overall-job-status-phase1::$phase1_status"
+
+           #set phase2 status
+           phase2_status=$(echo "$phase_status" | grep -o "phase 2 status: [^,]*")
+           echo "::set-output name=overall-job-status-phase2::$phase2_status"
+
+           #set phase3 status
+           phase3_status=$(echo "$phase_status" | grep -o "phase 3 status: [^,]*")
+           echo "::set-output name=overall-job-status-phase3::$phase3_status"
            #split into individual job
            #IFS=', ' read -r -a phase_array <<< "$phase_status"
            phase_statuses=($phase_status)
