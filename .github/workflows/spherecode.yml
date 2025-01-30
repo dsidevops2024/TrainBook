@@ -139,10 +139,10 @@ jobs:
      needs: [check-component-input, create-environment-matrix, set-environment-runner, call-phase]
      runs-on: ubuntu-latest
      outputs:
-        OverallPhaseJobStatus: ${{ steps.report-status.outputs.overall-phase-status }}
-        ComponentJobStatus-for-Phase1: ${{ steps.report-status.outputs.comp-status-phase1 }}
-        ComponentJobStatus-for-Phase2: ${{ steps.report-status.outputs.comp-status-phase2 }}
-        ComponentJobStatus-for-Phase3: ${{ steps.report-status.outputs.comp-status-phase3 }}
+        OverallPhaseJobStatusnew: ${{ steps.report-status.outputs.overall-phase-status }}
+        ComponentJobStatus-for-Phase1new: ${{ steps.report-status.outputs.comp-status-phase1 }}
+        ComponentJobStatus-for-Phase2new: ${{ steps.report-status.outputs.comp-status-phase2 }}
+        ComponentJobStatus-for-Phase3new: ${{ steps.report-status.outputs.comp-status-phase3 }}
      steps:
        - name: Report job statuses
          id: report-status
@@ -183,16 +183,16 @@ jobs:
       - name: Use the outputs from report-job-status
         run: |
           echo "OverallPhaseJobStatus:"
-          echo "${{ needs.report-job-status.outputs.OverallPhaseJobStatus }}"
+          echo "${{ needs.report-job-status.outputs.OverallPhaseJobStatusnew }}"
           
           echo "ComponentJobStatus-for-Phase1:"
-          echo "${{ needs.report-job-status.outputs.ComponentJobStatus-for-Phase1 }}"
+          echo "${{ needs.report-job-status.outputs.ComponentJobStatus-for-Phase1new }}"
 
           echo "ComponentJobStatus-for-Phase2:"
-          echo "${{ needs.report-job-status.outputs.ComponentJobStatus-for-Phase2 }}"
+          echo "${{ needs.report-job-status.outputs.ComponentJobStatus-for-Phase2new }}"
           
           echo "ComponentJobStatus-for-Phase3:"
-          echo "${{ needs.report-job-status.outputs.ComponentJobStatus-for-Phase3 }}"
+          echo "${{ needs.report-job-status.outputs.ComponentJobStatus-for-Phase3new }}"
   #next-job:
      #needs: report-job-status
      #runs-on: ubuntu-latest
