@@ -158,13 +158,23 @@ jobs:
 
            
            # Format OverallPhaseJobStatus
+           #echo "OverallPhaseJobStatus:"
+           #phase_status="${{ needs.call-phase.outputs.phase-status }}"
+           # Convert comma separated status into new lines
+           #formatted_phase_status=$(echo "$phase_status" | sed 's/,/\n/g' | sed 's/^ *//;s/ *$//')
+           #echo "checking:$formatted_phase_status"
+           #echo "::set-output name=overall-phase-status::$formatted_phase_status"
+           #echo "DEBUG: OverallPhaseJobStatus is $formatted_phase_status"
+
+           # Format OverallPhaseJobStatus
            echo "OverallPhaseJobStatus:"
            phase_status="${{ needs.call-phase.outputs.phase-status }}"
-           # Convert comma separated status into new lines
+           # Convert comma-separated status into new lines
            formatted_phase_status=$(echo "$phase_status" | sed 's/,/\n/g' | sed 's/^ *//;s/ *$//')
-           echo "checking:$formatted_phase_status"
+           # Set the output only once
            echo "::set-output name=overall-phase-status::$formatted_phase_status"
-           echo "DEBUG: OverallPhaseJobStatus is $formatted_phase_status"
+           echo "DEBUG: OverallPhaseJobStatus is:"
+           echo "$formatted_phase_status"
            
            # Format ComponentJobStatus-for-Phase1
            echo "ComponentJobStatus-for-Phase1:"
