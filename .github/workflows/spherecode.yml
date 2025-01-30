@@ -165,11 +165,12 @@ jobs:
            echo "::set-output name=overall-phase-status::$phase_status"
 
            #split into individual job
-           IFS=', ' read -r -a phase_array <<< "$phase_status"
+           #IFS=', ' read -r -a phase_array <<< "$phase_status"
+           phase_statuses=($phase_status)
 
-           for i in "${!phase_array[@]}";do
+           for i in "${!phase_statuses[@]}";do
              phase_index=$((i+1))
-             echo "::set-output name=overall-job-status-phase$phase_index::${phase_array[$i]}"
+             echo "::set-output name=overall-job-status-phase$phase_index::${phase_statuses[$i]}"
            done
 
            echo "ComponentJobStatus-for-Phase1:"
