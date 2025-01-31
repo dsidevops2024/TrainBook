@@ -183,15 +183,6 @@ jobs:
            comp_status_phase1="${{ needs.call-phase.outputs.comp-status-phase1 }}"
            echo "$comp_status_phase1" | tr ',' '\n' | sed 's/^ *//;s/ *$//'
            echo "::set-output name=comp-status-phase1::$comp_status_phase1"
-
-           phase_status="${{ needs.call-phase.outputs.phase-status }}"
-           echo "OverallPhaseJobStatus:"
-           echo "$phase_status"
-           echo "::set-output name=overall-phase-status::$phase_status"
-
-           #set phase1 status
-           phase1_status=$(echo "$phase_status" | grep -o "phase 1 status: [^,]*")
-           echo "::set-output name=overall-job-status-phase1::$phase1_status"
           
            # Component job status for Phase 1 using grep
            comp_status_phase1="${{ needs.call-phase.outputs.comp-status-phase1 }}"
