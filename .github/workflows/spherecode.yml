@@ -186,11 +186,11 @@ jobs:
            echo "::set-output name=comp-status-phase1::$comp_status_phase1"
 
            #set comp1
-           comp_status_phase1_job1="$(echo "$comp_status_phase1" | grep -o "job1 status: [^,]*")
+           comp_status_phase1_job1="$(echo "$comp_status_phase1" | grep -o "Job1 status: [^,]*")
            echo "::set-output name=comp-status-phase1-job1::$comp_status_phase1_job1"
 
            #set comp2
-           comp_status_phase1_job2="$(echo "$comp_status_phase1" | grep -o "job2 status: [^,]*")
+           comp_status_phase1_job2="$(echo "$comp_status_phase1" | grep -o "Job2 status: [^,]*")
            echo "::set-output name=comp-status-phase1-job2::$comp_status_phase1_job2"
 
            echo "ComponentJobStatus-for-Phase2:"
