@@ -167,17 +167,29 @@ jobs:
            echo "$phase_status"
            echo "::set-output name=overall-phase-status::$phase_status"
 
-           #set phase1 status
-           phase1_status=$(echo "$phase_status" | grep -o "phase 1 status: [^,]*")
+            # set phase1 status
+           phase1_status=$(echo "$phase_status" | awk -F'phase 1 status: ' '{print "phase 1 status: " $2}' | awk -F', ' '{print $1}')
            echo "::set-output name=overall-job-status-phase1::$phase1_status"
 
-           #set phase2 status
-           phase2_status=$(echo "$phase_status" | grep -o "phase 2 status: [^,]*")
+           # set phase2 status
+           phase2_status=$(echo "$phase_status" | awk -F'phase 2 status: ' '{print "phase 2 status: " $2}' | awk -F', ' '{print $1}')
            echo "::set-output name=overall-job-status-phase2::$phase2_status"
 
-           #set phase3 status
-           phase3_status=$(echo "$phase_status" | grep -o "phase 3 status: [^,]*")
+           # set phase3 status
+           phase3_status=$(echo "$phase_status" | awk -F'phase 3 status: ' '{print "phase 3 status: " $2}' | awk -F', ' '{print $1}')
            echo "::set-output name=overall-job-status-phase3::$phase3_status"
+           
+           #set phase1 status
+           #phase1_status=$(echo "$phase_status" | grep -o "phase 1 status: [^,]*")
+           #echo "::set-output name=overall-job-status-phase1::$phase1_status"
+
+           #set phase2 status
+           #phase2_status=$(echo "$phase_status" | grep -o "phase 2 status: [^,]*")
+           #echo "::set-output name=overall-job-status-phase2::$phase2_status"
+
+           #set phase3 status
+           #phase3_status=$(echo "$phase_status" | grep -o "phase 3 status: [^,]*")
+           #echo "::set-output name=overall-job-status-phase3::$phase3_status"
           
            # Component job status for Phase 1 using grep
            comp_status_phase1="${{ needs.call-phase.outputs.comp-status-phase1 }}"
@@ -186,23 +198,13 @@ jobs:
            echo "::set-output name=comp-status-phase1::$comp_status_phase1"
 
            # For Job1
-           #comp_status_phase1_job1=$(echo "$comp_status_phase1" | awk -F'Job1 status: ' '{print "job1 status: " $2}' | awk -F', ' '{print $1}')
-           #echo "::set-output name=comp-status-phase1-job1::$comp_status_phase1_job1"
+           comp_status_phase1_job1=$(echo "$comp_status_phase1" | awk -F'Job1 status: ' '{print "job1 status: " $2}' | awk -F', ' '{print $1}')
+           echo "::set-output name=comp-status-phase1-job1::$comp_status_phase1_job1"
 
            # For Job2
-           #comp_status_phase1_job2=$(echo "$comp_status_phase1" | awk -F'Job2 status: ' '{print "job2 status: " $2}' | awk -F', ' '{print $1}')
-           #echo "::set-output name=comp-status-phase1-job2::$comp_status_phase1_job2"
+           comp_status_phase1_job2=$(echo "$comp_status_phase1" | awk -F'Job2 status: ' '{print "job2 status: " $2}' | awk -F', ' '{print $1}')
+           echo "::set-output name=comp-status-phase1-job2::$comp_status_phase1_job2"
            
-           #set comp1
-           echo "comp_status_phase1: $comp_status_phase1"
-           comp_status_phase1_job1="$(echo "$comp_status_phase1" | grep -Po "job1 status: [^,]*")
-           echo "::set-output name=comp-status-phase1-job1::$comp_status_phase1_job1"
-           
-           #set comp2
-           echo "comp_status_phase1: $comp_status_phase1"
-           comp_status_phase1_job2="$(echo "$comp_status_phase1" | grep -Po "Job2 status: [^,]*")
-           #echo "::set-output name=comp-status-phase1-job2::$comp_status_phase1_job2"
-
            #echo "ComponentJobStatus-for-Phase2:"
            #comp_status_phase2="${{ needs.call-phase.outputs.comp-status-phase2 }}"
            #echo "$comp_status_phase2" | tr ',' '\n' | sed 's/^ *//;s/ *$//'
@@ -232,9 +234,7 @@ jobs:
            #comp_status_phase3="${{ needs.call-phase.outputs.comp-status-phase3 }}"
            #echo "$comp_status_phase3" | tr ',' '\n' | sed 's/^ *//;s/ *$//'
            #echo "::set-output name=comp-status-phase3::$comp_status_phase3"
-           
-           #echo "$comp_status_phase1" | tr ',' '\n' | sed 's/^ *//;s/ *$//'
-           #echo "::set-output name=comp-status-phase1::$comp_status_phase1"  
+            
   next-job:
     needs: report-job-status
     runs-on: ubuntu-latest
@@ -261,14 +261,4 @@ jobs:
           
           echo "ComponentJobStatus-for-Phase3:"
           echo "${{ needs.report-job-status.outputs.ComponentJobStatus-for-Phase3new }}"
-  #next-job:
-     #needs: report-job-status
-     #runs-on: ubuntu-latest
-     #steps:
-       #- name: Use the outputs from report-job-status
-         #run: |
-           #echo "OverallPhaseJobStatus: ${{ needs.report-job-status.outputs.OverallPhaseJobStatus }}" | tr ',' '\n'
-           #echo "ComponentJobStatus-for-Phase1: ${{ needs.report-job-status.outputs.ComponentJobStatus-for-Phase1 }}" | tr ',' '\n'
-           #echo "ComponentJobStatus-for-Phase2: ${{ needs.report-job-status.outputs.ComponentJobStatus-for-Phase2 }}" | tr ',' '\n'
-           #echo "ComponentJobStatus-for-Phase3: ${{ needs.report-job-status.outputs.ComponentJobStatus-for-Phase3 }}" | tr ',' '\n'
   
