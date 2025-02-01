@@ -147,10 +147,10 @@ jobs:
         ComponentJobStatus_for_Phase1_job1: ${{ steps.report-status.outputs.comp-status-phase1-job1 }}
         ComponentJobStatus_for_Phase1_job2: ${{ steps.report-status.outputs.comp-status-phase1-job2 }}
         
-        ComponentJobStatus-for-Phase2: ${{ steps.report-status.outputs.comp-status-phase2 }}
+        ComponentJobStatus_for_Phase2: ${{ steps.report-status.outputs.comp-status-phase2 }}
         ComponentJobStatus_for_Phase2_job1: ${{ steps.report-status.outputs.comp-status-phase2-job1 }}
         ComponentJobStatus_for_Phase2_job2: ${{ steps.report-status.outputs.comp-status-phase2-job2 }}
-        ComponentJobStatus-for-Phase3: ${{ steps.report-status.outputs.comp-status-phase3 }}
+        ComponentJobStatus_for_Phase3: ${{ steps.report-status.outputs.comp-status-phase3 }}
         ComponentJobStatus_for_Phase3_job1: ${{ steps.report-status.outputs.comp-status-phase3-job1 }}
         ComponentJobStatus_for_Phase3_job2: ${{ steps.report-status.outputs.comp-status-phase3-job2 }}
      steps:
@@ -220,10 +220,10 @@ jobs:
              comp_status_phase2_job2="job2 status: skipped"
            else
              # For Job1
-             comp_status_phase2_job1=$(echo "$comp_status_phase1" | awk -F'job1 status: ' '{print "job1 status: " $2}' | awk -F', ' '{print $1}' | sed 's/^ *//;s/ *$//' || echo "job1 status: not available")
+             comp_status_phase2_job1=$(echo "$comp_status_phase2" | awk -F'job1 status: ' '{print "job1 status: " $2}' | awk -F', ' '{print $1}' | sed 's/^ *//;s/ *$//' || echo "job1 status: not available")
 
             # For Job2
-             comp_status_phase2_job2=$(echo "$comp_status_phase1" | awk -F'job2 status: ' '{print "job2 status: " $2}' | awk -F', ' '{print $1}' | sed 's/^ *//;s/ *$//' || echo "job2 status: not available")
+             comp_status_phase2_job2=$(echo "$comp_status_phase2" | awk -F'job2 status: ' '{print "job2 status: " $2}' | awk -F', ' '{print $1}' | sed 's/^ *//;s/ *$//' || echo "job2 status: not available")
            fi
 
             # Output the statuses
@@ -276,14 +276,14 @@ jobs:
           echo "${{ needs.report-job-status.outputs.ComponentJobStatus_for_Phase1_job2 }}"
           
           echo "ComponentJobStatus-for-Phase2:"
-          echo "${{ needs.report-job-status.outputs.ComponentJobStatus-for-Phase2 }}"
+          echo "${{ needs.report-job-status.outputs.ComponentJobStatus_for_Phase2 }}"
           echo "ComponentJobStatus-for-Phase2-job1:"
           echo "${{ needs.report-job-status.outputs.ComponentJobStatus_for_Phase2_job1 }}"
           echo "ComponentJobStatus-for-Phase2-job2:"
           echo "${{ needs.report-job-status.outputs.ComponentJobStatus_for_Phase2_job2 }}"
     
           echo "ComponentJobStatus-for-Phase3:"
-          echo "${{ needs.report-job-status.outputs.ComponentJobStatus-for-Phase3new }}"
+          echo "${{ needs.report-job-status.outputs.ComponentJobStatus_for_Phase3 }}"
           echo "ComponentJobStatus-for-Phase3-job1:"
           echo "${{ needs.report-job-status.outputs.ComponentJobStatus_for_Phase3_job1 }}"
           echo "ComponentJobStatus-for-Phase3-job2:"
