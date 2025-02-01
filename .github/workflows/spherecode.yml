@@ -167,16 +167,16 @@ jobs:
            echo "$phase_status"
            echo "::set-output name=overall-phase-status::$phase_status"
 
-           # Extract phase 1 status using awk
-           phase1_status=$(echo "$phase_status" | awk -F"phase 1 status: " '{print $2}' | awk -F", " '{print $1}')
+           # set phase1 status 
+           phase1_status=$(echo "$phase_status" | awk -F'phase 1 status: ' '{print "phase 1 status: " $2}' | awk -F', ' '{print $1}')
            echo "::set-output name=overall-job-status-phase1::$phase1_status"
 
-           # Extract phase 2 status using awk
-           phase2_status=$(echo "$phase_status" | awk -F"phase 2 status: " '{print $2}' | awk -F", " '{print $1}')
+           # set phase2 status 
+           phase2_status=$(echo "$phase_status" | awk -F'phase 2 status: ' '{print "phase 2 status: " $2}' | awk -F', ' '{print $1}')
            echo "::set-output name=overall-job-status-phase2::$phase2_status"
 
-           # Extract phase 3 status using awk
-           phase3_status=$(echo "$phase_status" | awk -F"phase 3 status: " '{print $2}' | awk -F", " '{print $1}')
+           # set phase3 status
+           phase3_status=$(echo "$phase_status" | awk -F'phase 3 status: ' '{print "phase 3 status: " $2}' | awk -F', ' '{print $1}')
            echo "::set-output name=overall-job-status-phase3::$phase3_status"
                        
            #set phase1 status
@@ -198,11 +198,11 @@ jobs:
            echo "::set-output name=comp-status-phase1::$comp_status_phase1"
 
            # For Job1
-           comp_status_phase1_job1=$(echo "$comp_status_phase1" | awk -F'Job1 status: ' '{print "job1 status: " $2}' | awk -F', ' '{print $1}')
+           comp_status_phase1_job1=$(echo "$comp_status_phase1" | awk -F'job1 status: ' '{print "job1 status: " $2}' | awk -F', ' '{print $1}')
            echo "::set-output name=comp-status-phase1-job1::$comp_status_phase1_job1"
 
            # For Job2
-           comp_status_phase1_job2=$(echo "$comp_status_phase1" | awk -F'Job2 status: ' '{print "job2 status: " $2}' | awk -F', ' '{print $1}')
+           comp_status_phase1_job2=$(echo "$comp_status_phase1" | awk -F'job2 status: ' '{print "job2 status: " $2}' | awk -F', ' '{print $1}')
            echo "::set-output name=comp-status-phase1-job2::$comp_status_phase1_job2"
            
            #echo "ComponentJobStatus-for-Phase2:"
