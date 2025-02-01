@@ -54,7 +54,7 @@ jobs:
           #echo "compjob1=${{ needs.job1.result }}" >> $GITHUB_OUTPUT
           #echo "compjob2=${{ needs.job2.result }}" >> $GITHUB_OUTPUT
           
-          compjob="Job1 status: ${{ needs.job1.result }}, "
-          compjob+="Job2 status: ${{ needs.job2.result }}"
+          compjob="job1 status: ${{ needs.job1.result }}, "
+          compjob+="job2 status: ${{ needs.job2.result }}"
           echo "compjob=$compjob" >> $GITHUB_OUTPUT
  
