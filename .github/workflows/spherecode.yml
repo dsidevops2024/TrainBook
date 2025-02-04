@@ -270,9 +270,9 @@ jobs:
           
           echo "ComponentJobStatus-for-Phase1:"
           echo "${{ needs.report-job-status.outputs.ComponentJobStatus_for_Phase1 }}"
-          echo "ComponentJobStatus-for-Phase1-job1:"
+
           echo "${{ needs.report-job-status.outputs.ComponentJobStatus_for_Phase1_job1 }}"
-          echo "ComponentJobStatus-for-Phase1-job2:"
+          
           echo "${{ needs.report-job-status.outputs.ComponentJobStatus_for_Phase1_job2 }}"
           
           echo "ComponentJobStatus-for-Phase2:"
