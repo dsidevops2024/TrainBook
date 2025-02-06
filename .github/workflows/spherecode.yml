@@ -157,13 +157,13 @@ jobs:
        - name: Report job statuses
          id: report-status
          run: |
-           #ControllerJobStatus=""
-           #ControllerJobStatus="job1 status: ${{ needs.check-component-input.result }}, "
-           #ControllerJobStatus+="job2 status: ${{ needs.create-environment-matrix.result }}, "
-           #ControllerJobStatus+="job3 status: ${{ needs.set-environment-runner.result }}"
+           ControllerJobStatus=""
+           ControllerJobStatus="job1 status: ${{ needs.check-component-input.result }}, "
+           ControllerJobStatus+="job2 status: ${{ needs.create-environment-matrix.result }}, "
+           ControllerJobStatus+="job3 status: ${{ needs.set-environment-runner.result }}"
 
            # Print job statuses with each status on a new line
-           #echo "ControllerJobStatus:"
+           echo "ControllerJobStatus:"
            #echo "$ControllerJobStatus" | tr ',' '\n' | sed 's/^ *//;s/ *$//'
 
            phase_status="${{ needs.call-phase.outputs.phase-status }}"
