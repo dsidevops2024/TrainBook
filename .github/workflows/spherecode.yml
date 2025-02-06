@@ -193,13 +193,22 @@ jobs:
            echo "$ControllerJobStatus:"
            echo "::set-output name=Controller-Job-Status::$ControllerJobStatus"
 
-           # Loop through the job statuses (job1, job2, job3)
+           # Loop through the jobs and dynamically extract each status
            for job in 1 2 3; do
-             # Dynamically extract the status for each job
-           job_status=$(echo "$ControllerJobStatus" | awk -F"job$job status: " '{print "job" $job " status: " $2}' | awk -F', ' '{print $1}')
-            # Set the output for each job dynamically
-           echo "::set-output name=controller-Job$job-status::$job_status"
+           # Use awk to correctly extract the status for each job
+           job_status=$(echo "$ControllerJobStatus" | awk -v job="$job" -F"job$job status: " '{print $2}' | awk -F', ' '{print $1}')
+
+           # Set the output for each job dynamically
+           echo "::set-output name=controller-Job$job-status::job$job status: $job_status"
            done
+           
+           # Loop through the job statuses (job1, job2, job3)
+           #for job in 1 2 3; do
+             # Dynamically extract the status for each job
+           #job_status=$(echo "$ControllerJobStatus" | awk -F"job$job status: " '{print "job" $job " status: " $2}' | awk -F', ' '{print $1}')
+            # Set the output for each job dynamically
+           #echo "::set-output name=controller-Job$job-status::$job_status"
+           #done
            
            phase_status="${{ needs.call-phase.outputs.phase-status }}"
            echo "OverallPhaseJobStatus:"
