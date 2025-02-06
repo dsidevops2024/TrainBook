@@ -51,7 +51,7 @@ jobs:
       - name: Report job statuses
         id: report-status
         run: |
-          compjob="${{ needs.job1.result }}, "
-          compjob+="${{ needs.job2.result }}"
+          compjob="job1 status: ${{ needs.job1.result }}, "
+          compjob+="job1 status: ${{ needs.job2.result }}"
           echo "compjob=$compjob" >> $GITHUB_OUTPUT
  
