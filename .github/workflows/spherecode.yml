@@ -189,17 +189,23 @@ jobs:
            echo "$phase_status"
            echo "::set-output name=overall-phase-status::$phase_status"
 
+            # Loop to set phase status for 1, 2, and 3
+           for phase in 1 2 3; do
+             phase_status_value=$(echo "$phase_status" | awk -F"phase $phase status: " '{print $2}' | awk -F', ' '{print $1}')
+             echo "::set-output name=overall-job-status-phase$phase::$phase_status_value"
+           done
+           
            # set phase1 status 
-           phase1_status=$(echo "$phase_status" | awk -F'phase 1 status: ' '{print "phase 1 status: " $2}' | awk -F', ' '{print $1}')
-           echo "::set-output name=overall-job-status-phase1::$phase1_status"
+           #phase1_status=$(echo "$phase_status" | awk -F'phase 1 status: ' '{print "phase 1 status: " $2}' | awk -F', ' '{print $1}')
+           #echo "::set-output name=overall-job-status-phase1::$phase1_status"
 
            # set phase2 status 
-           phase2_status=$(echo "$phase_status" | awk -F'phase 2 status: ' '{print "phase 2 status: " $2}' | awk -F', ' '{print $1}')
-           echo "::set-output name=overall-job-status-phase2::$phase2_status"
+           #phase2_status=$(echo "$phase_status" | awk -F'phase 2 status: ' '{print "phase 2 status: " $2}' | awk -F', ' '{print $1}')
+           #echo "::set-output name=overall-job-status-phase2::$phase2_status"
 
            # set phase3 status
-           phase3_status=$(echo "$phase_status" | awk -F'phase 3 status: ' '{print "phase 3 status: " $2}' | awk -F', ' '{print $1}')
-           echo "::set-output name=overall-job-status-phase3::$phase3_status"
+           #phase3_status=$(echo "$phase_status" | awk -F'phase 3 status: ' '{print "phase 3 status: " $2}' | awk -F', ' '{print $1}')
+           #echo "::set-output name=overall-job-status-phase3::$phase3_status"
 
            # Component job status for Phase 1 using grep
            comp_status_phase1="${{ needs.call-phase.outputs.comp-status-phase1 }}"
