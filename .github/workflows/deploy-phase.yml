@@ -70,8 +70,8 @@ jobs:
           #echo "comp01status:${{ needs.Phase2.outputs.compstatus1 }}" 
           #echo "comp02status:${{ needs.Phase2.outputs.compstatus2 }}"
 
-          Phasestatus="${{ needs.Phase1.result }}, " 
-          Phasestatus+="${{ needs.Phase2.result }}, "
-          Phasestatus+="${{ needs.Phase3.result }}"
+          Phasestatus="phase 1 status: ${{ needs.Phase1.result }}, " 
+          Phasestatus+="phase 2 status: ${{ needs.Phase2.result }}, "
+          Phasestatus+="phase 3 status: ${{ needs.Phase3.result }}"
           echo "Phasestatus=$Phasestatus" >> $GITHUB_OUTPUT  
           
