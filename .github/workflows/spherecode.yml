@@ -162,27 +162,44 @@ jobs:
        - name: Report job statuses
          id: report-status
          run: |
-           ControllerJobStatus=""
+           #ControllerJobStatus=""
+           #ControllerJobStatus="job1 status: ${{ needs.check-component-input.result }}, "
+           #ControllerJobStatus+="job2 status: ${{ needs.create-environment-matrix.result }}, "
+           #ControllerJobStatus+="job3 status: ${{ needs.set-environment-runner.result }}"
+
+           # Print job statuses with each status on a new line
+           #echo "$ControllerJobStatus:"
+           #echo "$ControllerJobStatus" | tr ',' '\n' | sed 's/^ *//;s/ *$//'
+           #echo "::set-output name=Controller-Job-Status::$ControllerJobStatus"
+
+            # set controllerjob1 status 
+           #controller_Job1_status=$(echo "$ControllerJobStatus" | awk -F'job1 status: ' '{print "job1 status: " $2}' | awk -F', ' '{print $1}')
+           #echo "::set-output name=controller-Job1-status::$controller_Job1_status"
+
+           # set controllerjob2 status 
+           #controller_Job2_status=$(echo "$ControllerJobStatus" | awk -F'job2 status: ' '{print "job2 status: " $2}' | awk -F', ' '{print $1}')
+           #echo "::set-output name=controller-Job2-status::$controller_Job2_status"
+
+           # set controllerjob3 status 
+           #controller_Job3_status=$(echo "$ControllerJobStatus" | awk -F'job3 status: ' '{print "job3 status: " $2}' | awk -F', ' '{print $1}')
+           #echo "::set-output name=controller-Job3-status::$controller_Job3_status"
+
+           # Initialize ControllerJobStatus
            ControllerJobStatus="job1 status: ${{ needs.check-component-input.result }}, "
            ControllerJobStatus+="job2 status: ${{ needs.create-environment-matrix.result }}, "
            ControllerJobStatus+="job3 status: ${{ needs.set-environment-runner.result }}"
 
            # Print job statuses with each status on a new line
            echo "$ControllerJobStatus:"
-           #echo "$ControllerJobStatus" | tr ',' '\n' | sed 's/^ *//;s/ *$//'
            echo "::set-output name=Controller-Job-Status::$ControllerJobStatus"
 
-            # set controllerjob1 status 
-           controller_Job1_status=$(echo "$ControllerJobStatus" | awk -F'job1 status: ' '{print "job1 status: " $2}' | awk -F', ' '{print $1}')
-           echo "::set-output name=controller-Job1-status::$controller_Job1_status"
-
-           # set controllerjob2 status 
-           controller_Job2_status=$(echo "$ControllerJobStatus" | awk -F'job2 status: ' '{print "job2 status: " $2}' | awk -F', ' '{print $1}')
-           echo "::set-output name=controller-Job2-status::$controller_Job2_status"
-
-           # set controllerjob3 status 
-           controller_Job3_status=$(echo "$ControllerJobStatus" | awk -F'job3 status: ' '{print "job3 status: " $2}' | awk -F', ' '{print $1}')
-           echo "::set-output name=controller-Job3-status::$controller_Job3_status"
+           # Loop through the job statuses (job1, job2, job3)
+           for job in 1 2 3; do
+             # Dynamically extract the status for each job
+           job_status=$(echo "$ControllerJobStatus" | awk -F"job$job status: " '{print "job" $job " status: " $2}' | awk -F', ' '{print $1}')
+            # Set the output for each job dynamically
+           echo "::set-output name=controller-Job$job-status::$job_status"
+           done
            
            phase_status="${{ needs.call-phase.outputs.phase-status }}"
            echo "OverallPhaseJobStatus:"
