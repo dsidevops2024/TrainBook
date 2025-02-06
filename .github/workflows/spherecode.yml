@@ -277,6 +277,14 @@ jobs:
     steps:
       - name: Use the outputs from report-job-status
         run: |
+          echo "ControllerJobStatus:"
+          echo "${{ needs.report-job-status.outputs.Controller_Job_Status }}"
+          echo "ControllerJob1Status:"
+          echo "${{ needs.report-job-status.outputs.Controller_Job1_Status }}"
+          echo "ControllerJob2Status:"
+          echo "${{ needs.report-job-status.outputs.Controller_Job2_Status }}"
+          echo "ControllerJob3Status:"
+          echo "${{ needs.report-job-status.outputs.Controller_Job3_Status }}"
           echo "OverallPhaseJobStatus:"
           echo "${{ needs.report-job-status.outputs.OverallPhaseJobStatus }}"
           echo "Overall_Job_Status_phase1:"
