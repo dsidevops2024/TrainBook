@@ -208,26 +208,27 @@ jobs:
            #echo "::set-output name=overall-job-status-phase3::$phase3_status"
 
            for phase in 1 2 3; do
-             comp_status="${{ needs.call-phase.outputs.comp-status-phase$phase }}"
+            # Use separate expressions for each phase instead of dynamic interpolation
+           comp_status="${{ needs.call-phase.outputs['comp-status-phase'${phase}] }}"
 
-             # Display component status for the current phase
-             echo "ComponentJobStatus-for-Phase$phase:"
-             echo "$comp_status"
-             echo "::set-output name=comp-status-phase$phase::$comp_status"
+           # Display component status for the current phase
+           echo "ComponentJobStatus-for-Phase$phase:"
+           echo "$comp_status"
+           echo "::set-output name=comp-status-phase$phase::$comp_status"
 
             # Check if comp_status is empty (i.e., the job was skipped)
-             if [ -z "$comp_status" ]; then
-               comp_status_job1="job1 status: skipped"
-               comp_status_job2="job2 status: skipped"
-             else
-               # Extract job1 and job2 statuses from the component status using awk
-               comp_status_job1=$(echo "$comp_status" | awk -F'job1 status: ' '{print "job1 status: " $2}' | awk -F', ' '{print $1}' | sed 's/^ *//;s/ *$//' || echo "job1 status: not available")
-               comp_status_job2=$(echo "$comp_status" | awk -F'job2 status: ' '{print "job2 status: " $2}' | awk -F', ' '{print $1}' | sed 's/^ *//;s/ *$//' || echo "job2 status: not available")
-             fi
+            if [ -z "$comp_status" ]; then
+              comp_status_job1="job1 status: skipped"
+              comp_status_job2="job2 status: skipped"
+            else
+              # Extract job1 and job2 statuses from the component status using awk
+             comp_status_job1=$(echo "$comp_status" | awk -F'job1 status: ' '{print "job1 status: " $2}' | awk -F', ' '{print $1}' | sed 's/^ *//;s/ *$//' || echo "job1 status: not available")
+             comp_status_job2=$(echo "$comp_status" | awk -F'job2 status: ' '{print "job2 status: " $2}' | awk -F', ' '{print $1}' | sed 's/^ *//;s/ *$//' || echo "job2 status: not available")
+            fi
 
-             # Output the job statuses for the current phase
-             echo "::set-output name=comp-status-phase$phase-job1::$comp_status_job1"
-             echo "::set-output name=comp-status-phase$phase-job2::$comp_status_job2"
+           # Output the job statuses for the current phase
+           echo "::set-output name=comp-status-phase$phase-job1::$comp_status_job1"
+           echo "::set-output name=comp-status-phase$phase-job2::$comp_status_job2"
            done
            
            # Component job status for Phase 1 using grep
