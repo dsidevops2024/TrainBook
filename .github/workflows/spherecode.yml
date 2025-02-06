@@ -163,7 +163,7 @@ jobs:
            ControllerJobStatus+="job3 status: ${{ needs.set-environment-runner.result }}"
 
            # Print job statuses with each status on a new line
-           echo "ControllerJobStatus:"
+           echo "$ControllerJobStatus:"
            #echo "$ControllerJobStatus" | tr ',' '\n' | sed 's/^ *//;s/ *$//'
 
            phase_status="${{ needs.call-phase.outputs.phase-status }}"
