@@ -139,6 +139,11 @@ jobs:
      needs: [check-component-input, create-environment-matrix, set-environment-runner, call-phase]
      runs-on: ubuntu-latest
      outputs:
+        Controller_Job_Status: ${{ steps.report-status.outputs.Controller-Job-Status }}
+        Controller_Job1_Status: ${{ steps.report-status.outputs.controller-Job1-status }}
+        Controller_Job2_Status: ${{ steps.report-status.outputs.controller-Job2-status }}
+        Controller_Job3_Status: ${{ steps.report-status.outputs.controller-Job3-status }}
+        
         OverallPhaseJobStatus: ${{ steps.report-status.outputs.overall-phase-status }}
         Overall_Job_Status_phase1: ${{ steps.report-status.outputs.overall-job-status-phase1 }}
         Overall_Job_Status_phase2: ${{ steps.report-status.outputs.overall-job-status-phase2 }}
@@ -165,7 +170,20 @@ jobs:
            # Print job statuses with each status on a new line
            echo "$ControllerJobStatus:"
            #echo "$ControllerJobStatus" | tr ',' '\n' | sed 's/^ *//;s/ *$//'
+           echo "::set-output name=Controller-Job-Status::$ControllerJobStatus"
 
+            # set controllerjob1 status 
+           controller_Job1_status=$(echo "$ControllerJobStatus" | awk -F'job1 status: ' '{print "job1 status: " $2}' | awk -F', ' '{print $1}')
+           echo "::set-output name=controller-Job1-status::$controller_Job1_status"
+
+           # set controllerjob2 status 
+           controller_Job2_status=$(echo "$ControllerJobStatus" | awk -F'job2 status: ' '{print "job2 status: " $2}' | awk -F', ' '{print $1}')
+           echo "::set-output name=controller-Job2-status::$controller_Job2_status"
+
+           # set controllerjob3 status 
+           controller_Job3_status=$(echo "$ControllerJobStatus" | awk -F'job3 status: ' '{print "job3 status: " $2}' | awk -F', ' '{print $1}')
+           echo "::set-output name=controller-Job3-status::$controller_Job3_status"
+           
            phase_status="${{ needs.call-phase.outputs.phase-status }}"
            echo "OverallPhaseJobStatus:"
            echo "$phase_status"
