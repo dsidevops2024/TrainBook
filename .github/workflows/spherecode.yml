@@ -162,7 +162,7 @@ jobs:
        - name: Report job statuses
          id: report-status
          run: |
-           pwsh .\scripts\report-job-status.ps1 "${{ needs.check-component-input.result }}" \
+           pwsh ./scripts/report-job-status.ps1 "${{ needs.check-component-input.result }}" \
                                               "${{ needs.create-environment-matrix.result }}" \
                                               "${{ needs.set-environment-runner.result }}" \
                                               "${{ needs.call-phase.outputs.phase-status }}" \
