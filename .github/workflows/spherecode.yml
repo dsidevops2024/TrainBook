@@ -162,6 +162,14 @@ jobs:
        - name: Report job statuses
          id: report-status
          run: |
+           pwsh .\scripts\report-job-status.ps1 "${{ needs.check-component-input.result }}" \
+                                              "${{ needs.create-environment-matrix.result }}" \
+                                              "${{ needs.set-environment-runner.result }}" \
+                                              "${{ needs.call-phase.outputs.phase-status }}" \
+                                              "${{ needs.call-phase.outputs.comp-status-phase1 }}" \
+                                              "${{ needs.call-phase.outputs.comp-status-phase2 }}" \
+                                              "${{ needs.call-phase.outputs.comp-status-phase3 }}"
+
            #ControllerJobStatus=""
            #ControllerJobStatus="job1 status: ${{ needs.check-component-input.result }}, "
            #ControllerJobStatus+="job2 status: ${{ needs.create-environment-matrix.result }}, "
@@ -183,41 +191,41 @@ jobs:
            # set controllerjob3 status 
            #controller_Job3_status=$(echo "$ControllerJobStatus" | awk -F'job3 status: ' '{print "job3 status: " $2}' | awk -F', ' '{print $1}')
            #echo "::set-output name=controller-Job3-status::$controller_Job3_status"
-
+           #********************
            # Initialize ControllerJobStatus
-           ControllerJobStatus="job1 status: ${{ needs.check-component-input.result }}, "
-           ControllerJobStatus+="job2 status: ${{ needs.create-environment-matrix.result }}, "
-           ControllerJobStatus+="job3 status: ${{ needs.set-environment-runner.result }}"
+           #ControllerJobStatus="job1 status: ${{ needs.check-component-input.result }}, "
+           #ControllerJobStatus+="job2 status: ${{ needs.create-environment-matrix.result }}, "
+           #ControllerJobStatus+="job3 status: ${{ needs.set-environment-runner.result }}"
 
            # Print job statuses with each status on a new line
-           echo "$ControllerJobStatus:"
-           echo "::set-output name=Controller-Job-Status::$ControllerJobStatus"
+           #echo "$ControllerJobStatus:"
+           #echo "::set-output name=Controller-Job-Status::$ControllerJobStatus"
 
            # Loop through the jobs and dynamically extract each status
-           for job in 1 2 3; do
+           #for job in 1 2 3; do
            # Use awk to correctly extract the status for each job
-           job_status=$(echo "$ControllerJobStatus" | awk -v job="$job" -F"job$job status: " '{print $2}' | awk -F', ' '{print $1}')
+           #job_status=$(echo "$ControllerJobStatus" | awk -v job="$job" -F"job$job status: " '{print $2}' | awk -F', ' '{print $1}')
 
            # Set the output for each job dynamically
-           echo "::set-output name=controller-Job$job-status::job$job status: $job_status"
-           done
+           #echo "::set-output name=controller-Job$job-status::job$job status: $job_status"
+           #done
            
-           phase_status="${{ needs.call-phase.outputs.phase-status }}"
-           echo "OverallPhaseJobStatus:"
-           echo "$phase_status"
-           echo "::set-output name=overall-phase-status::$phase_status"
+           #phase_status="${{ needs.call-phase.outputs.phase-status }}"
+           #echo "OverallPhaseJobStatus:"
+           #echo "$phase_status"
+           #echo "::set-output name=overall-phase-status::$phase_status"
 
             # Loop to set phase status for 1, 2, and 3
            #for phase in 1 2 3; do
              #phase_status_value=$(echo "$phase_status" | awk -F"phase $phase status: " '{print "phase $phase status: " $2}' | awk -F', ' '{print $1}')
              #echo "::set-output name=overall-job-status-phase$phase::$phase_status_value"
            #done
-
-           for phase in 1 2 3; do
+           #*******************************
+           #for phase in 1 2 3; do
               # Use awk to dynamically extract the status for each phase
-             phase_status_value=$(echo "$phase_status" | awk -v phase="$phase" -F"phase $phase status: " '{print "phase " phase " status: " $2}' | awk -F', ' '{print $1}')
-             echo "::set-output name=overall-job-status-phase$phase::$phase_status_value"
-           done
+             #phase_status_value=$(echo "$phase_status" | awk -v phase="$phase" -F"phase $phase status: " '{print "phase " phase " status: " $2}' | awk -F', ' '{print $1}')
+             #echo "::set-output name=overall-job-status-phase$phase::$phase_status_value"
+           #done
            
            # set phase1 status 
            #phase1_status=$(echo "$phase_status" | awk -F'phase 1 status: ' '{print "phase 1 status: " $2}' | awk -F', ' '{print $1}')
@@ -230,37 +238,37 @@ jobs:
            # set phase3 status
            #phase3_status=$(echo "$phase_status" | awk -F'phase 3 status: ' '{print "phase 3 status: " $2}' | awk -F', ' '{print $1}')
            #echo "::set-output name=overall-job-status-phase3::$phase3_status"
-
+           #******************
            # Loop to handle component job status for all three phases
-           for phase in 1 2 3; do
+           #for phase in 1 2 3; do
             # Explicitly reference each phase instead of using dynamic interpolation
-            if [ $phase -eq 1 ]; then
-              comp_status="${{ needs.call-phase.outputs.comp-status-phase1 }}"
-            elif [ $phase -eq 2 ]; then
-              comp_status="${{ needs.call-phase.outputs.comp-status-phase2 }}"
-            elif [ $phase -eq 3 ]; then
-              comp_status="${{ needs.call-phase.outputs.comp-status-phase3 }}"
-            fi
+            #if [ $phase -eq 1 ]; then
+              #comp_status="${{ needs.call-phase.outputs.comp-status-phase1 }}"
+            #elif [ $phase -eq 2 ]; then
+              #comp_status="${{ needs.call-phase.outputs.comp-status-phase2 }}"
+            #elif [ $phase -eq 3 ]; then
+              #comp_status="${{ needs.call-phase.outputs.comp-status-phase3 }}"
+            #fi
 
            # Display component status for the current phase
-           echo "ComponentJobStatus-for-Phase$phase:"
-           echo "$comp_status"
-           echo "::set-output name=comp-status-phase$phase::$comp_status"
+           #echo "ComponentJobStatus-for-Phase$phase:"
+           #echo "$comp_status"
+           #echo "::set-output name=comp-status-phase$phase::$comp_status"
 
            # Check if comp_status is empty (i.e., the job was skipped)
-           if [ -z "$comp_status" ]; then
-             comp_status_job1="job1 status: skipped"
-             comp_status_job2="job2 status: skipped"
-           else
+           #if [ -z "$comp_status" ]; then
+             #comp_status_job1="job1 status: skipped"
+             #comp_status_job2="job2 status: skipped"
+           #else
             # Extract job1 and job2 statuses from the component status using awk
-           comp_status_job1=$(echo "$comp_status" | awk -F'job1 status: ' '{print "job1 status: " $2}' | awk -F', ' '{print $1}' | sed 's/^ *//;s/ *$//' || echo "job1 status: not available")
-           comp_status_job2=$(echo "$comp_status" | awk -F'job2 status: ' '{print "job2 status: " $2}' | awk -F', ' '{print $1}' | sed 's/^ *//;s/ *$//' || echo "job2 status: not available")
-           fi
+           #comp_status_job1=$(echo "$comp_status" | awk -F'job1 status: ' '{print "job1 status: " $2}' | awk -F', ' '{print $1}' | sed 's/^ *//;s/ *$//' || echo "job1 status: not available")
+           #comp_status_job2=$(echo "$comp_status" | awk -F'job2 status: ' '{print "job2 status: " $2}' | awk -F', ' '{print $1}' | sed 's/^ *//;s/ *$//' || echo "job2 status: not available")
+           #fi
 
            # Output the job statuses for the current phase
-           echo "::set-output name=comp-status-phase$phase-job1::$comp_status_job1"
-           echo "::set-output name=comp-status-phase$phase-job2::$comp_status_job2"
-           done
+           #echo "::set-output name=comp-status-phase$phase-job1::$comp_status_job1"
+           #echo "::set-output name=comp-status-phase$phase-job2::$comp_status_job2"
+           #done
            
            # Component job status for Phase 1 using grep
            #comp_status_phase1="${{ needs.call-phase.outputs.comp-status-phase1 }}"
