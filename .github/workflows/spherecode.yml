@@ -208,8 +208,14 @@ jobs:
            echo "::set-output name=overall-phase-status::$phase_status"
 
             # Loop to set phase status for 1, 2, and 3
+           #for phase in 1 2 3; do
+             #phase_status_value=$(echo "$phase_status" | awk -F"phase $phase status: " '{print "phase $phase status: " $2}' | awk -F', ' '{print $1}')
+             #echo "::set-output name=overall-job-status-phase$phase::$phase_status_value"
+           #done
+
            for phase in 1 2 3; do
-             phase_status_value=$(echo "$phase_status" | awk -F"phase $phase status: " '{print "phase $phase status: " $2}' | awk -F', ' '{print $1}')
+              # Use awk to dynamically extract the status for each phase
+             phase_status_value=$(echo "$phase_status" | awk -v phase="$phase" -F"phase $phase status: " '{print "phase " phase " status: " $2}' | awk -F', ' '{print $1}')
              echo "::set-output name=overall-job-status-phase$phase::$phase_status_value"
            done
            
