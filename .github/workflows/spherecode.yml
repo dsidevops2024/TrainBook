@@ -217,7 +217,9 @@ jobs:
 
             # Loop to set phase status for 1, 2, and 3
            for phase in 1 2 3; do
-             phase_status_value=$(echo "$phase_status" | awk -F"phase $phase status: " '{print "phase $phase status: " $2}' | awk -F', ' '{print $1}')
+             #phase_status_value=$(echo "$phase_status" | awk -F"phase $phase status: " '{print "phase $phase status: " $2}' | awk -F', ' '{print $1}')
+             #job_status=$(echo "$ControllerJobStatus" | awk -v job="$job" -F"job$job status: " '{print $2}' | awk -F', ' '{print $1}')
+             phase_status_value=$(echo "$phase_status" | awk -v phase=$phase -F"phase $phase status: " '{print "phase $phase status: " $2}' | awk -F', ' '{print $1}')
              echo "::set-output name=overall-job-status-phase$phase::$phase_status_value"
            done
            
