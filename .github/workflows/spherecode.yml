@@ -159,9 +159,6 @@ jobs:
         ComponentJobStatus_for_Phase3_job1: ${{ steps.report-status.outputs.comp-status-phase3-job1 }}
         ComponentJobStatus_for_Phase3_job2: ${{ steps.report-status.outputs.comp-status-phase3-job2 }}
      steps:
-       - name: Set execution policy
-         run: |
-           pwsh -Command "Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass"
        - name: Report job statuses
          id: report-status
          run: |
