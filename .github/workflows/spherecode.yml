@@ -159,12 +159,20 @@ jobs:
         ComponentJobStatus_for_Phase3_job1: ${{ steps.report-status.outputs.comp-status-phase3-job1 }}
         ComponentJobStatus_for_Phase3_job2: ${{ steps.report-status.outputs.comp-status-phase3-job2 }}
      steps:
+       - name: Set execution policy
+         run: |
+           pwsh -Command "Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass"
        - name: Report job statuses
          id: report-status
          run: |
-           #.\.github\scripts\report-job-status.ps1 ${{ needs.check-component-input.result }}  ${{ needs.create-environment-matrix.result }} ${{ needs.set-environment-runner.result }} ${{ needs.call-phase.outputs.phase-status }} ${{ needs.call-phase.outputs.comp-status-phase1 }} ${{ needs.call-phase.outputs.comp-status-phase2 }} ${{ needs.call-phase.outputs.comp-status-phase3 }}
-           ./.github/scripts/report-job-status.ps1 '${{ needs.check-component-input.result }}' '${{ needs.create-environment-matrix.result }}' '${{ needs.set-environment-runner.result }}' '${{ needs.call-phase.outputs.phase-status }}' '${{ needs.call-phase.outputs.comp-status-phase1 }}' '${{ needs.call-phase.outputs.comp-status-phase2 }}' '${{ needs.call-phase.outputs.comp-status-phase3 }}'
+           pwsh -File .\.github\scripts\report-job-status.ps1 '${{ needs.check-component-input.result }}' '${{ needs.create-environment-matrix.result }}' '${{ needs.set-environment-runner.result }}' '${{ needs.call-phase.outputs.phase-status }}' '${{ needs.call-phase.outputs.comp-status-phase1 }}' '${{ needs.call-phase.outputs.comp-status-phase2 }}' '${{ needs.call-phase.outputs.comp-status-phase3 }}'
          shell: pwsh
+       #- name: Report job statuses
+         #id: report-status
+         #run: |
+           #.\.github\scripts\report-job-status.ps1 ${{ needs.check-component-input.result }}  ${{ needs.create-environment-matrix.result }} ${{ needs.set-environment-runner.result }} ${{ needs.call-phase.outputs.phase-status }} ${{ needs.call-phase.outputs.comp-status-phase1 }} ${{ needs.call-phase.outputs.comp-status-phase2 }} ${{ needs.call-phase.outputs.comp-status-phase3 }}
+           #./.github/scripts/report-job-status.ps1 '${{ needs.check-component-input.result }}' '${{ needs.create-environment-matrix.result }}' '${{ needs.set-environment-runner.result }}' '${{ needs.call-phase.outputs.phase-status }}' '${{ needs.call-phase.outputs.comp-status-phase1 }}' '${{ needs.call-phase.outputs.comp-status-phase2 }}' '${{ needs.call-phase.outputs.comp-status-phase3 }}'
+         #shell: pwsh
            #ControllerJobStatus=""
            #ControllerJobStatus="job1 status: ${{ needs.check-component-input.result }}, "
            #ControllerJobStatus+="job2 status: ${{ needs.create-environment-matrix.result }}, "
