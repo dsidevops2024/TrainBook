@@ -1,4 +1,3 @@
-# report-job-status.ps1
 param (
     [string]$componentInputResult,
     [string]$environmentMatrixResult,
