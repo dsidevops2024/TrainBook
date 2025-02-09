@@ -9,7 +9,8 @@ param (
 )
 
 # Initialize ControllerJobStatus with all job results concatenated
-$ControllerJobStatus = "job1 status: $componentInputResult, job2 status: $environmentMatrixResult, job3 status: $environmentRunnerResult"
+#$ControllerJobStatus = "job1 status: $componentInputResult, job2 status: $environmentMatrixResult, job3 status: $environmentRunnerResult"
+$ControllerJobStatus = "check-component-input status: $componentInputResult, create-environment-matrix: $environmentMatrixResult, set-environment-runner: $environmentRunnerResult"
 Write-Host "ControllerJobStatus: $ControllerJobStatus"
 Write-Output "::set-output name=Controller-Job-Status::$ControllerJobStatus"
 
@@ -38,7 +39,8 @@ for ($phase = 1; $phase -le 3; $phase++) {
 }
 
 # Output OverallPhaseJobStatus by concatenating all phase statuses with commas
-$OverallPhaseJobStatus = "phase 1 status: $($phaseStatuses[0].Status), phase 2 status: $($phaseStatuses[1].Status), phase 3 status: $($phaseStatuses[2].Status)"
+#$OverallPhaseJobStatus = "phase 1 status: $($phaseStatuses[0].Status), phase 2 status: $($phaseStatuses[1].Status), phase 3 status: $($phaseStatuses[2].Status)"
+$OverallPhaseJobStatus = "Firstphase status: $($phaseStatuses[0].Status), Secondphase status: $($phaseStatuses[1].Status), Thirdphase status: $($phaseStatuses[2].Status)"
 
 # Remove any unwanted trailing commas
 $OverallPhaseJobStatus = $OverallPhaseJobStatus -replace ",\s*$", ""
@@ -59,19 +61,33 @@ for ($phase = 1; $phase -le 3; $phase++) {
 
     # Initialize component job statuses for phase 1, 2, and 3
     if ([string]::IsNullOrEmpty($compStatus)) {
-        $comp_status_job1 = "job1 status: skipped"
-        $comp_status_job2 = "job2 status: skipped"
+        #$comp_status_job1 = "job1 status: skipped"
+        #$comp_status_job2 = "job2 status: skipped"
+        $comp_status_job1 = "Firstcomponent status: skipped"
+        $comp_status_job2 = "Secondcomponent status: skipped"
     } else {
-        if ($compStatus -match "job1 status: (\S+)") {
-            $comp_status_job1 = "job1 status: $($matches[1].Trim())"
+        #if ($compStatus -match "job1 status: (\S+)") {
+            #$comp_status_job1 = "job1 status: $($matches[1].Trim())"
+        #} else {
+            #$comp_status_job1 = "job1 status: Unknown"
+        #}
+
+        #if ($compStatus -match "job2 status: (\S+)") {
+            #$comp_status_job2 = "job2 status: $($matches[1].Trim())"
+        #} else {
+            #$comp_status_job2 = "job2 status: Unknown"
+        #}
+    #}
+        if ($compStatus -match "Firstcomponent status: (\S+)") {
+            $comp_status_job1 = "Firstcomponent status: $($matches[1].Trim())"
         } else {
-            $comp_status_job1 = "job1 status: Unknown"
+            $comp_status_job1 = "Firstcomponent status: Unknown"
         }
 
-        if ($compStatus -match "job2 status: (\S+)") {
-            $comp_status_job2 = "job2 status: $($matches[1].Trim())"
+        if ($compStatus -match "Secondcomponent status: (\S+)") {
+            $comp_status_job2 = "Secondcomponent status: $($matches[1].Trim())"
         } else {
-            $comp_status_job2 = "job2 status: Unknown"
+            $comp_status_job2 = "Secondcomponent status: Unknown"
         }
     }
 
