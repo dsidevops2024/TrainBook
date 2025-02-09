@@ -37,7 +37,7 @@ for ($phase = 1; $phase -le 3; $phase++) {
     Write-Output "::set-output name=overall-job-status-phase$phase::phase $phase status: $($phaseStatusValue)"
 }
 
-# Output OverallPhaseJobStatus by concatenating all phase statuses
+# Output OverallPhaseJobStatus by concatenating all phase statuses with commas
 $OverallPhaseJobStatus = "phase 1 status: $($phaseStatuses[0].Status), phase 2 status: $($phaseStatuses[1].Status), phase 3 status: $($phaseStatuses[2].Status)"
 Write-Host "OverallPhaseJobStatus: $OverallPhaseJobStatus"
 Write-Output "::set-output name=OverallPhaseJobStatus::$OverallPhaseJobStatus"
@@ -84,7 +84,19 @@ for ($phase = 1; $phase -le 3; $phase++) {
 
 # Output component job statuses for each phase in a detailed manner
 foreach ($status in $componentStatuses) {
-    Write-Host "ComponentJobStatus-for-Phase$($status.Phase): $($status.CompStatus)"
-    Write-Host "ComponentJobStatus-for-Phase$($status.Phase)-job1: $($status.Job1Status)"
-    Write-Host "ComponentJobStatus-for-Phase$($status.Phase)-job2: $($status.Job2Status)"
+    # For Phase 2 and Phase 3, if status is empty or skipped, it will still show "skipped"
+    if ($status.Phase -eq 2 -or $status.Phase -eq 3) {
+        if ($status.CompStatus -eq "") {
+            Write-Host "ComponentJobStatus-for-Phase$($status.Phase): skipped"
+        } else {
+            Write-Host "ComponentJobStatus-for-Phase$($status.Phase): $($status.CompStatus)"
+        }
+
+        Write-Host "ComponentJobStatus-for-Phase$($status.Phase)-job1: $($status.Job1Status)"
+        Write-Host "ComponentJobStatus-for-Phase$($status.Phase)-job2: $($status.Job2Status)"
+    } else {
+        Write-Host "ComponentJobStatus-for-Phase$($status.Phase): $($status.CompStatus)"
+        Write-Host "ComponentJobStatus-for-Phase$($status.Phase)-job1: $($status.Job1Status)"
+        Write-Host "ComponentJobStatus-for-Phase$($status.Phase)-job2: $($status.Job2Status)"
+    }
 }
