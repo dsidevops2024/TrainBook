@@ -174,7 +174,7 @@ jobs:
          id: report-status
          shell: pwsh
          run: |
-           .\.github\scripts\report-job-status.ps1 `
+           .\.github\scripts\report-job-status-new.ps1 `
             -componentInputResult "${{ needs.check-component-input.result }}" `
             -environmentMatrixResult "${{ needs.create-environment-matrix.result }}" `
             -environmentRunnerResult "${{ needs.set-environment-runner.result }}" `
