@@ -162,8 +162,15 @@ jobs:
        - name: Report job statuses
          id: report-status
          run: |
-           pwsh -File .\.github\scripts\report-job-status.ps1 '${{ needs.check-component-input.result }}' '${{ needs.create-environment-matrix.result }}' '${{ needs.set-environment-runner.result }}' '${{ needs.call-phase.outputs.phase-status }}' '${{ needs.call-phase.outputs.comp-status-phase1 }}' '${{ needs.call-phase.outputs.comp-status-phase2 }}' '${{ needs.call-phase.outputs.comp-status-phase3 }}'
-         shell: pwsh
+            pwsh ./scripts/report-job-status.ps1 `
+            -componentInputResult "${{ needs.check-component-input.result }}" `
+            -environmentMatrixResult "${{ needs.create-environment-matrix.result }}" `
+            -environmentRunnerResult "${{ needs.set-environment-runner.result }}" `
+            -phaseStatus "${{ needs.call-phase.outputs.phase-status }}" `
+            -compStatusPhase1 "${{ needs.call-phase.outputs.comp-status-phase1 }}" `
+            -compStatusPhase2 "${{ needs.call-phase.outputs.comp-status-phase2 }}" `
+            -compStatusPhase3 "${{ needs.call-phase.outputs.comp-status-phase3 }}"
+            
        #- name: Report job statuses
          #id: report-status
          #run: |
