@@ -8,6 +8,15 @@ param (
     [string]$compStatusPhase3
 )
 
+# Debugging: Print the input values
+Write-Host "componentInputResult: $componentInputResult"
+Write-Host "environmentMatrixResult: $environmentMatrixResult"
+Write-Host "environmentRunnerResult: $environmentRunnerResult"
+Write-Host "phaseStatus: $phaseStatus"
+Write-Host "compStatusPhase1: $compStatusPhase1"
+Write-Host "compStatusPhase2: $compStatusPhase2"
+Write-Host "compStatusPhase3: $compStatusPhase3"
+
 # Initialize ControllerJobStatus with all job results concatenated
 $ControllerJobStatus = "check-component-input status: $componentInputResult, create-environment-matrix status: $environmentMatrixResult, set-environment-runner status: $environmentRunnerResult"
 Write-Host "ControllerJobStatus: $ControllerJobStatus"
@@ -21,6 +30,7 @@ $jobStatuses = @(
 )
 
 foreach ($job in $jobStatuses) {
+    Write-Host "ControllerJob$($job.Job)Status: $($job.Status)"
     Write-Output "::set-output name=controller-Job$($job.Job)-status::$($job.Job) status: $($job.Status)"
 }
 
@@ -29,13 +39,15 @@ $phaseStatuses = @()
 $phaseNames = @("Firstphase", "Secondphase", "Thirdphase")
 
 for ($phase = 1; $phase -le 3; $phase++) {
-    if ($phaseStatus -match "phase $phase status: (\S+)") {
+    if ($phaseStatus -match "$($phaseNames[$phase-1]) status: (\S+)") {
         $phaseStatusValue = $matches[1].Trim()
     } else {
+        Write-Host "$($phaseNames[$phase - 1]) status not matched or empty, setting to skipped"
         $phaseStatusValue = "skipped"  # Default value for empty or unmatched statuses
     }
 
     $phaseStatuses += [PSCustomObject]@{Phase = $phaseNames[$phase - 1]; Status = $phaseStatusValue}
+    Write-Host "Setting Overall Phase $phase Status: $($phaseNames[$phase - 1]) status: $($phaseStatusValue)"
     Write-Output "::set-output name=overall-job-status-$($phaseNames[$phase - 1])::${phaseNames[$phase - 1]} status: $($phaseStatusValue)"
 }
 
@@ -60,6 +72,9 @@ for ($phase = 1; $phase -le 3; $phase++) {
     if ($phase -eq 1) { $compStatus = $compStatusPhase1 }
     elseif ($phase -eq 2) { $compStatus = $compStatusPhase2 }
     elseif ($phase -eq 3) { $compStatus = $compStatusPhase3 }
+
+    # Debugging: Print each phase status
+    Write-Host "Processing Component for Phase $phase: $compStatus"
 
     # Initialize component job statuses for phase 1, 2, and 3
     if ([string]::IsNullOrEmpty($compStatus)) {
@@ -88,6 +103,7 @@ for ($phase = 1; $phase -le 3; $phase++) {
     }
 
     # Output component job statuses for each phase
+    Write-Host "Component Status for Phase $phase: $compStatus"
     Write-Output "::set-output name=comp-status-phase$phase::$compStatus"
     Write-Output "::set-output name=comp-status-phase$phase-job1::$comp_status_job1"
     Write-Output "::set-output name=comp-status-phase$phase-job2::$comp_status_job2"
@@ -95,19 +111,7 @@ for ($phase = 1; $phase -le 3; $phase++) {
 
 # Output component job statuses for each phase in a detailed manner with updated component names
 foreach ($status in $componentStatuses) {
-    # For Phase 2 and Phase 3, if status is empty or skipped, it will still show "skipped"
-    if ($status.Phase -eq "Secondphase" -or $status.Phase -eq "Thirdphase") {
-        if ($status.CompStatus -eq "") {
-            Write-Host "ComponentJobStatus-for-$($status.Phase): skipped"
-        } else {
-            Write-Host "ComponentJobStatus-for-$($status.Phase): $($status.CompStatus)"
-        }
-
-        Write-Host "ComponentJobStatus-for-$($status.Phase)-job1: $($status.Job1Status)"
-        Write-Host "ComponentJobStatus-for-$($status.Phase)-job2: $($status.Job2Status)"
-    } else {
-        Write-Host "ComponentJobStatus-for-$($status.Phase): $($status.CompStatus)"
-        Write-Host "ComponentJobStatus-for-$($status.Phase)-job1: $($status.Job1Status)"
-        Write-Host "ComponentJobStatus-for-$($status.Phase)-job2: $($status.Job2Status)"
-    }
+    Write-Host "ComponentJobStatus-for-$($status.Phase): $($status.CompStatus)"
+    Write-Host "ComponentJobStatus-for-$($status.Phase)-job1: $($status.Job1Status)"
+    Write-Host "ComponentJobStatus-for-$($status.Phase)-job2: $($status.Job2Status)"
 }
