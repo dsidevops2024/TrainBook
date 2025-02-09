@@ -84,19 +84,7 @@ for ($phase = 1; $phase -le 3; $phase++) {
 
 # Output component job statuses for each phase in a detailed manner
 foreach ($status in $componentStatuses) {
-    # For Phase 2 and Phase 3, if status is empty or skipped, it will still show "skipped"
-    if ($status.Phase -eq 2 -or $status.Phase -eq 3) {
-        if ($status.CompStatus -eq "") {
-            Write-Host "ComponentJobStatus-for-Phase$($status.Phase): skipped"
-        } else {
-            Write-Host "ComponentJobStatus-for-Phase$($status.Phase): $($status.CompStatus)"
-        }
-
-        Write-Host "ComponentJobStatus-for-Phase$($status.Phase)-job1: $($status.Job1Status)"
-        Write-Host "ComponentJobStatus-for-Phase$($status.Phase)-job2: $($status.Job2Status)"
-    } else {
-        Write-Host "ComponentJobStatus-for-Phase$($status.Phase): $($status.CompStatus)"
-        Write-Host "ComponentJobStatus-for-Phase$($status.Phase)-job1: $($status.Job1Status)"
-        Write-Host "ComponentJobStatus-for-Phase$($status.Phase)-job2: $($status.Job2Status)"
-    }
+    Write-Host "ComponentJobStatus-for-Phase$($status.Phase): $($status.CompStatus)"
+    Write-Host "ComponentJobStatus-for-Phase$($status.Phase)-job1: $($status.Job1Status)"
+    Write-Host "ComponentJobStatus-for-Phase$($status.Phase)-job2: $($status.Job2Status)"
 }
