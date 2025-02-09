@@ -159,7 +159,11 @@ jobs:
         ComponentJobStatus_for_Phase3_job1: ${{ steps.report-status.outputs.comp-status-phase3-job1 }}
         ComponentJobStatus_for_Phase3_job2: ${{ steps.report-status.outputs.comp-status-phase3-job2 }}
      steps:
-       - name: List files in the repository
+       - name: Checkout repository
+         uses: actions/checkout@v3
+
+       # List files in the repository
+       - name: List all files recursively
          run: ls -R
 
        - name: Report job statuses
