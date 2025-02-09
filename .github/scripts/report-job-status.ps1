@@ -38,7 +38,7 @@ for ($phase = 1; $phase -le 3; $phase++) {
     Write-Output "::set-output name=overall-job-status-phase$phase::phase $phase status: $($phaseStatusValue)"
 }
 
-# Output OverallPhaseJobStatus by concatenating all phase statuses with commas
+# Output OverallPhaseJobStatus by concatenating all phase statuses
 $OverallPhaseJobStatus = "phase 1 status: $($phaseStatuses[0].Status), phase 2 status: $($phaseStatuses[1].Status), phase 3 status: $($phaseStatuses[2].Status)"
 Write-Host "OverallPhaseJobStatus: $OverallPhaseJobStatus"
 Write-Output "::set-output name=OverallPhaseJobStatus::$OverallPhaseJobStatus"
