@@ -144,7 +144,8 @@ jobs:
         Controller_Job2_Status: ${{ steps.report-status.outputs.controller-Job2-status }}
         Controller_Job3_Status: ${{ steps.report-status.outputs.controller-Job3-status }}
         
-        OverallPhaseJobStatus: ${{ steps.report-status.outputs.overall-phase-status }}
+        #OverallPhaseJobStatus: ${{ steps.report-status.outputs.overall-phase-status }}
+        OverallPhaseJobStatus: ${{ steps.report-status.outputs.OverallPhaseJobStatus }}
         Overall_Job_Status_phase1: ${{ steps.report-status.outputs.overall-job-status-phase1 }}
         Overall_Job_Status_phase2: ${{ steps.report-status.outputs.overall-job-status-phase2 }}
         Overall_Job_Status_phase3: ${{ steps.report-status.outputs.overall-job-status-phase3 }}
