@@ -8,25 +8,16 @@ param (
     [string]$compStatusPhase3
 )
 
-# Debugging: Print the input values
-Write-Host "componentInputResult: $componentInputResult"
-Write-Host "environmentMatrixResult: $environmentMatrixResult"
-Write-Host "environmentRunnerResult: $environmentRunnerResult"
-Write-Host "phaseStatus: $phaseStatus"
-Write-Host "compStatusPhase1: $compStatusPhase1"
-Write-Host "compStatusPhase2: $compStatusPhase2"
-Write-Host "compStatusPhase3: $compStatusPhase3"
-
 # Initialize ControllerJobStatus with all job results concatenated
 $ControllerJobStatus = "check-component-input status: $componentInputResult, create-environment-matrix status: $environmentMatrixResult, set-environment-runner status: $environmentRunnerResult"
 Write-Host "ControllerJobStatus: $ControllerJobStatus"
 Write-Output "::set-output name=Controller-Job-Status::$ControllerJobStatus"
 
-# Output Controller job statuses individually with new job names
+# Output Controller job statuses individually
 $jobStatuses = @(
-    [PSCustomObject]@{Job = "check-component-input"; Status = $componentInputResult},
-    [PSCustomObject]@{Job = "create-environment-matrix"; Status = $environmentMatrixResult},
-    [PSCustomObject]@{Job = "set-environment-runner"; Status = $environmentRunnerResult}
+    [PSCustomObject]@{Job = 1; Status = $componentInputResult},
+    [PSCustomObject]@{Job = 2; Status = $environmentMatrixResult},
+    [PSCustomObject]@{Job = 3; Status = $environmentRunnerResult}
 )
 
 foreach ($job in $jobStatuses) {
@@ -34,25 +25,25 @@ foreach ($job in $jobStatuses) {
     Write-Output "::set-output name=controller-Job$($job.Job)-status::$($job.Job) status: $($job.Status)"
 }
 
-# Handle overall phase status for all 3 phases (success or skipped) with new phase names
+# Handle overall phase status for all 3 phases (success or skipped)
 $phaseStatuses = @()
-$phaseNames = @("Firstphase", "Secondphase", "Thirdphase")
-
 for ($phase = 1; $phase -le 3; $phase++) {
-    if ($phaseStatus -match "$($phaseNames[$phase-1]) status: (\S+)") {
+    if ($phaseStatus -match "Firstphase status: (\S+)") {
+        $phaseStatusValue = $matches[1].Trim()
+    } elseif ($phaseStatus -match "Secondphase status: (\S+)") {
+        $phaseStatusValue = $matches[1].Trim()
+    } elseif ($phaseStatus -match "Thirdphase status: (\S+)") {
         $phaseStatusValue = $matches[1].Trim()
     } else {
-        Write-Host "$($phaseNames[$phase - 1]) status not matched or empty, setting to skipped"
         $phaseStatusValue = "skipped"  # Default value for empty or unmatched statuses
     }
 
-    $phaseStatuses += [PSCustomObject]@{Phase = $phaseNames[$phase - 1]; Status = $phaseStatusValue}
-    Write-Host "Setting Overall Phase $phase Status: $($phaseNames[$phase - 1]) status: $($phaseStatusValue)"
-    Write-Output "::set-output name=overall-job-status-$($phaseNames[$phase - 1])::${phaseNames[$phase - 1]} status: $($phaseStatusValue)"
+    $phaseStatuses += [PSCustomObject]@{Phase = $phase; Status = $phaseStatusValue}
+    Write-Output "::set-output name=overall-job-status-phase$phase::phase$phase status: $($phaseStatusValue)"
 }
 
 # Output OverallPhaseJobStatus by concatenating all phase statuses with commas
-$OverallPhaseJobStatus = "$($phaseStatuses[0].Phase) status: $($phaseStatuses[0].Status), $($phaseStatuses[1].Phase) status: $($phaseStatuses[1].Status), $($phaseStatuses[2].Phase) status: $($phaseStatuses[2].Status)"
+$OverallPhaseJobStatus = "Firstphase status: $($phaseStatuses[0].Status), Secondphase status: $($phaseStatuses[1].Status), Thirdphase status: $($phaseStatuses[2].Status)"
 
 # Remove any unwanted trailing commas
 $OverallPhaseJobStatus = $OverallPhaseJobStatus -replace ",\s*$", ""
@@ -63,34 +54,32 @@ $OverallPhaseJobStatus = $OverallPhaseJobStatus -replace ",,", ","
 Write-Host "OverallPhaseJobStatus: $OverallPhaseJobStatus"
 Write-Output "::set-output name=OverallPhaseJobStatus::$OverallPhaseJobStatus"
 
-# Handle component job status for all 3 phases (job1 and job2 in each phase) with new component names
+# Handle component job status for all 3 phases (job1 and job2 in each phase)
 $componentStatuses = @()
-$componentNames = @("Firstcomponent", "Secondcomponent")
-
 for ($phase = 1; $phase -le 3; $phase++) {
     $compStatus = ""
     if ($phase -eq 1) { $compStatus = $compStatusPhase1 }
     elseif ($phase -eq 2) { $compStatus = $compStatusPhase2 }
     elseif ($phase -eq 3) { $compStatus = $compStatusPhase3 }
 
-    # Debugging: Print each phase status
-    Write-Host "Processing Component for Phase $phase: $compStatus"
+    # Print the processing status for the current phase
+    Write-Host "Processing Component for Phase ${phase}: $compStatus"
 
     # Initialize component job statuses for phase 1, 2, and 3
     if ([string]::IsNullOrEmpty($compStatus)) {
-        $comp_status_job1 = "${componentNames[0]} status: skipped"
-        $comp_status_job2 = "${componentNames[1]} status: skipped"
+        $comp_status_job1 = "Firstcomponent status: skipped"
+        $comp_status_job2 = "Secondcomponent status: skipped"
     } else {
         if ($compStatus -match "job1 status: (\S+)") {
-            $comp_status_job1 = "${componentNames[0]} status: $($matches[1].Trim())"
+            $comp_status_job1 = "Firstcomponent status: $($matches[1].Trim())"
         } else {
-            $comp_status_job1 = "${componentNames[0]} status: Unknown"
+            $comp_status_job1 = "Firstcomponent status: Unknown"
         }
 
         if ($compStatus -match "job2 status: (\S+)") {
-            $comp_status_job2 = "${componentNames[1]} status: $($matches[1].Trim())"
+            $comp_status_job2 = "Secondcomponent status: $($matches[1].Trim())"
         } else {
-            $comp_status_job2 = "${componentNames[1]} status: Unknown"
+            $comp_status_job2 = "Secondcomponent status: Unknown"
         }
     }
 
@@ -102,16 +91,26 @@ for ($phase = 1; $phase -le 3; $phase++) {
         CompStatus = $compStatus
     }
 
-    # Output component job statuses for each phase
-    Write-Host "Component Status for Phase $phase: $compStatus"
     Write-Output "::set-output name=comp-status-phase$phase::$compStatus"
     Write-Output "::set-output name=comp-status-phase$phase-job1::$comp_status_job1"
     Write-Output "::set-output name=comp-status-phase$phase-job2::$comp_status_job2"
 }
 
-# Output component job statuses for each phase in a detailed manner with updated component names
+# Output component job statuses for each phase in a detailed manner
 foreach ($status in $componentStatuses) {
-    Write-Host "ComponentJobStatus-for-$($status.Phase): $($status.CompStatus)"
-    Write-Host "ComponentJobStatus-for-$($status.Phase)-job1: $($status.Job1Status)"
-    Write-Host "ComponentJobStatus-for-$($status.Phase)-job2: $($status.Job2Status)"
+    # For Phase 2 and Phase 3, if status is empty or skipped, it will still show "skipped"
+    if ($status.Phase -eq 2 -or $status.Phase -eq 3) {
+        if ($status.CompStatus -eq "") {
+            Write-Host "ComponentJobStatus-for-Phase$($status.Phase): skipped"
+        } else {
+            Write-Host "ComponentJobStatus-for-Phase$($status.Phase): $($status.CompStatus)"
+        }
+
+        Write-Host "ComponentJobStatus-for-Phase$($status.Phase)-job1: $($status.Job1Status)"
+        Write-Host "ComponentJobStatus-for-Phase$($status.Phase)-job2: $($status.Job2Status)"
+    } else {
+        Write-Host "ComponentJobStatus-for-Phase$($status.Phase): $($status.CompStatus)"
+        Write-Host "ComponentJobStatus-for-Phase$($status.Phase)-job1: $($status.Job1Status)"
+        Write-Host "ComponentJobStatus-for-Phase$($status.Phase)-job2: $($status.Job2Status)"
+    }
 }
