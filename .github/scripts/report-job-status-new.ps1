@@ -13,18 +13,17 @@ $ControllerJobStatus = "check-component-input status: $componentInputResult, cre
 Write-Host "ControllerJobStatus: $ControllerJobStatus"
 Write-Output "::set-output name=Controller-Job-Status::$ControllerJobStatus"
 
-# Output Controller job statuses individually
+# Output Controller job statuses individually with job names
 $jobStatuses = @(
-    [PSCustomObject]@{Job = 1; Status = $componentInputResult},
-    [PSCustomObject]@{Job = 2; Status = $environmentMatrixResult},
-    [PSCustomObject]@{Job = 3; Status = $environmentRunnerResult}
+    [PSCustomObject]@{Job = 'check-component-input'; Status = $componentInputResult},
+    [PSCustomObject]@{Job = 'create-environment-matrix'; Status = $environmentMatrixResult},
+    [PSCustomObject]@{Job = 'set-environment-runner'; Status = $environmentRunnerResult}
 )
 
 foreach ($job in $jobStatuses) {
-    Write-Host "ControllerJob$($job.Job)Status: $($job.Status)"
-    Write-Output "::set-output name=controller-Job$($job.Job)-status::$($job.Job) status: $($job.Status)"
+    Write-Host "$($job.Job) Status: $($job.Status)"
+    Write-Output "::set-output name=controller-$($job.Job)-status::$($job.Status)"
 }
-
 # Handle overall phase status for all 3 phases (success or skipped)
 $phaseStatuses = @()
 for ($phase = 1; $phase -le 3; $phase++) {
