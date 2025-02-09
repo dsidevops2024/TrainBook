@@ -159,10 +159,20 @@ jobs:
         ComponentJobStatus_for_Phase3_job1: ${{ steps.report-status.outputs.comp-status-phase3-job1 }}
         ComponentJobStatus_for_Phase3_job2: ${{ steps.report-status.outputs.comp-status-phase3-job2 }}
      steps:
+       - name: List files in .github/scripts
+         run: ls -R .github/scripts/
+
        - name: Report job statuses
          id: report-status
          run: |
-            pwsh ./scripts/report-job-status.ps1 `
+            pwsh -File .github/scripts/report-job-status.ps1 `
+            -componentInputResult "${{ needs.check-component-input.result }}" `
+            -environmentMatrixResult "${{ needs.create-environment-matrix.result }}" `
+            -environmentRunnerResult "${{ needs.set-environment-runner.result }}" `
+            -phaseStatus "${{ needs.call-phase.outputs.phase-status }}" `
+            -compStatusPhase1 "${{ needs.call-phase.outputs.comp-status-phase1 }}" `
+            -compStatusPhase2 "${{ needs.call-phase.outputs.comp-status-phase2 }}" `
+            -compStatusPhase3 "${{ needs.call-phase.outputs.comp-status-phase3 }}" `
             -componentInputResult "${{ needs.check-component-input.result }}" `
             -environmentMatrixResult "${{ needs.create-environment-matrix.result }}" `
             -environmentRunnerResult "${{ needs.set-environment-runner.result }}" `
