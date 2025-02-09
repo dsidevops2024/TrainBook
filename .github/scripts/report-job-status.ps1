@@ -1,69 +1,54 @@
+# report-job-status.ps1
+
+param (
+    [string]$componentInputResult,
+    [string]$environmentMatrixResult,
+    [string]$environmentRunnerResult,
+    [string]$phaseStatus,
+    [string]$compStatusPhase1,
+    [string]$compStatusPhase2,
+    [string]$compStatusPhase3
+)
+
 # Initialize ControllerJobStatus
-$ControllerJobStatus = "job1 status: $args[0], "
-$ControllerJobStatus += "job2 status: $args[1], "
-$ControllerJobStatus += "job3 status: $args[2]"
+$ControllerJobStatus = "job1 status: $componentInputResult, "
+$ControllerJobStatus += "job2 status: $environmentMatrixResult, "
+$ControllerJobStatus += "job3 status: $environmentRunnerResult"
 
 # Print job statuses with each status on a new line
 Write-Host $ControllerJobStatus
-Write-Host "::set-output name=Controller-Job-Status::$ControllerJobStatus"
+Write-Output "::set-output name=Controller-Job-Status::$ControllerJobStatus"
 
 # Loop through the jobs and dynamically extract each status
 for ($job = 1; $job -le 3; $job++) {
-    # Extract the job status for each job using regex
-    $job_status = ($ControllerJobStatus -replace ".*job$job status: (.*?),.*", '$1').Trim()
-
-    # Set the output for each job dynamically
-    Write-Host "::set-output name=controller-Job$job-status::job$job status: $job_status"
+    $job_status = $ControllerJobStatus -split "job$job status: " | Select-String -Pattern ".*" | ForEach-Object { $_.Line.Split(',')[0] }
+    Write-Output "::set-output name=controller-Job$job-status::job$job status: $job_status"
 }
-
-# Get phase status from input
-$phase_status = $args[3]
-Write-Host "OverallPhaseJobStatus:"
-Write-Host $phase_status
-Write-Host "::set-output name=overall-phase-status::$phase_status"
 
 # Loop to set phase status for 1, 2, and 3
 for ($phase = 1; $phase -le 3; $phase++) {
-    $phase_status_value = ($phase_status -replace ".*phase $phase status: (.*?),.*", '$1').Trim()
-    Write-Host "::set-output name=overall-job-status-phase$phase::$phase_status_value"
+    $phase_status_value = ($phaseStatus -split "phase $phase status: " | Select-String -Pattern ".*" | ForEach-Object { $_.Line.Split(',')[0] })
+    Write-Output "::set-output name=overall-job-status-phase$phase::$phase_status_value"
 }
 
 # Loop to handle component job status for all three phases
 for ($phase = 1; $phase -le 3; $phase++) {
-    # Explicitly reference each phase
-    if ($phase -eq 1) {
-        $comp_status = $args[4]
-    } elseif ($phase -eq 2) {
-        $comp_status = $args[5]
-    } elseif ($phase -eq 3) {
-        $comp_status = $args[6]
-    }
-
-    # Display component status for the current phase
-    Write-Host "ComponentJobStatus-for-Phase$phase:"
-    Write-Host $comp_status
-    Write-Host "::set-output name=comp-status-phase$phase::$comp_status"
+    if ($phase -eq 1) { $comp_status = $compStatusPhase1 }
+    elseif ($phase -eq 2) { $comp_status = $compStatusPhase2 }
+    elseif ($phase -eq 3) { $comp_status = $compStatusPhase3 }
 
     # Check if comp_status is empty (i.e., the job was skipped)
     if ([string]::IsNullOrEmpty($comp_status)) {
         $comp_status_job1 = "job1 status: skipped"
         $comp_status_job2 = "job2 status: skipped"
-    } else {
-        # Extract job1 and job2 statuses from the component status using regex
-        $comp_status_job1 = ($comp_status -replace ".*job1 status: (.*?),.*", 'job1 status: $1').Trim()
-        $comp_status_job2 = ($comp_status -replace ".*job2 status: (.*?),.*", 'job2 status: $1').Trim()
-        
-        # If not found, set default values
-        if ([string]::IsNullOrEmpty($comp_status_job1)) {
-            $comp_status_job1 = "job1 status: not available"
-        }
-        if ([string]::IsNullOrEmpty($comp_status_job2)) {
-            $comp_status_job2 = "job2 status: not available"
-        }
+    }
+    else {
+        $comp_status_job1 = $comp_status -split "job1 status: " | Select-String -Pattern ".*" | ForEach-Object { $_.Line.Split(',')[0] }
+        $comp_status_job2 = $comp_status -split "job2 status: " | Select-String -Pattern ".*" | ForEach-Object { $_.Line.Split(',')[0] }
     }
 
     # Output the job statuses for the current phase
-    Write-Host "::set-output name=comp-status-phase$phase-job1::$comp_status_job1"
-    Write-Host "::set-output name=comp-status-phase$phase-job2::$comp_status_job2"
+    Write-Output "::set-output name=comp-status-phase$phase::$comp_status"
+    Write-Output "::set-output name=comp-status-phase$phase-job1::$comp_status_job1"
+    Write-Output "::set-output name=comp-status-phase$phase-job2::$comp_status_job2"
 }
-
