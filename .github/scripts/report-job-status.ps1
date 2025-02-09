@@ -37,14 +37,18 @@ for ($phase = 1; $phase -le 3; $phase++) {
     Write-Output "::set-output name=overall-job-status-phase$phase::phase $phase status: $($phaseStatusValue)"
 }
 
-# Output OverallPhaseJobStatus by concatenating all phase statuses with commas
-$OverallPhaseJobStatus = "phase 1 status: $($phaseStatuses[0].Status), phase 2 status: $($phaseStatuses[1].Status), phase 3 status: $($phaseStatuses[2].Status)"
+# Initialize OverallPhaseJobStatus without a trailing comma
+$OverallPhaseJobStatus = ""
 
-# Remove any unwanted trailing commas
-$OverallPhaseJobStatus = $OverallPhaseJobStatus -replace ",\s*$", ""
-
-# Remove any extra commas if there are empty phase statuses
-$OverallPhaseJobStatus = $OverallPhaseJobStatus -replace ",,", ","
+for ($phase = 1; $phase -le 3; $phase++) {
+    $status = $phaseStatuses[$phase - 1].Status
+    if ($phase -eq 3) {
+        # Don't add a comma after the last phase
+        $OverallPhaseJobStatus += "phase $phase status: $status"
+    } else {
+        $OverallPhaseJobStatus += "phase $phase status: $status, "
+    }
+}
 
 Write-Host "OverallPhaseJobStatus: $OverallPhaseJobStatus"
 Write-Output "::set-output name=OverallPhaseJobStatus::$OverallPhaseJobStatus"
