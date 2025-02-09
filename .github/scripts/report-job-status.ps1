@@ -39,6 +39,8 @@ for ($phase = 1; $phase -le 3; $phase++) {
 
 # Output OverallPhaseJobStatus by concatenating all phase statuses with commas
 $OverallPhaseJobStatus = "phase 1 status: $($phaseStatuses[0].Status), phase 2 status: $($phaseStatuses[1].Status), phase 3 status: $($phaseStatuses[2].Status)"
+# Remove any unwanted trailing commas
+$OverallPhaseJobStatus = $OverallPhaseJobStatus -replace ",\s*$", ""
 Write-Host "OverallPhaseJobStatus: $OverallPhaseJobStatus"
 Write-Output "::set-output name=OverallPhaseJobStatus::$OverallPhaseJobStatus"
 
@@ -56,15 +58,15 @@ for ($phase = 1; $phase -le 3; $phase++) {
         $comp_status_job2 = "job2 status: skipped"
     } else {
         if ($compStatus -match "job1 status: (\S+)") {
-            $comp_status_job1 = $matches[1].Trim()
+            $comp_status_job1 = "job1 status: $($matches[1].Trim())"
         } else {
-            $comp_status_job1 = "Unknown"
+            $comp_status_job1 = "job1 status: Unknown"
         }
 
         if ($compStatus -match "job2 status: (\S+)") {
-            $comp_status_job2 = $matches[1].Trim()
+            $comp_status_job2 = "job2 status: $($matches[1].Trim())"
         } else {
-            $comp_status_job2 = "Unknown"
+            $comp_status_job2 = "job2 status: Unknown"
         }
     }
 
