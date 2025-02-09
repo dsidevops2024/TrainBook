@@ -1,4 +1,4 @@
-param (
+param ( 
     [string]$componentInputResult,
     [string]$environmentMatrixResult,
     [string]$environmentRunnerResult,
@@ -30,7 +30,7 @@ for ($phase = 1; $phase -le 3; $phase++) {
     if ($phaseStatus -match "phase $phase status: (\S+)") {
         $phaseStatusValue = $matches[1].Trim()
     } else {
-        $phaseStatusValue = "Unknown"
+        $phaseStatusValue = "skipped"  # Default value for empty or unmatched statuses
     }
 
     $phaseStatuses += [PSCustomObject]@{Phase = $phase; Status = $phaseStatusValue}
@@ -39,8 +39,13 @@ for ($phase = 1; $phase -le 3; $phase++) {
 
 # Output OverallPhaseJobStatus by concatenating all phase statuses with commas
 $OverallPhaseJobStatus = "phase 1 status: $($phaseStatuses[0].Status), phase 2 status: $($phaseStatuses[1].Status), phase 3 status: $($phaseStatuses[2].Status)"
+
 # Remove any unwanted trailing commas
 $OverallPhaseJobStatus = $OverallPhaseJobStatus -replace ",\s*$", ""
+
+# Remove any extra commas if there are empty phase statuses
+$OverallPhaseJobStatus = $OverallPhaseJobStatus -replace ",,", ","
+
 Write-Host "OverallPhaseJobStatus: $OverallPhaseJobStatus"
 Write-Output "::set-output name=OverallPhaseJobStatus::$OverallPhaseJobStatus"
 
