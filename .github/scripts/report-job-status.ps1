@@ -37,17 +37,14 @@ for ($phase = 1; $phase -le 3; $phase++) {
     Write-Output "::set-output name=overall-job-status-phase$phase::phase $phase status: $($phaseStatusValue)"
 }
 
-# Output OverallPhaseJobStatus by concatenating all phase statuses with commas between phases (no trailing comma)
-$OverallPhaseJobStatus = ""
-for ($phase = 1; $phase -le 3; $phase++) {
-    $status = $phaseStatuses[$phase - 1].Status
-    if ($phase -eq 3) {
-        # Last phase (phase 3) doesn't get a comma at the end
-        $OverallPhaseJobStatus += "phase $phase status: $status"
-    } else {
-        $OverallPhaseJobStatus += "phase $phase status: $status, "
-    }
-}
+# Output OverallPhaseJobStatus by concatenating all phase statuses with commas
+$OverallPhaseJobStatus = "phase 1 status: $($phaseStatuses[0].Status), phase 2 status: $($phaseStatuses[1].Status), phase 3 status: $($phaseStatuses[2].Status)"
+
+# Remove any unwanted trailing commas
+$OverallPhaseJobStatus = $OverallPhaseJobStatus -replace ",\s*$", ""
+
+# Remove any extra commas if there are empty phase statuses
+$OverallPhaseJobStatus = $OverallPhaseJobStatus -replace ",,", ","
 
 Write-Host "OverallPhaseJobStatus: $OverallPhaseJobStatus"
 Write-Output "::set-output name=OverallPhaseJobStatus::$OverallPhaseJobStatus"
@@ -92,8 +89,9 @@ for ($phase = 1; $phase -le 3; $phase++) {
     Write-Output "::set-output name=comp-status-phase$phase-job2::$comp_status_job2"
 }
 
-# Output component job statuses for each phase in a detailed manner (no trailing commas)
+# Output component job statuses for each phase in a detailed manner
 foreach ($status in $componentStatuses) {
+    # For Phase 2 and Phase 3, if status is empty or skipped, it will still show "skipped"
     if ($status.Phase -eq 2 -or $status.Phase -eq 3) {
         if ($status.CompStatus -eq "") {
             Write-Host "ComponentJobStatus-for-Phase$($status.Phase): skipped"
