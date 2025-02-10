@@ -15,15 +15,18 @@ on:
       phase-status:
         value: ${{ jobs.phase-status.outputs.phaseop }}
       comp-status-phase1:
-        value: ${{ jobs.Phase1.outputs.compstatus }}
+        #value: ${{ jobs.Phase1.outputs.compstatus }}
+        value: ${{ jobs.deploy-single-component.outputs.compstatus }}
       comp-status-phase2:
-        value: ${{ jobs.Phase2.outputs.compstatus }}
+        #value: ${{ jobs.Phase2.outputs.compstatus }}
+        value: ${{ jobs.deploy-phase-one.outputs.compstatus }}
       comp-status-phase3:
-        value: ${{ jobs.Phase3.outputs.compstatus }}
+        #value: ${{ jobs.Phase3.outputs.compstatus }}
+        value: ${{ jobs.deploy-phase-two.outputs.compstatus }}
         
 jobs:
   #Phase1:
-  Firstphase:
+  deploy-single-component:
     if: ${{ ! contains(inputs.component, 'fullstack') }}
     uses: ./.github/workflows/deploy-component.yml
     with: 
@@ -33,7 +36,7 @@ jobs:
 
   
   #Phase2:
-  Secondphase:
+  deploy-phase-one:
     if: ${{  inputs.component == 'fullstack' }}
     uses: ./.github/workflows/deploy-component.yml
     with: 
@@ -42,9 +45,9 @@ jobs:
       runner: ${{ inputs.runner }}
 
   #Phase3:
-  Thirdphase:
+  deploy-phase-two:
     if: ${{  inputs.component == 'fullstack' }}
-    needs: Secondphase
+    needs: deploy-phase-one
     uses: ./.github/workflows/deploy-component.yml
     with: 
       component: ${{ inputs.component }}
@@ -52,7 +55,7 @@ jobs:
       runner: ${{ inputs.runner }}
       
   phase-status:
-    needs: [Firstphase, Secondphase, Thirdphase]
+    needs: [deploy-single-component, deploy-phase-one, deploy-phase-two]
     if: always()
     continue-on-error: true
     runs-on: ubuntu-latest
@@ -75,8 +78,8 @@ jobs:
           #Phasestatus="phase 1 status: ${{ needs.Phase1.result }}, " 
           #Phasestatus+="phase 2 status: ${{ needs.Phase2.result }}, "
           #Phasestatus+="phase 3 status: ${{ needs.Phase3.result }}"
-          Phasestatus="Firstphase status: ${{ needs.Firstphase.result }}, " 
-          Phasestatus+="Secondphase status: ${{ needs.Secondphase.result }}, "
-          Phasestatus+="Thirdphase status: ${{ needs.Thirdphase.result }}"
+          Phasestatus="deploy-single-component status: ${{ needs.deploy-single-component.result }}, " 
+          Phasestatus+="deploy-phase-one status: ${{ needs.deploy-phase-one.result }}, "
+          Phasestatus+="deploy-phase-two status: ${{ needs.deploy-phase-two.result }}"
           echo "Phasestatus=$Phasestatus" >> $GITHUB_OUTPUT  
           
