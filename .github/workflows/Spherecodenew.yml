@@ -191,7 +191,7 @@ jobs:
             # Set the output for each component's status
              echo "::set-output name=${component}-status::$component status: $component_status"
            done
- 
+
            #Handling Phase jobs
            phase_status="${{ needs.call-phase.outputs.phase-status }}"
            echo "OverallPhaseJobStatus:"
@@ -202,8 +202,10 @@ jobs:
            for phase in deploy-single-component deploy-phase-one deploy-phase-two; do
                 # Extract the phase status dynamically based on the phase name
              phase_status_value=$(echo "$phase_status" | awk -v phase="$phase" -F"$phase status: " '{print $2}' | awk -F', ' '{print $1}')
+             # Debug: Check phase_status_value for each phase
+             echo "Phase Status for $phase: $phase_status_value"
              # Set the output for each phase's status using the new method
-             echo "::set-output name=${phase}-status::$phase status: $phase_status_value"
+             echo "::set-output name=${phase}-status::$phase_status_value"
            done
 
            # Loop to handle component job status for all phases
