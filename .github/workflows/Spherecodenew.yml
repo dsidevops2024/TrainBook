@@ -206,7 +206,9 @@ jobs:
              # Print the status for each component on a new line
              echo "$phase status: $phase_status_value"  
              # Set the output for each phase's status using the new method
-             echo "::set-output name=${phase}-status::$phase status: $phase_status_value"
+             #echo "::set-output name=${phase}-status::$phase status: $phase_status_value"
+             # Set the output for each phase's status
+             echo "::set-output name=${phase}-status::$phase_status_value"
            done
 
            # Loop to handle component job status for all phases
