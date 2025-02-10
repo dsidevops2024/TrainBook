@@ -150,17 +150,17 @@ jobs:
         Overall_Job_Status_phase2: ${{ steps.report-status.outputs.deploy-phase-one-status }}
         Overall_Job_Status_phase3: ${{ steps.report-status.outputs.deploy-phase-two-status }}
         
-        ComponentJobStatus_for_Phase1: ${{ steps.report-status.outputs.comp-status-phase1 }}
-        ComponentJobStatus_for_Phase1_job1: ${{ steps.report-status.outputs.comp-status-phase1-job1 }}
-        ComponentJobStatus_for_Phase1_job2: ${{ steps.report-status.outputs.comp-status-phase1-job2 }}
+        ComponentJobStatus_for_Phase1: ${{ steps.report-status.outputs.comp-status-deploy-single-component }}
+        ComponentJobStatus_for_Phase1_job1: ${{ steps.report-status.outputs.comp-status-deploy-single-component-job1 }}
+        ComponentJobStatus_for_Phase1_job2: ${{ steps.report-status.outputs.comp-status-deploy-single-component-job2 }}
         
-        ComponentJobStatus_for_Phase2: ${{ steps.report-status.outputs.comp-status-phase2 }}
-        ComponentJobStatus_for_Phase2_job1: ${{ steps.report-status.outputs.comp-status-phase2-job1 }}
-        ComponentJobStatus_for_Phase2_job2: ${{ steps.report-status.outputs.comp-status-phase2-job2 }}
+        ComponentJobStatus_for_Phase2: ${{ steps.report-status.outputs.comp-status-deploy-phase-one }}
+        ComponentJobStatus_for_Phase2_job1: ${{ steps.report-status.outputs.comp-status-deploy-phase-one-job1 }}
+        ComponentJobStatus_for_Phase2_job2: ${{ steps.report-status.outputs.comp-status-deploy-phase-one-job2 }}
         
-        ComponentJobStatus_for_Phase3: ${{ steps.report-status.outputs.comp-status-phase3 }}
-        ComponentJobStatus_for_Phase3_job1: ${{ steps.report-status.outputs.comp-status-phase3-job1 }}
-        ComponentJobStatus_for_Phase3_job2: ${{ steps.report-status.outputs.comp-status-phase3-job2 }}
+        ComponentJobStatus_for_Phase3: ${{ steps.report-status.outputs.comp-status-deploy-phase-two }}
+        ComponentJobStatus_for_Phase3_job1: ${{ steps.report-status.outputs.comp-status-deploy-phase-two-job1 }}
+        ComponentJobStatus_for_Phase3_job2: ${{ steps.report-status.outputs.comp-status-deploy-phase-two-job2 }}
         
      steps:
        - name: Checkout repository
@@ -212,11 +212,11 @@ jobs:
            for phase in deploy-single-component deploy-phase-one deploy-phase-two; do
               # Explicitly reference each phase instead of using dynamic interpolation
              if [ "$phase" == "deploy-single-component" ]; then
-                 comp_status="${{ needs.call-phase.outputs.comp-status-deploy-single-component }}"
+                 comp_status="${{ needs.call-phase.outputs.comp-status-phase1 }}"
              elif [ "$phase" == "deploy-phase-one" ]; then
-                 comp_status="${{ needs.call-phase.outputs.comp-status-deploy-phase-one }}"
+                 comp_status="${{ needs.call-phase.outputs.comp-status-phase2 }}"
              elif [ "$phase" == "deploy-phase-two" ]; then
-                 comp_status="${{ needs.call-phase.outputs.comp-status-deploy-phase-two }}"
+                 comp_status="${{ needs.call-phase.outputs.comp-status-phase3 }}"
              fi
 
               # Display component status for the current phase
@@ -226,17 +226,17 @@ jobs:
 
              # Check if comp_status is empty (i.e., the job was skipped)
              if [ -z "$comp_status" ]; then
-                 job1_status="create-component-matrix status: skipped"
-                 job2_status="deploy-to-AzService status: skipped"
+                 comp_status_job1="create-component-matrix status: skipped"
+                 comp_status_job2="deploy-to-AzService status: skipped"
              else
                # Extract job statuses from the component status using awk
-               job1_status=$(echo "$comp_status" | awk -F'create-component-matrix status: ' '{print "create-component-matrix status: " $2}' | awk -F', ' '{print $1}' | sed 's/^ *//;s/ *$//' || echo "create-component-matrix status: not available")
-               job2_status=$(echo "$comp_status" | awk -F'deploy-to-AzService status: ' '{print "deploy-to-AzService status: " $2}' | awk -F', ' '{print $1}' | sed 's/^ *//;s/ *$//' || echo "deploy-to-AzService status: not available")
+               comp_status_job1=$(echo "$comp_status" | awk -F'create-component-matrix status: ' '{print "create-component-matrix status: " $2}' | awk -F', ' '{print $1}' | sed 's/^ *//;s/ *$//' || echo "create-component-matrix status: not available")
+               comp_status_job2=$(echo "$comp_status" | awk -F'deploy-to-AzService status: ' '{print "deploy-to-AzService status: " $2}' | awk -F', ' '{print $1}' | sed 's/^ *//;s/ *$//' || echo "deploy-to-AzService status: not available")
              fi
 
               # Output the job statuses for the current phase
-               echo "::set-output name=${phase}-job1-status::$job1_status"
-               echo "::set-output name=${phase}-job2-status::$job2_status"
+               echo "::set-output name=${phase}-job1-status::$comp_status_job1"
+               echo "::set-output name=${phase}-job2-status::$comp_status_job2"
            done
           
   next-job:
