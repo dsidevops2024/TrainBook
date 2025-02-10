@@ -150,17 +150,17 @@ jobs:
         Overall_Job_Status_phase2: ${{ steps.report-status.outputs.deploy-phase-one-status }}
         Overall_Job_Status_phase3: ${{ steps.report-status.outputs.deploy-phase-two-status }}
         
-        ComponentJobStatus_for_Phase1: ${{ steps.report-status.outputs.comp-status-deploy-single-component }}
-        ComponentJobStatus_for_Phase1_job1: ${{ steps.report-status.outputs.comp-status-deploy-single-component-job1 }}
-        ComponentJobStatus_for_Phase1_job2: ${{ steps.report-status.outputs.comp-status-deploy-single-component-job2 }}
+        ComponentJobStatus_for_Phase1: ${{ steps.report-status.outputs.deploy-single-component-status }}
+        ComponentJobStatus_for_Phase1_job1: ${{ steps.report-status.outputs.deploy-single-component-job1-status }}
+        ComponentJobStatus_for_Phase1_job2: ${{ steps.report-status.outputs.comp-status-deploy-single-component-job2-status }}
         
-        ComponentJobStatus_for_Phase2: ${{ steps.report-status.outputs.comp-status-deploy-phase-one }}
-        ComponentJobStatus_for_Phase2_job1: ${{ steps.report-status.outputs.comp-status-deploy-phase-one-job1 }}
-        ComponentJobStatus_for_Phase2_job2: ${{ steps.report-status.outputs.comp-status-deploy-phase-one-job2 }}
+        ComponentJobStatus_for_Phase2: ${{ steps.report-status.outputs.deploy-phase-one-status }}
+        ComponentJobStatus_for_Phase2_job1: ${{ steps.report-status.outputs.deploy-phase-one-job1-status }}
+        ComponentJobStatus_for_Phase2_job2: ${{ steps.report-status.outputs.deploy-phase-one-job2-status}}
         
-        ComponentJobStatus_for_Phase3: ${{ steps.report-status.outputs.comp-status-deploy-phase-two }}
-        ComponentJobStatus_for_Phase3_job1: ${{ steps.report-status.outputs.comp-status-deploy-phase-two-job1 }}
-        ComponentJobStatus_for_Phase3_job2: ${{ steps.report-status.outputs.comp-status-deploy-phase-two-job2 }}
+        ComponentJobStatus_for_Phase3: ${{ steps.report-status.outputs.deploy-phase-two-status }}
+        ComponentJobStatus_for_Phase3_job1: ${{ steps.report-status.outputs.deploy-phase-two-job1-status }}
+        ComponentJobStatus_for_Phase3_job2: ${{ steps.report-status.outputs.deploy-phase-two-job2-status }}
         
      steps:
        - name: Checkout repository
