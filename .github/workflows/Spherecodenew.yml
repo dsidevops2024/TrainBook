@@ -183,7 +183,7 @@ jobs:
            echo "$ControllerJobStatus:"
            echo "::set-output name=Controller-Job-Status::$ControllerJobStatus"
 
-           for component in check-component-input create-environment-matrix set-environment-matrix; do
+           for component in check-component-input create-environment-matrix set-environment-runner; do
             # Extract the status of each component dynamically based on its name
              component_status=$(echo "$ControllerJobStatus" | awk -v component="$component" -F"$component status: " '{print $2}' | awk -F', ' '{print $1}')
             # Print the status for each component on a new line
