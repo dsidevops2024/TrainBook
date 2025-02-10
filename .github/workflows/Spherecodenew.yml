@@ -202,7 +202,6 @@ jobs:
            for phase in deploy-single-component deploy-phase-one deploy-phase-two; do
                 # Extract the phase status dynamically based on the phase name
              phase_status_value=$(echo "$phase_status" | awk -v phase="$phase" -F"$phase status: " '{print $2}' | awk -F', ' '{print $1}')
-             echo "$phase status": $phase_status_value"
              # Set the output for each phase's status using the new method
              echo "::set-output name=${phase}-status::$phase status: $phase_status_value"
            done
