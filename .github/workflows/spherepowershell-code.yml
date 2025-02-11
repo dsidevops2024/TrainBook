@@ -152,15 +152,14 @@ jobs:
          id: report-status
          shell: pwsh
          run: |
+           $env:GITHUB_OUTPUT = $GITHUB_ENV
+           
            .\.github\scripts\report-recent-status.ps1 `
-           # Set environment variables for the PowerShell script
-           $env:check_component_input_status = "${{ needs.check-component-input.result }}" `
-           $env:create_environment_matrix_status = "${{ needs.create-environment-matrix.result }}" `
-           $env:set_environment_runner_status = "${{ needs.set-environment-runner.result }}" `
-           $env:phase_status = "${{ needs.call-phase.outputs.phase-status }}" `
-           $env:comp_status_phase1 = "${{ needs.call-phase.outputs.comp-status-phase1 }}" `
-           $env:comp_status_phase2 = "${{ needs.call-phase.outputs.comp-status-phase2 }}" `
-           $env:comp_status_phase3 = "${{ needs.call-phase.outputs.comp-status-phase3 }}" `
-
-           # Call the PowerShell script to process the job statuses
+               -check_component_input_status ${{ needs.check-component-input.outputs.status }} `
+               -create_environment_matrix_status ${{ needs.create-environment-matrix.outputs.status }} `
+               -set_environment_runner_status ${{ needs.set-environment-runner.outputs.status }} `
+               -phase_status ${{ needs.call-phase.outputs.phase_status }} `
+               -comp_status_phase1 ${{ needs.check-component-input.outputs.comp_status_phase1 }} `
+               -comp_status_phase2 ${{ needs.create-environment-matrix.outputs.comp_status_phase2 }} `
+               -comp_status_phase3 ${{ needs.set-environment-runner.outputs.comp_status_phase3 }}
            
