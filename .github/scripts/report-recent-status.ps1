@@ -1,7 +1,17 @@
+param (
+    [string]$check_component_input_status,
+    [string]$create_environment_matrix_status,
+    [string]$set_environment_runner_status,
+    [string]$phase_status,
+    [string]$comp_status_phase1,
+    [string]$comp_status_phase2,
+    [string]$comp_status_phase3
+)
+
 # Get input data for job statuses
-$ControllerJobStatus = "check-component-input status: $($env:check_component_input_status), "
-$ControllerJobStatus += "create-environment-matrix status: $($env:create_environment_matrix_status), "
-$ControllerJobStatus += "set-environment-runner status: $($env:set_environment_runner_status)"
+$ControllerJobStatus = "check-component-input status: $check_component_input_status, "
+$ControllerJobStatus += "create-environment-matrix status: $create_environment_matrix_status, "
+$ControllerJobStatus += "set-environment-runner status: $set_environment_runner_status"
 Write-Host "$ControllerJobStatus:"
 Write-Host "Controller-Job-Status=$ControllerJobStatus" | Out-File -Append -FilePath $env:GITHUB_OUTPUT
 
@@ -14,7 +24,6 @@ foreach ($component in $components) {
 }
 
 # Phase status
-$phase_status = $env:phase_status
 Write-Host "OverallPhaseJobStatus:"
 Write-Host "$phase_status"
 Write-Host "overall-phase-status=$phase_status" | Out-File -Append -FilePath $env:GITHUB_OUTPUT
@@ -24,17 +33,17 @@ $phases = @("deploy-single-component", "deploy-phase-one", "deploy-phase-two")
 foreach ($phase in $phases) {
     $phase_status_value = $phase_status -split "$phase status: " | Select-Object -Skip 1 | ForEach-Object { ($_ -split ', ')[0] }
     Write-Host "$phase status: $phase_status_value"
-    Write-Host "$phase`_status=$phase status: $phase_status_value" | Out-File -Append -FilePath $env:GITHUB_OUTPUT
+    Write-Host "$phase-status=$phase status: $phase_status_value" | Out-File -Append -FilePath $env:GITHUB_OUTPUT
 }
 
 # For each phase, get component status
 foreach ($phase in $phases) {
     if ($phase -eq "deploy-single-component") {
-        $comp_status = $env:comp_status_phase1
+        $comp_status = $comp_status_phase1
     } elseif ($phase -eq "deploy-phase-one") {
-        $comp_status = $env:comp_status_phase2
+        $comp_status = $comp_status_phase2
     } elseif ($phase -eq "deploy-phase-two") {
-        $comp_status = $env:comp_status_phase3
+        $comp_status = $comp_status_phase3
     }
 
     Write-Host "$phase status: $comp_status"
