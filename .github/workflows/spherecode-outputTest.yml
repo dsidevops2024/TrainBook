@@ -165,7 +165,9 @@ jobs:
            echo "$ControllerJobStatus:"
            echo "Controller-Job-Status=$ControllerJobStatus" >> $GITHUB_OUTPUT
 
-           for component in check-component-input create-environment-matrix set-environment-runner; do
+           components=("check-component-input" "create-environment-matrix" "set-environment-runner")
+           #for component in check-component-input create-environment-matrix set-environment-runner; do
+           for component in "${components[@]}"; do
              component_status=$(echo "$ControllerJobStatus" | awk -v component="$component" -F"$component status: " '{print $2}' | awk -F', ' '{print $1}')
              echo "$component status: $component_status"  
              echo "${component}-status=$component status: $component_status" >> $GITHUB_OUTPUT
@@ -175,14 +177,19 @@ jobs:
            echo "OverallPhaseJobStatus:"
            echo "$phase_status"
            echo "overall-phase-status=$phase_status" >> $GITHUB_OUTPUT
+           # Define the phase names in an array
 
-           for phase in deploy-single-component deploy-phase-one deploy-phase-two; do
+           phases=("deploy-single-component" "deploy-phase-one" "deploy-phase-two")
+           #for phase in deploy-single-component deploy-phase-one deploy-phase-two; do
+           for phase in "${phases[@]}"; do
              phase_status_value=$(echo "$phase_status" | awk -v phase="$phase" -F"$phase status: " '{print $2}' | awk -F', ' '{print $1}')
              echo "$phase status: $phase_status_value"  
              echo "${phase}_status=$phase status: $phase_status_value" >> $GITHUB_OUTPUT
            done
 
-           for phase in deploy-single-component deploy-phase-one deploy-phase-two; do
+           phases=("deploy-single-component" "deploy-phase-one" "deploy-phase-two")
+           #for phase in deploy-single-component deploy-phase-one deploy-phase-two; do
+           for phase in "${phases[@]}"; do
              if [ "$phase" == "deploy-single-component" ]; then
                  comp_status="${{ needs.call-phase.outputs.comp-status-phase1 }}"
              elif [ "$phase" == "deploy-phase-one" ]; then
