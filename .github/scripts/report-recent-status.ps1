@@ -12,7 +12,7 @@ param (
 $ControllerJobStatus = "check-component-input status: $check_component_input_status, "
 $ControllerJobStatus += "create-environment-matrix status: $create_environment_matrix_status, "
 $ControllerJobStatus += "set-environment-runner status: $set_environment_runner_status"
-Write-Host "$ControllerJobStatus:"
+Write-Host "$ControllerJobStatus"
 Write-Host "Controller-Job-Status=$ControllerJobStatus" | Out-File -Append -FilePath $env:GITHUB_OUTPUT
 
 # Components list
@@ -24,7 +24,7 @@ foreach ($component in $components) {
 }
 
 # Phase status
-Write-Host "OverallPhaseJobStatus:"
+Write-Host "OverallPhaseJobStatus"
 Write-Host "$phase_status"
 Write-Host "overall-phase-status=$phase_status" | Out-File -Append -FilePath $env:GITHUB_OUTPUT
 
