@@ -153,31 +153,54 @@ jobs:
          shell: pwsh
          run: |           
            .\.github\scripts\report-recent-status.ps1 `
-               -check_component_input_status ${{ needs.check-component-input.outputs.status }} `
-               -create_environment_matrix_status ${{ needs.create-environment-matrix.outputs.status }} `
-               -set_environment_runner_status ${{ needs.set-environment-runner.outputs.status }} `
+               -check_component_input_status ${{ needs.check-component-input.result }} `
+               -create_environment_matrix_status ${{ needs.create-environment-matrix.result }} `
+               -set_environment_runner_status ${{ needs.set-environment-runner.result }} `
                -phase_status ${{ needs.call-phase.outputs.phase_status }} `
-               -comp_status_phase1 ${{ needs.check-component-input.outputs.comp_status_phase1 }} `
-               -comp_status_phase2 ${{ needs.create-environment-matrix.outputs.comp_status_phase2 }} `
-               -comp_status_phase3 ${{ needs.set-environment-runner.outputs.comp_status_phase3 }}
+               -comp_status_phase1 ${{ needs.call-phase.outputs.comp_status_phase1 }} `
+               -comp_status_phase2 ${{ needs.call-phase.outputs.comp_status_phase2 }} `
+               -comp_status_phase3 ${{ needs.call-phase.outputs.comp_status_phase3 }}
 
-       - name: Set outputs from PowerShell script
-         #id: report-status
-         shell: pwsh
-         run: |
-           # Set the outputs using the correct syntax for GitHub Actions
-           echo "Controller-Job-Status=$ControllerJobStatus" >> $GITHUB_OUTPUT
-           echo "check-component-input-status=$component_status" >> $GITHUB_OUTPUT
-           echo "create-environment-matrix-status=$component_status" >> $GITHUB_OUTPUT
-           echo "set-environment-runner-status=$component_status" >> $GITHUB_OUTPUT
-           echo "overall-phase-status=$phase_status" >> $GITHUB_OUTPUT
-           echo "deploy-single-component-status=$comp_status_phase1" >> $GITHUB_OUTPUT
-           echo "deploy-phase-one-status=$comp_status_phase2" >> $GITHUB_OUTPUT
-           echo "deploy-phase-two-status=$comp_status_phase3" >> $GITHUB_OUTPUT
-           echo "deploy-single-component-job1-status=$comp_status_job1" >> $GITHUB_OUTPUT
-           echo "deploy-single-component-job2-status=$comp_status_job2" >> $GITHUB_OUTPUT
-           echo "deploy-phase-one-job1-status=$comp_status_job1" >> $GITHUB_OUTPUT
-           echo "deploy-phase-one-job2-status=$comp_status_job2" >> $GITHUB_OUTPUT
-           echo "deploy-phase-two-job1-status=$comp_status_job1" >> $GITHUB_OUTPUT
-           echo "deploy-phase-two-job2-status=$comp_status_job2" >> $GITHUB_OUTPUT
-           
+  next-job:
+    needs: report-job-status
+    runs-on: ubuntu-latest
+    steps:
+      - name: Use the outputs from report-job-status
+        run: |
+          echo "ControllerJobStatus:"
+          echo "${{ needs.report-job-status.outputs.Controller_Job_Status }}"
+          echo "ControllerJob1Status:"
+          echo "${{ needs.report-job-status.outputs.Controller_Job1_Status }}"
+          echo "ControllerJob2Status:"
+          echo "${{ needs.report-job-status.outputs.Controller_Job2_Status }}"
+          echo "ControllerJob3Status:"
+          echo "${{ needs.report-job-status.outputs.Controller_Job3_Status }}"
+          echo "OverallPhaseJobStatus:"
+          echo "${{ needs.report-job-status.outputs.OverallPhaseJobStatus }}"
+          echo "Overall_Job_Status_phase1:"
+          echo "${{ needs.report-job-status.outputs.Overall_Job_Status_phase1 }}"
+          echo "Overall_Job_Status_phase2:"
+          echo "${{ needs.report-job-status.outputs.Overall_Job_Status_phase2 }}"
+          echo "Overall_Job_Status_phase3:"
+          echo "${{ needs.report-job-status.outputs.Overall_Job_Status_phase3 }}"
+          
+          echo "ComponentJobStatus-for-Phase1:"
+          echo "${{ needs.report-job-status.outputs.ComponentJobStatus_for_Phase1 }}"
+          echo "ComponentJobStatus-for-Phase1-job1:"
+          echo "${{ needs.report-job-status.outputs.ComponentJobStatus_for_Phase1_job1 }}"
+          echo "ComponentJobStatus-for-Phase1-job2:"
+          echo "${{ needs.report-job-status.outputs.ComponentJobStatus_for_Phase1_job2 }}"
+          
+          echo "ComponentJobStatus-for-Phase2:"
+          echo "${{ needs.report-job-status.outputs.ComponentJobStatus_for_Phase2 }}"
+          echo "ComponentJobStatus-for-Phase2-job1:"
+          echo "${{ needs.report-job-status.outputs.ComponentJobStatus_for_Phase2_job1 }}"
+          echo "ComponentJobStatus-for-Phase2-job2:"
+          echo "${{ needs.report-job-status.outputs.ComponentJobStatus_for_Phase2_job2 }}"
+    
+          echo "ComponentJobStatus-for-Phase3:"
+          echo "${{ needs.report-job-status.outputs.ComponentJobStatus_for_Phase3 }}"
+          echo "ComponentJobStatus-for-Phase3-job1:"
+          echo "${{ needs.report-job-status.outputs.ComponentJobStatus_for_Phase3_job1 }}"
+          echo "ComponentJobStatus-for-Phase3-job2:"
+          echo "${{ needs.report-job-status.outputs.ComponentJobStatus_for_Phase3_job2 }}"
