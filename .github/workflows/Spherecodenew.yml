@@ -201,7 +201,8 @@ jobs:
            # Loop through the phases (deploy-single-component, deploy-phase-one, deploy-phase-two)
             for phase in deploy-single-component deploy-phase-one deploy-phase-two; do
              # Extract the phase status dynamically based on the phase name
-              phase_status_value=$(echo "$phase_status" | awk -v phase="$phase" -F"$phase status: " '{print $2}' | awk -F', ' '{print $1}')
+              #phase_status_value=$(echo "$phase_status" | awk -v phase="$phase" -F"$phase status: " '{print $2}' | awk -F', ' '{print $1}')
+              phase_status_value=$(echo "$phase_status" | awk -v phase="$phase" -F"$phase status: " '{print "$phase_status status: $2}' | awk -F', ' '{print $1}')
              
              # Print the status for each component on a new line
               echo "$phase status: $phase_status_value"  
