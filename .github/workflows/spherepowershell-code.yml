@@ -151,9 +151,7 @@ jobs:
        - name: Report job statuses
          id: report-status
          shell: pwsh
-         run: |
-           $env:GITHUB_OUTPUT = $GITHUB_ENV
-           
+         run: |           
            .\.github\scripts\report-recent-status.ps1 `
                -check_component_input_status ${{ needs.check-component-input.outputs.status }} `
                -create_environment_matrix_status ${{ needs.create-environment-matrix.outputs.status }} `
@@ -162,4 +160,24 @@ jobs:
                -comp_status_phase1 ${{ needs.check-component-input.outputs.comp_status_phase1 }} `
                -comp_status_phase2 ${{ needs.create-environment-matrix.outputs.comp_status_phase2 }} `
                -comp_status_phase3 ${{ needs.set-environment-runner.outputs.comp_status_phase3 }}
+
+       - name: Set outputs from PowerShell script
+         #id: report-status
+         shell: pwsh
+         run: |
+           # Set the outputs using the correct syntax for GitHub Actions
+           echo "Controller-Job-Status=$ControllerJobStatus" >> $GITHUB_OUTPUT
+           echo "check-component-input-status=$component_status" >> $GITHUB_OUTPUT
+           echo "create-environment-matrix-status=$component_status" >> $GITHUB_OUTPUT
+           echo "set-environment-runner-status=$component_status" >> $GITHUB_OUTPUT
+           echo "overall-phase-status=$phase_status" >> $GITHUB_OUTPUT
+           echo "deploy-single-component-status=$comp_status_phase1" >> $GITHUB_OUTPUT
+           echo "deploy-phase-one-status=$comp_status_phase2" >> $GITHUB_OUTPUT
+           echo "deploy-phase-two-status=$comp_status_phase3" >> $GITHUB_OUTPUT
+           echo "deploy-single-component-job1-status=$comp_status_job1" >> $GITHUB_OUTPUT
+           echo "deploy-single-component-job2-status=$comp_status_job2" >> $GITHUB_OUTPUT
+           echo "deploy-phase-one-job1-status=$comp_status_job1" >> $GITHUB_OUTPUT
+           echo "deploy-phase-one-job2-status=$comp_status_job2" >> $GITHUB_OUTPUT
+           echo "deploy-phase-two-job1-status=$comp_status_job1" >> $GITHUB_OUTPUT
+           echo "deploy-phase-two-job2-status=$comp_status_job2" >> $GITHUB_OUTPUT
            
