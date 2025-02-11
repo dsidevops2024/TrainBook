@@ -1,0 +1,248 @@
+name: spherecode new
+run-name: Deploy ${{ inputs.component }} to ${{ inputs.environment }}
+
+on:
+  workflow_dispatch:
+    inputs:
+      component:
+        description: Input the component you wish to deploy. Use "fullstack" to deploy the entire app stack.
+        required: true
+        type: string
+      environment:
+        description: Select a deployment environment.
+        type: choice
+        options:
+          - dev
+          - qa
+          - uat
+          - prod
+          - id
+          - standalone
+        required: true
+      target_environment:
+        description: "Input target environment(s) for Prod. For multiple environments input them with comma separated i.e. (env1, env2)"
+        type: string
+        default: 'All'
+        required: false
+      keep:
+        description: Check to Overwrite the current AppConfig.
+        type:  boolean
+        required: false
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:    
+  check-component-input:
+    environment: ${{ inputs.environment }}
+    runs-on: ubuntu-latest
+    outputs:
+      component: ${{ steps.component-input.outputs.component }}
+    steps:
+      - name: checkout code
+        uses: actions/checkout@v4 
+      - name: check component input 
+        id: component-input
+        shell: bash
+        run: |
+          temp="${{ inputs.component }}"
+          lower=${temp,,}
+          if [[ "$lower" == "fullstack" ]]; then
+            echo "component=fullstack" >> $GITHUB_OUTPUT
+            echo "Deploying fullstack"
+          else 
+            comp=`jq '.[] | .componentName' component.json | grep -i "\<${{ inputs.component }}\>" -m1`
+            lowercomp=${comp,,}
+            if [[ $lowercomp == "\"${lower}\"" ]]; then
+              echo "Deploying `cat ./component.json | grep -iF -o "${{ inputs.component }}" -m1`"
+              echo "component=`cat ./component.json | grep -iF -o "${{ inputs.component }}" -m1`" >> $GITHUB_OUTPUT
+            else
+              echo "Error: Component '${{ inputs.component }}' not found in component.json"
+              exit 1
+            fi
+          fi
+
+  create-environment-matrix:
+    needs: check-component-input
+    runs-on: ubuntu-latest
+    outputs:
+        env: ${{ steps.env-matrix.outputs.env }}
+    steps:
+      - name: checkout code
+        uses: actions/checkout@v4  
+      - name: get environment input and created matrix
+        id: env-matrix
+        shell: bash
+        run: |
+          input_envs=$(echo "${{ inputs.target_environment }}" | tr -d '[:blank:]')
+
+          if [[ "${{ inputs.environment }}" == "prod" ]]; then
+            if [[ "$input_envs" == "All" ]]; then
+              echo "env=`cat ./client-manifests/${{ inputs.environment }}-clients.json | jq -c`" >> $GITHUB_OUTPUT
+            else
+              deploy_envs="["
+
+              IFS=',' read -ra ENV_ARRAY <<< "$input_envs"
+              for env in "${ENV_ARRAY[@]}"; do
+                matching_env=$(jq -c ".[] | select(.env == \"$env\")" ./client-manifests/${{ inputs.environment }}-clients.json)
+                 
+                if [[ -z "$matching_env" ]]; then
+                  echo "Error: No matching environment found for '$env' in ${{ inputs.environment }}-clients.json"
+                  exit 1
+                else
+                  if [[ -z "$deploy_envs" || "$deploy_envs" == "[" ]]; then
+                    deploy_envs="$deploy_envs$matching_env"
+                  else
+                    deploy_envs="$deploy_envs, $matching_env"
+                  fi
+                fi
+              done
+
+              deploy_envs="$deploy_envs]"
+              echo "env=$deploy_envs" >> $GITHUB_OUTPUT
+            fi
+          else
+            echo "env=`cat ./client-manifests/${{ inputs.environment }}-clients.json | jq -c`" >> $GITHUB_OUTPUT
+          fi
+  
+  set-environment-runner:
+    runs-on: ubuntu-latest
+    outputs:
+      runner: ${{ steps.env-runner.outputs.runner }}
+    steps:
+      - name: set runner group
+        id: env-runner
+        run: |
+          if [[ ${{ inputs.environment }} == "prod" ]]; then
+            echo "runner=Prod" >> $GITHUB_OUTPUT
+          else
+            echo "runner=NonProd" >> $GITHUB_OUTPUT
+          fi
+  call-phase:
+    needs: [check-component-input, create-environment-matrix]
+    uses: ./.github/workflows/deploy-phase.yml
+    with: 
+      component: ${{ inputs.component }}
+      environment: ${{ inputs.environment }}
+      runner: ${{ inputs.runner }}
+
+  report-job-status:
+    needs: [check-component-input, create-environment-matrix, set-environment-runner, call-phase]
+    runs-on: ubuntu-latest
+    outputs:
+        Controller_Job_Status: ${{ steps.report-status.outputs.Controller-Job-Status }}
+        Controller_Job1_Status: ${{ steps.report-status.outputs.check-component-input-status }}
+        Controller_Job2_Status: ${{ steps.report-status.outputs.create-environment-matrix-status }}
+        Controller_Job3_Status: ${{ steps.report-status.outputs.set-environment-runner-status }}
+        OverallPhaseJobStatus: ${{ steps.report-status.outputs.overall-phase-status }}
+        Overall_Job_Status_phase1: ${{ steps.report-status.outputs.deploy-single-component_status }}
+        Overall_Job_Status_phase2: ${{ steps.report-status.outputs.deploy-phase-one_status }}
+        Overall_Job_Status_phase3: ${{ steps.report-status.outputs.deploy-phase-two_status }}
+        ComponentJobStatus_for_Phase1: ${{ steps.report-status.outputs.deploy-single-component-status }}
+        ComponentJobStatus_for_Phase1_job1: ${{ steps.report-status.outputs.deploy-single-component-job1-status }}
+        ComponentJobStatus_for_Phase1_job2: ${{ steps.report-status.outputs.deploy-single-component-job2-status }}
+        ComponentJobStatus_for_Phase2: ${{ steps.report-status.outputs.deploy-phase-one-status }}
+        ComponentJobStatus_for_Phase2_job1: ${{ steps.report-status.outputs.deploy-phase-one-job1-status }}
+        ComponentJobStatus_for_Phase2_job2: ${{ steps.report-status.outputs.deploy-phase-one-job2-status }}
+        ComponentJobStatus_for_Phase3: ${{ steps.report-status.outputs.deploy-phase-two-status }}
+        ComponentJobStatus_for_Phase3_job1: ${{ steps.report-status.outputs.deploy-phase-two-job1-status }}
+        ComponentJobStatus_for_Phase3_job2: ${{ steps.report-status.outputs.deploy-phase-two-job2-status }}
+    steps:
+       - name: Checkout repository
+         uses: actions/checkout@v3
+
+       - name: List all files recursively
+         run: ls -R
+
+       - name: Report job statuses
+         id: report-status
+         run: |
+           ControllerJobStatus="check-component-input status: ${{ needs.check-component-input.result }}, "
+           ControllerJobStatus+="create-environment-matrix status: ${{ needs.create-environment-matrix.result }}, "
+           ControllerJobStatus+="set-environment-runner status: ${{ needs.set-environment-runner.result }}"
+
+           echo "$ControllerJobStatus:"
+           echo "Controller-Job-Status=$ControllerJobStatus" >> $GITHUB_OUTPUT
+
+           for component in check-component-input create-environment-matrix set-environment-runner; do
+             component_status=$(echo "$ControllerJobStatus" | awk -v component="$component" -F"$component status: " '{print $2}' | awk -F', ' '{print $1}')
+             echo "$component status: $component_status"  
+             echo "${component}-status=$component status: $component_status" >> $GITHUB_OUTPUT
+           done
+
+           phase_status="${{ needs.call-phase.outputs.phase-status }}"
+           echo "OverallPhaseJobStatus:"
+           echo "$phase_status"
+           echo "overall-phase-status=$phase_status" >> $GITHUB_OUTPUT
+
+           for phase in deploy-single-component deploy-phase-one deploy-phase-two; do
+             phase_status_value=$(echo "$phase_status" | awk -v phase="$phase" -F"$phase status: " '{print $2}' | awk -F', ' '{print $1}')
+             echo "$phase status: $phase_status_value"  
+             echo "${phase}_status=$phase status: $phase_status_value" >> $GITHUB_OUTPUT
+           done
+
+           for phase in deploy-single-component deploy-phase-one deploy-phase-two; do
+             if [ "$phase" == "deploy-single-component" ]; then
+                 comp_status="${{ needs.call-phase.outputs.comp-status-phase1 }}"
+             elif [ "$phase" == "deploy-phase-one" ]; then
+                 comp_status="${{ needs.call-phase.outputs.comp-status-phase2 }}"
+             elif [ "$phase" == "deploy-phase-two" ]; then
+                 comp_status="${{ needs.call-phase.outputs.comp-status-phase3 }}"
+             fi
+
+             echo "$phase status: $comp_status"  
+             echo "${phase}-status=$comp_status" >> $GITHUB_OUTPUT
+
+             if [ -z "$comp_status" ]; then
+                 comp_status_job1="create-component-matrix status: skipped"
+                 comp_status_job2="deploy-to-AzService status: skipped"
+             else
+               comp_status_job1=$(echo "$comp_status" | awk -F'create-component-matrix status: ' '{print "create-component-matrix status: " $2}' | awk -F', ' '{print $1}' | sed 's/^ *//;s/ *$//' || echo "create-component-matrix status: not available")
+               comp_status_job2=$(echo "$comp_status" | awk -F'deploy-to-AzService status: ' '{print "deploy-to-AzService status: " $2}' | awk -F', ' '{print $1}' | sed 's/^ *//;s/ *$//' || echo "deploy-to-AzService status: not available")
+             fi
+
+             echo "${phase}-job1-status=$comp_status_job1" >> $GITHUB_OUTPUT
+             echo "${phase}-job2-status=$comp_status_job2" >> $GITHUB_OUTPUT
+           done
+
+  next-job:
+    needs: report-job-status
+    runs-on: ubuntu-latest
+    steps:
+      - name: Use the outputs from report-job-status
+        run: |
+          echo "ControllerJobStatus:"
+          echo "${{ needs.report-job-status.outputs.Controller_Job_Status }}"
+          echo "ControllerJob1Status:"
+          echo "${{ needs.report-job-status.outputs.Controller_Job1_Status }}"
+          echo "ControllerJob2Status:"
+          echo "${{ needs.report-job-status.outputs.Controller_Job2_Status }}"
+          echo "ControllerJob3Status:"
+          echo "${{ needs.report-job-status.outputs.Controller_Job3_Status }}"
+          echo "OverallPhaseJobStatus:"
+          echo "${{ needs.report-job-status.outputs.OverallPhaseJobStatus }}"
+          echo "Overall_Job_Status_phase1:"
+          echo "${{ needs.report-job-status.outputs.Overall_Job_Status_phase1 }}"
+          echo "Overall_Job_Status_phase2:"
+          echo "${{ needs.report-job-status.outputs.Overall_Job_Status_phase2 }}"
+          echo "Overall_Job_Status_phase3:"
+          echo "${{ needs.report-job-status.outputs.Overall_Job_Status_phase3 }}"
+          echo "ComponentJobStatus-for-Phase1:"
+          echo "${{ needs.report-job-status.outputs.ComponentJobStatus_for_Phase1 }}"
+          echo "ComponentJobStatus-for-Phase1-job1:"
+          echo "${{ needs.report-job-status.outputs.ComponentJobStatus_for_Phase1_job1 }}"
+          echo "ComponentJobStatus-for-Phase1-job2:"
+          echo "${{ needs.report-job-status.outputs.ComponentJobStatus_for_Phase1_job2 }}"
+          echo "ComponentJobStatus-for-Phase2:"
+          echo "${{ needs.report-job-status.outputs.ComponentJobStatus_for_Phase2 }}"
+          echo "ComponentJobStatus-for-Phase2-job1:"
+          echo "${{ needs.report-job-status.outputs.ComponentJobStatus_for_Phase2_job1 }}"
+          echo "ComponentJobStatus-for-Phase2-job2:"
+          echo "${{ needs.report-job-status.outputs.ComponentJobStatus_for_Phase2_job2 }}"
+          echo "ComponentJobStatus-for-Phase3:"
+          echo "${{ needs.report-job-status.outputs.ComponentJobStatus_for_Phase3 }}"
+          echo "ComponentJobStatus-for-Phase3-job1:"
+          echo "${{ needs.report-job-status.outputs.ComponentJobStatus_for_Phase3_job1 }}"
+          echo "ComponentJobStatus-for-Phase3-job2:"
+          echo "${{ needs.report-job-status.outputs.ComponentJobStatus_for_Phase3_job2 }}"
