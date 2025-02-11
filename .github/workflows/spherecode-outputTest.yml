@@ -1,4 +1,4 @@
-name: spherecode new
+name: spherecode-outputTest
 run-name: Deploy ${{ inputs.component }} to ${{ inputs.environment }}
 
 on:
