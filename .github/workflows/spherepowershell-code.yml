@@ -125,7 +125,7 @@ jobs:
 
   report-job-status:
     needs: [check-component-input, create-environment-matrix, set-environment-runner, call-phase]
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
     outputs:
         Controller_Job_Status: ${{ steps.report-status.outputs.Controller-Job-Status }}
         Controller_Job1_Status: ${{ steps.report-status.outputs.check-component-input-status }}
