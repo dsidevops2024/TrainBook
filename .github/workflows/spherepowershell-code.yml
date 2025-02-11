@@ -1,15 +1,165 @@
- - name: Report job statuses
-      id: report-status
-      shell: pwsh
-      run: |
-        # Set environment variables for the PowerShell script
-        $env:check_component_input_status = "${{ needs.check-component-input.result }}"
-        $env:create_environment_matrix_status = "${{ needs.create-environment-matrix.result }}"
-        $env:set_environment_runner_status = "${{ needs.set-environment-runner.result }}"
-        $env:phase_status = "${{ needs.call-phase.outputs.phase-status }}"
-        $env:comp_status_phase1 = "${{ needs.call-phase.outputs.comp-status-phase1 }}"
-        $env:comp_status_phase2 = "${{ needs.call-phase.outputs.comp-status-phase2 }}"
-        $env:comp_status_phase3 = "${{ needs.call-phase.outputs.comp-status-phase3 }}"
+name: spherepowershell-code
+run-name: Deploy ${{ inputs.component }} to ${{ inputs.environment }}
 
-        # Call the PowerShell script to process the job statuses
-         ./report-recent-status.ps1
+on:
+  workflow_dispatch:
+    inputs:
+      component:
+        description: Input the component you wish to deploy. Use "fullstack" to deploy the entire app stack.
+        required: true
+        type: string
+      environment:
+        description: Select a deployment environment.
+        type: choice
+        options:
+          - dev
+          - qa
+          - uat
+          - prod
+          - id
+          - standalone
+        required: true
+      target_environment:
+        description: "Input target environment(s) for Prod. For multiple environments input them with comma separated i.e. (env1, env2)"
+        type: string
+        default: 'All'
+        required: false
+      keep:
+        description: Check to Overwrite the current AppConfig.
+        type:  boolean
+        required: false
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:    
+  check-component-input:
+    environment: ${{ inputs.environment }}
+    runs-on: ubuntu-latest
+    outputs:
+      component: ${{ steps.component-input.outputs.component }}
+    steps:
+      - name: checkout code
+        uses: actions/checkout@v4 
+      - name: check component input 
+        id: component-input
+        shell: bash
+        run: |
+          temp="${{ inputs.component }}"
+          lower=${temp,,}
+          if [[ "$lower" == "fullstack" ]]; then
+            echo "component=fullstack" >> $GITHUB_OUTPUT
+            echo "Deploying fullstack"
+          else 
+            comp=`jq '.[] | .componentName' component.json | grep -i "\<${{ inputs.component }}\>" -m1`
+            lowercomp=${comp,,}
+            if [[ $lowercomp == "\"${lower}\"" ]]; then
+              echo "Deploying `cat ./component.json | grep -iF -o "${{ inputs.component }}" -m1`"
+              echo "component=`cat ./component.json | grep -iF -o "${{ inputs.component }}" -m1`" >> $GITHUB_OUTPUT
+            else
+              echo "Error: Component '${{ inputs.component }}' not found in component.json"
+              exit 1
+            fi
+          fi
+  create-environment-matrix:
+    needs: check-component-input
+    runs-on: ubuntu-latest
+    outputs:
+        env: ${{ steps.env-matrix.outputs.env }}
+    steps:
+      - name: checkout code
+        uses: actions/checkout@v4  
+      - name: get environment input and created matrix
+        id: env-matrix
+        shell: bash
+        run: |
+          input_envs=$(echo "${{ inputs.target_environment }}" | tr -d '[:blank:]')
+          if [[ "${{ inputs.environment }}" == "prod" ]]; then
+            if [[ "$input_envs" == "All" ]]; then
+              echo "env=`cat ./client-manifests/${{ inputs.environment }}-clients.json | jq -c`" >> $GITHUB_OUTPUT
+            else
+              deploy_envs="["
+              IFS=',' read -ra ENV_ARRAY <<< "$input_envs"
+              for env in "${ENV_ARRAY[@]}"; do
+                matching_env=$(jq -c ".[] | select(.env == \"$env\")" ./client-manifests/${{ inputs.environment }}-clients.json)
+                 
+                if [[ -z "$matching_env" ]]; then
+                  echo "Error: No matching environment found for '$env' in ${{ inputs.environment }}-clients.json"
+                  exit 1
+                else
+                  if [[ -z "$deploy_envs" || "$deploy_envs" == "[" ]]; then
+                    deploy_envs="$deploy_envs$matching_env"
+                  else
+                    deploy_envs="$deploy_envs, $matching_env"
+                  fi
+                fi
+              done
+              deploy_envs="$deploy_envs]"
+              echo "env=$deploy_envs" >> $GITHUB_OUTPUT
+            fi
+          else
+            echo "env=`cat ./client-manifests/${{ inputs.environment }}-clients.json | jq -c`" >> $GITHUB_OUTPUT
+          fi
+  
+  set-environment-runner:
+    runs-on: ubuntu-latest
+    outputs:
+      runner: ${{ steps.env-runner.outputs.runner }}
+    steps:
+      - name: set runner group
+        id: env-runner
+        run: |
+          if [[ ${{ inputs.environment }} == "prod" ]]; then
+            echo "runner=Prod" >> $GITHUB_OUTPUT
+          else
+            echo "runner=NonProd" >> $GITHUB_OUTPUT
+          fi
+  call-phase:
+    needs: [check-component-input, create-environment-matrix]
+    uses: ./.github/workflows/deploy-phase.yml
+    with: 
+      component: ${{ inputs.component }}
+      environment: ${{ inputs.environment }}
+      runner: ${{ inputs.runner }}
+
+  report-job-status:
+    needs: [check-component-input, create-environment-matrix, set-environment-runner, call-phase]
+    runs-on: ubuntu-latest
+    outputs:
+        Controller_Job_Status: ${{ steps.report-status.outputs.Controller-Job-Status }}
+        Controller_Job1_Status: ${{ steps.report-status.outputs.check-component-input-status }}
+        Controller_Job2_Status: ${{ steps.report-status.outputs.create-environment-matrix-status }}
+        Controller_Job3_Status: ${{ steps.report-status.outputs.set-environment-runner-status }}
+        OverallPhaseJobStatus: ${{ steps.report-status.outputs.overall-phase-status }}
+        Overall_Job_Status_phase1: ${{ steps.report-status.outputs.deploy-single-component_status }}
+        Overall_Job_Status_phase2: ${{ steps.report-status.outputs.deploy-phase-one_status }}
+        Overall_Job_Status_phase3: ${{ steps.report-status.outputs.deploy-phase-two_status }}
+        ComponentJobStatus_for_Phase1: ${{ steps.report-status.outputs.deploy-single-component-status }}
+        ComponentJobStatus_for_Phase1_job1: ${{ steps.report-status.outputs.deploy-single-component-job1-status }}
+        ComponentJobStatus_for_Phase1_job2: ${{ steps.report-status.outputs.deploy-single-component-job2-status }}
+        ComponentJobStatus_for_Phase2: ${{ steps.report-status.outputs.deploy-phase-one-status }}
+        ComponentJobStatus_for_Phase2_job1: ${{ steps.report-status.outputs.deploy-phase-one-job1-status }}
+        ComponentJobStatus_for_Phase2_job2: ${{ steps.report-status.outputs.deploy-phase-one-job2-status }}
+        ComponentJobStatus_for_Phase3: ${{ steps.report-status.outputs.deploy-phase-two-status }}
+        ComponentJobStatus_for_Phase3_job1: ${{ steps.report-status.outputs.deploy-phase-two-job1-status }}
+        ComponentJobStatus_for_Phase3_job2: ${{ steps.report-status.outputs.deploy-phase-two-job2-status }}
+    steps:
+       - name: Checkout repository
+         uses: actions/checkout@v3
+ 
+       - name: Report job statuses
+         id: report-status
+         shell: pwsh
+         run: |
+           # Set environment variables for the PowerShell script
+           $env:check_component_input_status = "${{ needs.check-component-input.result }}"
+           $env:create_environment_matrix_status = "${{ needs.create-environment-matrix.result }}"
+           $env:set_environment_runner_status = "${{ needs.set-environment-runner.result }}"
+           $env:phase_status = "${{ needs.call-phase.outputs.phase-status }}"
+           $env:comp_status_phase1 = "${{ needs.call-phase.outputs.comp-status-phase1 }}"
+           $env:comp_status_phase2 = "${{ needs.call-phase.outputs.comp-status-phase2 }}"
+           $env:comp_status_phase3 = "${{ needs.call-phase.outputs.comp-status-phase3 }}"
+
+           # Call the PowerShell script to process the job statuses
+           .\.github\scripts\report-recent-status.ps1
