@@ -146,9 +146,9 @@ jobs:
         
         OverallPhaseJobStatus: ${{ steps.report-status.outputs.overall-phase-status }}
         #OverallPhaseJobStatus: ${{ steps.report-status.outputs.OverallPhaseJobStatus }}
-        Overall_Job_Status_phase1: ${{ steps.report-status.outputs.OverallPhaseJobStatus-deploy-single-component }}
-        Overall_Job_Status_phase2: ${{ steps.report-status.outputs.OverallPhaseJobStatus-deploy-phase-one }}
-        Overall_Job_Status_phase3: ${{ steps.report-status.outputs.OverallPhaseJobStatus-deploy-phase-two }}
+        Overall_Job_Status_phase1: ${{ steps.report-status.outputs.deploy-single-component_status }}
+        Overall_Job_Status_phase2: ${{ steps.report-status.outputs.OverallPhaseJobStatus-deploy-phase-one_status }}
+        Overall_Job_Status_phase3: ${{ steps.report-status.outputs.OverallPhaseJobStatus-deploy-phase-two_status }}
         
         ComponentJobStatus_for_Phase1: ${{ steps.report-status.outputs.deploy-single-component-status }}
         ComponentJobStatus_for_Phase1_job1: ${{ steps.report-status.outputs.deploy-single-component-job1-status }}
@@ -206,9 +206,9 @@ jobs:
              # Print the status for each component on a new line
               echo "$phase status: $phase_status_value"  
              # Set the output for each phase's status using the new method
-              echo "::set-output name=${phase}-status::$phase status: $phase_status_value"
+              echo "::set-output name=${phase}_status::$phase status: $phase_status_value"
              # Set the output for each phase's status
-              echo "::set-output name=OverallPhaseJobStatus-${phase}::$phase_status_value"
+              #echo "::set-output name=OverallPhaseJobStatus-${phase}::$phase_status_value"
             done
 
            # Loop to handle component job status for all phases
