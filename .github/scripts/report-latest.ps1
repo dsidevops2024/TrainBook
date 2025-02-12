@@ -1,49 +1,54 @@
-# Generate the Controller Job Status
-$ControllerJobStatus = "check-component-input status: $check_component_input_status, "
-$ControllerJobStatus += "create-environment-matrix status: $create_environment_matrix_status, "
-$ControllerJobStatus += "set-environment-runner status: $set_environment_runner_status"
+param (
+    [string]$checkComponentInputStatus,
+    [string]$createEnvironmentMatrixStatus,
+    [string]$setEnvironmentRunnerStatus,
+    [string]$phaseStatus,
+    [string]$compStatusPhase1,
+    [string]$compStatusPhase2,
+    [string]$compStatusPhase3
+)
 
-Write-Host "$ControllerJobStatus"
-Write-Host "Controller-Job-Status=$ControllerJobStatus"
+# Constructing Controller Job Status
+$ControllerJobStatus = "check-component-input status: $checkComponentInputStatus, "
+$ControllerJobStatus += "create-environment-matrix status: $createEnvironmentMatrixStatus, "
+$ControllerJobStatus += "set-environment-runner status: $setEnvironmentRunnerStatus"
 
-# Process component statuses
+# Set output for Controller_Job_Status
+Add-Content -Path $env:GITHUB_OUTPUT -Value "Controller-Job-Status=$ControllerJobStatus"
+
 $components = @("check-component-input", "create-environment-matrix", "set-environment-runner")
 foreach ($component in $components) {
-    $component_status = $ControllerJobStatus -split "$component status: " | Select-String -Pattern '^.*, ' | ForEach-Object { $_.Line -split ", " | Select-Object -First 1 }
-    Write-Host "$component status: $component_status"
+    $componentStatus = ($ControllerJobStatus -split "$component status: ")[1] -split ", " | Select-Object -First 1
+    Add-Content -Path $env:GITHUB_OUTPUT -Value "$component-status=$component status: $componentStatus"
 }
 
-# Process phase statuses
+# Process Phase Status
 $phases = @("check-approvals", "deploy-single-component", "deploy-phase-one", "deploy-phase-two")
 foreach ($phase in $phases) {
-    $phase_status_value = $phase_status -split "$phase status: " | Select-String -Pattern '^.*, ' | ForEach-Object { $_.Line -split ", " | Select-Object -First 1 }
-    Write-Host "$phase status: $phase_status_value"
+    $phaseStatusValue = ($phaseStatus -split "$phase status: ")[1] -split ", " | Select-Object -First 1
+    Add-Content -Path $env:GITHUB_OUTPUT -Value "${phase}_status=$phase status: $phaseStatusValue"
 }
 
-# Process component statuses for each phase
-$phasejobs = @("deploy-single-component", "deploy-phase-one", "deploy-phase-two")
-foreach ($phase in $phasejobs) {
-    # Assign the corresponding phase status for each phase job
-    if ($phase -eq "deploy-single-component") {
-        $comp_status = $comp_status_phase1
+$phaseJobs = @("deploy-single-component", "deploy-phase-one", "deploy-phase-two")
+foreach ($phase in $phaseJobs) {
+    $compStatus = if ($phase -eq "deploy-single-component") {
+        $compStatusPhase1
     } elseif ($phase -eq "deploy-phase-one") {
-        $comp_status = $comp_status_phase2
+        $compStatusPhase2
     } elseif ($phase -eq "deploy-phase-two") {
-        $comp_status = $comp_status_phase3
+        $compStatusPhase3
     }
 
-    Write-Host "$phase status: $comp_status"
+    Add-Content -Path $env:GITHUB_OUTPUT -Value "${phase}-status=$compStatus"
 
-    # If there is no component status, set default skipped values for job 1 and job 2
-    if (-not $comp_status) {
-        $comp_status_job1 = "create-component-matrix status: skipped"
-        $comp_status_job2 = "deploy-to-AzService status: skipped"
+    if (-not $compStatus) {
+        $compStatusJob1 = "create-component-matrix status: skipped"
+        $compStatusJob2 = "deploy-to-AzService status: skipped"
     } else {
-        # Split comp_status to get the specific job statuses
-        $comp_status_job1 = ($comp_status -split 'create-component-matrix status: ')[1] -split ',' | Select-Object -First 1
-        $comp_status_job2 = ($comp_status -split 'deploy-to-AzService status: ')[1] -split ',' | Select-Object -First 1
+        $compStatusJob1 = ($compStatus -split 'create-component-matrix status: ')[1] -split ", " | Select-Object -First 1
+        $compStatusJob2 = ($compStatus -split 'deploy-to-AzService status: ')[1] -split ", " | Select-Object -First 1
     }
 
-    Write-Host "$phase-job1-status=$comp_status_job1"
-    Write-Host "$phase-job2-status=$comp_status_job2"
+    Add-Content -Path $env:GITHUB_OUTPUT -Value "${phase}-job1-status=$compStatusJob1"
+    Add-Content -Path $env:GITHUB_OUTPUT -Value "${phase}-job2-status=$compStatusJob2"
 }
