@@ -136,18 +136,19 @@ jobs:
         Controller_Job2_Status: ${{ steps.report-status.outputs.create-environment-matrix-status }}
         Controller_Job3_Status: ${{ steps.report-status.outputs.set-environment-runner-status }}
         OverallPhaseJobStatus: ${{ steps.report-status.outputs.overall-phase-status }}
-        Overall_Job_Status_phase1: ${{ steps.report-status.outputs.deploy-single-component_status }}
-        Overall_Job_Status_phase2: ${{ steps.report-status.outputs.deploy-phase-one_status }}
-        Overall_Job_Status_phase3: ${{ steps.report-status.outputs.deploy-phase-two_status }}
-        ComponentJobStatus_for_Phase1: ${{ steps.report-status.outputs.deploy-single-component-status }}
-        ComponentJobStatus_for_Phase1_job1: ${{ steps.report-status.outputs.deploy-single-component-job1-status }}
-        ComponentJobStatus_for_Phase1_job2: ${{ steps.report-status.outputs.deploy-single-component-job2-status }}
-        ComponentJobStatus_for_Phase2: ${{ steps.report-status.outputs.deploy-phase-one-status }}
-        ComponentJobStatus_for_Phase2_job1: ${{ steps.report-status.outputs.deploy-phase-one-job1-status }}
-        ComponentJobStatus_for_Phase2_job2: ${{ steps.report-status.outputs.deploy-phase-one-job2-status }}
-        ComponentJobStatus_for_Phase3: ${{ steps.report-status.outputs.deploy-phase-two-status }}
-        ComponentJobStatus_for_Phase3_job1: ${{ steps.report-status.outputs.deploy-phase-two-job1-status }}
-        ComponentJobStatus_for_Phase3_job2: ${{ steps.report-status.outputs.deploy-phase-two-job2-status }}
+        Overall_Job_Status_phase1: ${{ steps.report-status.outputs.check-approvals_status }}
+        Overall_Job_Status_phase2: ${{ steps.report-status.outputs.deploy-single-component_status }}
+        Overall_Job_Status_phase3: ${{ steps.report-status.outputs.deploy-phase-one_status }}
+        Overall_Job_Status_phase4: ${{ steps.report-status.outputs.deploy-phase-two_status }}
+        ComponentJobStatus_for_Phase2: ${{ steps.report-status.outputs.deploy-single-component-status }}
+        ComponentJobStatus_for_Phase2_job1: ${{ steps.report-status.outputs.deploy-single-component-job1-status }}
+        ComponentJobStatus_for_Phase2_job2: ${{ steps.report-status.outputs.deploy-single-component-job2-status }}
+        ComponentJobStatus_for_Phase3: ${{ steps.report-status.outputs.deploy-phase-one-status }}
+        ComponentJobStatus_for_Phase3_job1: ${{ steps.report-status.outputs.deploy-phase-one-job1-status }}
+        ComponentJobStatus_for_Phase3_job2: ${{ steps.report-status.outputs.deploy-phase-one-job2-status }}
+        ComponentJobStatus_for_Phase4: ${{ steps.report-status.outputs.deploy-phase-two-status }}
+        ComponentJobStatus_for_Phase4_job1: ${{ steps.report-status.outputs.deploy-phase-two-job1-status }}
+        ComponentJobStatus_for_Phase4_job2: ${{ steps.report-status.outputs.deploy-phase-two-job2-status }}
     steps:
        - name: Checkout repository
          uses: actions/checkout@v3
@@ -179,7 +180,7 @@ jobs:
            echo "overall-phase-status=$phase_status" >> $GITHUB_OUTPUT
            # Define the phase names in an array
 
-           phases=("deploy-single-component" "deploy-phase-one" "deploy-phase-two")
+           phases=("check-approvals" "deploy-single-component" "deploy-phase-one" "deploy-phase-two")
            #for phase in deploy-single-component deploy-phase-one deploy-phase-two; do
            for phase in "${phases[@]}"; do
              phase_status_value=$(echo "$phase_status" | awk -v phase="$phase" -F"$phase status: " '{print $2}' | awk -F', ' '{print $1}')
@@ -235,12 +236,8 @@ jobs:
           echo "${{ needs.report-job-status.outputs.Overall_Job_Status_phase2 }}"
           echo "Overall_Job_Status_phase3:"
           echo "${{ needs.report-job-status.outputs.Overall_Job_Status_phase3 }}"
-          echo "ComponentJobStatus-for-Phase1:"
-          echo "${{ needs.report-job-status.outputs.ComponentJobStatus_for_Phase1 }}"
-          echo "ComponentJobStatus-for-Phase1-job1:"
-          echo "${{ needs.report-job-status.outputs.ComponentJobStatus_for_Phase1_job1 }}"
-          echo "ComponentJobStatus-for-Phase1-job2:"
-          echo "${{ needs.report-job-status.outputs.ComponentJobStatus_for_Phase1_job2 }}"
+          echo "Overall_Job_Status_phase4:"
+          echo "${{ needs.report-job-status.outputs.Overall_Job_Status_phase4 }}"
           echo "ComponentJobStatus-for-Phase2:"
           echo "${{ needs.report-job-status.outputs.ComponentJobStatus_for_Phase2 }}"
           echo "ComponentJobStatus-for-Phase2-job1:"
@@ -253,3 +250,9 @@ jobs:
           echo "${{ needs.report-job-status.outputs.ComponentJobStatus_for_Phase3_job1 }}"
           echo "ComponentJobStatus-for-Phase3-job2:"
           echo "${{ needs.report-job-status.outputs.ComponentJobStatus_for_Phase3_job2 }}"
+          echo "ComponentJobStatus-for-Phase4:"
+          echo "${{ needs.report-job-status.outputs.ComponentJobStatus_for_Phase4 }}"
+          echo "ComponentJobStatus-for-Phase4-job1:"
+          echo "${{ needs.report-job-status.outputs.ComponentJobStatus_for_Phase4_job1 }}"
+          echo "ComponentJobStatus-for-Phase4-job2:"
+          echo "${{ needs.report-job-status.outputs.ComponentJobStatus_for_Phase4_job2 }}"
