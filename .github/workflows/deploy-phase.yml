@@ -25,7 +25,13 @@ on:
         value: ${{ jobs.deploy-phase-two.outputs.compstatus }}
         
 jobs:
-  #Phase1:
+  check-approvals:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Approval step
+        id: step2  # We add an ID for job2
+        run: |
+          echo "Approval-check=Test for approval" 
   deploy-single-component:
     if: ${{ ! contains(inputs.component, 'fullstack') }}
     uses: ./.github/workflows/deploy-component.yml
@@ -55,7 +61,7 @@ jobs:
       runner: ${{ inputs.runner }}
       
   phase-status:
-    needs: [deploy-single-component, deploy-phase-one, deploy-phase-two]
+    needs: [check-approvals,deploy-single-component, deploy-phase-one, deploy-phase-two]
     if: always()
     continue-on-error: true
     runs-on: ubuntu-latest
@@ -78,6 +84,7 @@ jobs:
           #Phasestatus="phase 1 status: ${{ needs.Phase1.result }}, " 
           #Phasestatus+="phase 2 status: ${{ needs.Phase2.result }}, "
           #Phasestatus+="phase 3 status: ${{ needs.Phase3.result }}"
+          Phasestatus="check-approvals status: ${{ needs.check-approvals.result }}, "
           Phasestatus="deploy-single-component status: ${{ needs.deploy-single-component.result }}, " 
           Phasestatus+="deploy-phase-one status: ${{ needs.deploy-phase-one.result }}, "
           Phasestatus+="deploy-phase-two status: ${{ needs.deploy-phase-two.result }}"
