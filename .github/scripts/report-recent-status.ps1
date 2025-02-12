@@ -1,5 +1,3 @@
-# report-latest.ps1
-
 # Function to write the status to the GitHub output
 function Write-OutputToFile {
     param (
@@ -10,7 +8,7 @@ function Write-OutputToFile {
     Add-Content -Path $env:GITHUB_OUTPUT -Value "$name=$value"
 }
 
-# Construct the Controller Job Status
+# Construct the Controller Job Status using the GitHub Actions environment variables
 $ControllerJobStatus = "check-component-input status: $($env:CHECK_COMPONENT_INPUT), "
 $ControllerJobStatus += "create-environment-matrix status: $($env:CREATE_ENVIRONMENT_MATRIX), "
 $ControllerJobStatus += "set-environment-runner status: $($env:SET_ENVIRONMENT_RUNNER)"
@@ -21,7 +19,7 @@ Write-OutputToFile "Controller-Job-Status" $ControllerJobStatus
 # Define components
 $components = @("check-component-input", "create-environment-matrix", "set-environment-runner")
 
-# Loop through components to extract their status
+# Loop through components to extract their status from the ControllerJobStatus
 foreach ($component in $components) {
     $componentStatus = ($ControllerJobStatus | Select-String -Pattern "$component status: (.*?),") -replace ".*?status: (.*?),", '$1'
     Write-Host "$component status: $componentStatus"
@@ -61,6 +59,7 @@ foreach ($phase in $phaseJobs) {
     Write-Host "$phase status: $compStatus"
     Write-OutputToFile "${phase}-status" $compStatus
 
+    # Define additional job statuses within each phase
     if (-not $compStatus) {
         $compStatusJob1 = "create-component-matrix status: skipped"
         $compStatusJob2 = "deploy-to-AzService status: skipped"
