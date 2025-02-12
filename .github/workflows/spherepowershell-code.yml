@@ -153,7 +153,23 @@ jobs:
          id: report-status
          shell: pwsh
          run: |
-           .\.github\scripts\report-recent-status.ps1
+            $check_component_input_status = "success"
+            $create_environment_matrix_status = "success"
+            $set_environment_runner_status = "success"
+            $phase_status = "success"
+            $comp_status_phase1 = "create-component-matrix status: success, deploy-to-AzService status: success"
+            $comp_status_phase2 = "create-component-matrix status: skipped, deploy-to-AzService status: skipped"
+            $comp_status_phase3 = "create-component-matrix status: success, deploy-to-AzService status: success"
+        
+             # Call the script and pass parameters
+            .\.github\scripts\report-latest.ps1 -check_component_input_status $check_component_input_status `
+                               -create_environment_matrix_status $create_environment_matrix_status `
+                               -set_environment_runner_status $set_environment_runner_status `
+                               -phase_status $phase_status `
+                               -comp_status_phase1 $comp_status_phase1 `
+                               -comp_status_phase2 $comp_status_phase2 `
+                               -comp_status_phase3 $comp_status_phase3
+           
   next-job:
     needs: report-job-status
     runs-on: ubuntu-latest
