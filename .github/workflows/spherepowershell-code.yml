@@ -122,7 +122,6 @@ jobs:
       component: ${{ inputs.component }}
       environment: ${{ inputs.environment }}
       runner: ${{ inputs.runner }}
-
   report-job-status:
     needs: [check-component-input, create-environment-matrix, set-environment-runner, call-phase]
     runs-on: windows-latest
@@ -132,35 +131,40 @@ jobs:
         Controller_Job2_Status: ${{ steps.report-status.outputs.create-environment-matrix-status }}
         Controller_Job3_Status: ${{ steps.report-status.outputs.set-environment-runner-status }}
         OverallPhaseJobStatus: ${{ steps.report-status.outputs.overall-phase-status }}
-        Overall_Job_Status_phase1: ${{ steps.report-status.outputs.deploy-single-component_status }}
-        Overall_Job_Status_phase2: ${{ steps.report-status.outputs.deploy-phase-one_status }}
-        Overall_Job_Status_phase3: ${{ steps.report-status.outputs.deploy-phase-two_status }}
-        ComponentJobStatus_for_Phase1: ${{ steps.report-status.outputs.deploy-single-component-status }}
-        ComponentJobStatus_for_Phase1_job1: ${{ steps.report-status.outputs.deploy-single-component-job1-status }}
-        ComponentJobStatus_for_Phase1_job2: ${{ steps.report-status.outputs.deploy-single-component-job2-status }}
-        ComponentJobStatus_for_Phase2: ${{ steps.report-status.outputs.deploy-phase-one-status }}
-        ComponentJobStatus_for_Phase2_job1: ${{ steps.report-status.outputs.deploy-phase-one-job1-status }}
-        ComponentJobStatus_for_Phase2_job2: ${{ steps.report-status.outputs.deploy-phase-one-job2-status }}
-        ComponentJobStatus_for_Phase3: ${{ steps.report-status.outputs.deploy-phase-two-status }}
-        ComponentJobStatus_for_Phase3_job1: ${{ steps.report-status.outputs.deploy-phase-two-job1-status }}
-        ComponentJobStatus_for_Phase3_job2: ${{ steps.report-status.outputs.deploy-phase-two-job2-status }}
+        Overall_Job_Status_phase1: ${{ steps.report-status.outputs.check-approvals_status }}
+        Overall_Job_Status_phase2: ${{ steps.report-status.outputs.deploy-single-component_status }}
+        Overall_Job_Status_phase3: ${{ steps.report-status.outputs.deploy-phase-one_status }}
+        Overall_Job_Status_phase4: ${{ steps.report-status.outputs.deploy-phase-two_status }}
+        ComponentJobStatus_for_Phase2: ${{ steps.report-status.outputs.deploy-single-component-status }}
+        ComponentJobStatus_for_Phase2_job1: ${{ steps.report-status.outputs.deploy-single-component-job1-status }}
+        ComponentJobStatus_for_Phase2_job2: ${{ steps.report-status.outputs.deploy-single-component-job2-status }}
+        ComponentJobStatus_for_Phase3: ${{ steps.report-status.outputs.deploy-phase-one-status }}
+        ComponentJobStatus_for_Phase3_job1: ${{ steps.report-status.outputs.deploy-phase-one-job1-status }}
+        ComponentJobStatus_for_Phase3_job2: ${{ steps.report-status.outputs.deploy-phase-one-job2-status }}
+        ComponentJobStatus_for_Phase4: ${{ steps.report-status.outputs.deploy-phase-two-status }}
+        ComponentJobStatus_for_Phase4_job1: ${{ steps.report-status.outputs.deploy-phase-two-job1-status }}
+        ComponentJobStatus_for_Phase4_job2: ${{ steps.report-status.outputs.deploy-phase-two-job2-status }}
     steps:
        - name: Checkout repository
          uses: actions/checkout@v3
- 
-       - name: Report job statuses
-         id: report-status
-         shell: pwsh
-         run: |           
-           .\.github\scripts\report-recent-status.ps1 `
-               -check_component_input_status ${{ needs.check-component-input.result }} `
-               -create_environment_matrix_status ${{ needs.create-environment-matrix.result }} `
-               -set_environment_runner_status ${{ needs.set-environment-runner.result }} `
-               -phase_status ${{ needs.call-phase.outputs.phase_status }} `
-               -comp_status_phase1 ${{ needs.call-phase.outputs.comp_status_phase1 }} `
-               -comp_status_phase2 ${{ needs.call-phase.outputs.comp_status_phase2 }} `
-               -comp_status_phase3 ${{ needs.call-phase.outputs.comp_status_phase3 }}
 
+       - name: List all files recursively
+         run: ls -R
+
+       - name: Report job statuses via PowerShell script
+         shell: pwsh
+         id: report-status
+         run: |
+           .\.github\scripts\report-latest.ps1 `
+             -check_component_input_status "${{ needs.check-component-input.result }}" `
+             -create_environment_matrix_status "${{ needs.create-environment-matrix.result }}" `
+             -set_environment_runner_status "${{ needs.set-environment-runner.result }}" `
+             -phase_status "${{ needs.call-phase.outputs.phase-status }}" `
+             -comp_status_phase1 "${{ needs.call-phase.outputs.comp-status-phase1 }}" `
+             -comp_status_phase2 "${{ needs.call-phase.outputs.comp-status-phase2 }}" `
+             -comp_status_phase3 "${{ needs.call-phase.outputs.comp-status-phase3 }}"
+
+ 
   next-job:
     needs: report-job-status
     runs-on: ubuntu-latest
