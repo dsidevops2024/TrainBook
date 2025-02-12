@@ -184,6 +184,7 @@ jobs:
            #for phase in deploy-single-component deploy-phase-one deploy-phase-two; do
            for phase in "${phases[@]}"; do
              phase_status_value=$(echo "$phase_status" | awk -v phase="$phase" -F"$phase status: " '{print $2}' | awk -F', ' '{print $1}')
+             echo "phasevalue: $phase_status_value"
              echo "$phase status: $phase_status_value"  
              echo "${phase}_status=$phase status: $phase_status_value" >> $GITHUB_OUTPUT
            done
