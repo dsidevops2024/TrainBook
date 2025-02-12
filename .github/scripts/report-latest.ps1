@@ -8,6 +8,9 @@ param (
     [string]$compStatusPhase3
 )
 
+# Debug log for phaseStatus
+Write-Host "Debug: phaseStatus is '$phaseStatus'"
+
 # Constructing Controller Job Status
 $ControllerJobStatus = "check-component-input status: $checkComponentInputStatus, "
 $ControllerJobStatus += "create-environment-matrix status: $createEnvironmentMatrixStatus, "
@@ -45,10 +48,23 @@ foreach ($phase in $phaseJobs) {
         $compStatusJob1 = "create-component-matrix status: skipped"
         $compStatusJob2 = "deploy-to-AzService status: skipped"
     } else {
-        $compStatusJob1 = ($compStatus -split 'create-component-matrix status: ')[1] -split ", " | Select-Object -First 1
-        $compStatusJob2 = ($compStatus -split 'deploy-to-AzService status: ')[1] -split ", " | Select-Object -First 1
+        # Extract full status text for each job
+        $compStatusJob1 = if ($compStatus) {
+            ($compStatus -split 'create-component-matrix status: ')[1] -split ", " | Select-Object -First 1
+        } else {
+            "create-component-matrix status: not available"
+        }
+
+        $compStatusJob2 = if ($compStatus) {
+            ($compStatus -split 'deploy-to-AzService status: ')[1] -split ", " | Select-Object -First 1
+        } else {
+            "deploy-to-AzService status: not available"
+        }
     }
 
     Add-Content -Path $env:GITHUB_OUTPUT -Value "${phase}-job1-status=$compStatusJob1"
     Add-Content -Path $env:GITHUB_OUTPUT -Value "${phase}-job2-status=$compStatusJob2"
 }
+
+# Set phaseStatus as output
+Add-Content -Path $env:GITHUB_OUTPUT -Value "OverallPhaseJobStatus=$phaseStatus"
