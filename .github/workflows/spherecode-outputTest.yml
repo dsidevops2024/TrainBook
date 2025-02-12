@@ -188,9 +188,9 @@ jobs:
              echo "${phase}_status=$phase status: $phase_status_value" >> $GITHUB_OUTPUT
            done
 
-           phases=("deploy-single-component" "deploy-phase-one" "deploy-phase-two")
+           phasejobs=("deploy-single-component" "deploy-phase-one" "deploy-phase-two")
            #for phase in deploy-single-component deploy-phase-one deploy-phase-two; do
-           for phase in "${phases[@]}"; do
+           for phase in "${phasejobs[@]}"; do
              if [ "$phase" == "deploy-single-component" ]; then
                  comp_status="${{ needs.call-phase.outputs.comp-status-phase1 }}"
              elif [ "$phase" == "deploy-phase-one" ]; then
