@@ -16,18 +16,18 @@ $ControllerJobStatus += "set-environment-runner status: $set_environment_runner_
 Write-Host "$ControllerJobStatus"
 Write-Host "Controller-Job-Status=$ControllerJobStatus"
 
-# Process component statuses
+# Process component statuses correctly
 $components = @("check-component-input", "create-environment-matrix", "set-environment-runner")
 foreach ($component in $components) {
-    $component_status = $ControllerJobStatus -split "$component status: " | Select-String -Pattern '^.*, ' | ForEach-Object { $_.Line -split ", " | Select-Object -First 1 }
+    $component_status = $ControllerJobStatus -split "$component status: " | Select-String -Pattern '^.*?($|\s*,\s*)' | ForEach-Object { $_.Line.Trim() }
     Write-Host "$component status: $component_status"
     Write-Host "$component-status=$component status: $component_status"
 }
 
-# Process phase statuses
+# Process phase statuses correctly
 $phases = @("check-approvals", "deploy-single-component", "deploy-phase-one", "deploy-phase-two")
 foreach ($phase in $phases) {
-    $phase_status_value = $phase_status -split "$phase status: " | Select-String -Pattern '^.*, ' | ForEach-Object { $_.Line -split ", " | Select-Object -First 1 }
+    $phase_status_value = $phase_status -split "$phase status: " | Select-String -Pattern '^.*?($|\s*,\s*)' | ForEach-Object { $_.Line.Trim() }
     Write-Host "$phase status: $phase_status_value"
     Write-Host "$phase-status=$phase status: $phase_status_value"
 }
