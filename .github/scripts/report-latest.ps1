@@ -24,6 +24,8 @@ foreach ($component in $components) {
     $componentStatus = ($ControllerJobStatus -split "$component status: ")[1] -split ", " | Select-Object -First 1
     Add-Content -Path $env:GITHUB_OUTPUT -Value "$component-status=$component status: $componentStatus"
 }
+    # Set phaseStatus as output
+    Add-Content -Path $env:GITHUB_OUTPUT -Value "overall-phase-status=$phaseStatus"
 
 # Process Phase Status
 $phases = @("check-approvals", "deploy-single-component", "deploy-phase-one", "deploy-phase-two")
@@ -65,6 +67,3 @@ foreach ($phase in $phaseJobs) {
     Add-Content -Path $env:GITHUB_OUTPUT -Value "${phase}-job1-status=$compStatusJob1"
     Add-Content -Path $env:GITHUB_OUTPUT -Value "${phase}-job2-status=$compStatusJob2"
 }
-
-# Set phaseStatus as output
-Add-Content -Path $env:GITHUB_OUTPUT -Value "OverallPhaseJobStatus=$phaseStatus"
