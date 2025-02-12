@@ -85,7 +85,7 @@ jobs:
           #Phasestatus+="phase 2 status: ${{ needs.Phase2.result }}, "
           #Phasestatus+="phase 3 status: ${{ needs.Phase3.result }}"
           Phasestatus="check-approvals status: ${{ needs.check-approvals.result }}, "
-          Phasestatus="deploy-single-component status: ${{ needs.deploy-single-component.result }}, " 
+          Phasestatus+="deploy-single-component status: ${{ needs.deploy-single-component.result }}, " 
           Phasestatus+="deploy-phase-one status: ${{ needs.deploy-phase-one.result }}, "
           Phasestatus+="deploy-phase-two status: ${{ needs.deploy-phase-two.result }}"
           echo "Phasestatus=$Phasestatus" >> $GITHUB_OUTPUT  
