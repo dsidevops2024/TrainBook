@@ -50,15 +50,15 @@ foreach ($phase in $phaseJobs) {
         $compStatusJob1 = "create-component-matrix status: skipped"
         $compStatusJob2 = "deploy-to-AzService status: skipped"
     } else {
-        # Extract full status text for each job
-        $compStatusJob1 = if ($compStatus) {
-            ($compStatus -split 'create-component-matrix status: ')[1] -split ", " | Select-Object -First 1
+        # Attempt to extract create-component-matrix status and deploy-to-AzService status using regex
+        $compStatusJob1 = if ($compStatus -match "create-component-matrix status: (.*?)(,|$)") {
+            "create-component-matrix status: $($matches[1])"
         } else {
             "create-component-matrix status: not available"
         }
 
-        $compStatusJob2 = if ($compStatus) {
-            ($compStatus -split 'deploy-to-AzService status: ')[1] -split ", " | Select-Object -First 1
+        $compStatusJob2 = if ($compStatus -match "deploy-to-AzService status: (.*?)(,|$)") {
+            "deploy-to-AzService status: $($matches[1])"
         } else {
             "deploy-to-AzService status: not available"
         }
