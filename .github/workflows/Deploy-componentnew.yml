@@ -1,4 +1,4 @@
-name: Deploy Component
+name: Deploy Component New
 on:
   workflow_call:
     inputs:
