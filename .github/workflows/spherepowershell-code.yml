@@ -117,7 +117,7 @@ jobs:
           fi
   call-phase:
     needs: [check-component-input, create-environment-matrix]
-    uses: ./.github/workflows/deploy-phase.yml
+    uses: ./.github/workflows/deploy-phasenew.yml
     with: 
       component: ${{ inputs.component }}
       environment: ${{ inputs.environment }}
@@ -153,7 +153,7 @@ jobs:
          id: report-status
          shell: pwsh
          run: |
-           $ErrorActionPreference = "Stop"
+           #$ErrorActionPreference = "Stop"
            .\.github\scripts\report-latest.ps1 `
             -checkComponentInputStatus "${{ needs.check-component-input.result }}" `
             -createEnvironmentMatrixStatus "${{ needs.create-environment-matrix.result }}" `
