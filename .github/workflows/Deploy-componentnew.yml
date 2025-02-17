@@ -42,18 +42,8 @@ jobs:
       - name: Report job statuses
         id: report-status
         run: |
-          jobs=(
-            "create-component-matrix"
-            "deploy-to-AzService"
-          )
-          
-          compjob=""
-          for job in "${jobs[@]}"; do
-            job_status="${{ needs[$job].result }}"
-            compjob+="$job status: $job_status, "
+          status=""
+          for job in ${{ toJson(needs) }}; do
+            status+="${job} status: ${{ needs[job].result }}, "
           done
-          
-          # Clean up trailing comma and space
-          compjob="${compjob%, }"
-          
-          echo "compjob=$compjob" >> $GITHUB_OUTPUT
+          echo "compstatus=${status}" >> $GITHUB_OUTPUT
