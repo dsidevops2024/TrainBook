@@ -67,17 +67,20 @@ jobs:
       - name: Report job statuses
         id: report
         run: |
-          # List of job names
-          jobNames = ("check-approvals", "deploy-single-component", "deploy-phase-one", "deploy-phase-two")         
-          for component "${jobNames[@]}"; do 
-            # Collect the result of each job
-            $status = "${{ needs.$component.result }}"
-            # Format the status output for each job
-            $Phasestatus += "$component status: $status, "
-          }
+          jobs=(
+            "check-approvals"
+            "deploy-single-component"
+            "deploy-phase-one"
+            "deploy-phase-two"
+          )
           
-          # Remove the trailing comma and space
-          $Phasestatus = $Phasestatus.TrimEnd(", ")
-
-          # Output the final formatted status string
-          echo "Phasestatus=$Phasestatus" >> $GITHUB_OUTPUT
+          phaseop=""
+          for job in "${jobs[@]}"; do
+            job_status="${{ needs[$job].result }}"
+            phaseop+="$job status: $job_status, "
+          done
+          
+          # Clean up trailing comma and space
+          phaseop="${phaseop%, }"
+          
+          echo "Phasestatus=$phaseop" >> $GITHUB_OUTPUT
