@@ -42,20 +42,18 @@ jobs:
       - name: Report job statuses
         id: report-status
         run: |
-          # PowerShell script to loop through job statuses dynamically and format the output
-          $jobNames = @("create-component-matrix", "deploy-to-AzService")
-          $compjob = ""
+          jobs=(
+            "create-component-matrix"
+            "deploy-to-AzService"
+          )
           
-          foreach ($job in $jobNames) {
-            # Get the result of each job (success, failure, skipped)
-            $status = "${{ needs.$job.result }}"
-            
-            # Format the job status in the required form
-            $compjob += "$job status: $status, "
-          }
+          compjob=""
+          for job in "${jobs[@]}"; do
+            job_status="${{ needs[$job].result }}"
+            compjob+="$job status: $job_status, "
+          done
           
-          # Trim the trailing comma and space
-          $compjob = $compjob.TrimEnd(", ")
-
-          # Output the final result to GitHub Actions
+          # Clean up trailing comma and space
+          compjob="${compjob%, }"
+          
           echo "compjob=$compjob" >> $GITHUB_OUTPUT
