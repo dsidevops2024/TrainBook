@@ -157,7 +157,8 @@ jobs:
            $Controllerstatus="check-component-input status: ${{ needs.check-component-input.result }}, "
            $Controllerstatus+="create-environment-matrix status: ${{ needs.create-environment-matrix.result }}, " 
            $Controllerstatus+="set-environment-runner status: ${{ needs.set-environment-runner.result }}"
-           echo "controller-status=$Controllerstatus" >> $GITHUB_OUTPUT 
+           #echo "controller-status=$Controllerstatus" >> $GITHUB_OUTPUT 
+           echo "::set-output name=controller-status::$Controllerstatus"
 
        - name: Debug output values
          run: |
