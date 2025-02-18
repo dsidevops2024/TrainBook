@@ -1,31 +1,41 @@
 param (
-    [string]$checkComponentInputStatus,
-    [string]$createEnvironmentMatrixStatus,
-    [string]$setEnvironmentRunnerStatus,
+    #[string]$checkComponentInputStatus,
+    #[string]$createEnvironmentMatrixStatus,
+    #[string]$setEnvironmentRunnerStatus,
+    [string]$controllerStatus,
     [string]$phaseStatus,
     [string]$compStatusPhase1,
     [string]$compStatusPhase2,
     [string]$compStatusPhase3
 )
 
-# Debug log for phaseStatus
-Write-Host "Debug: phaseStatus is '$phaseStatus'"
-
 # Constructing Controller Job Status
-$ControllerJobStatus = "check-component-input status: $checkComponentInputStatus, "
-$ControllerJobStatus += "create-environment-matrix status: $createEnvironmentMatrixStatus, "
-$ControllerJobStatus += "set-environment-runner status: $setEnvironmentRunnerStatus"
+#$ControllerJobStatus = "check-component-input status: $checkComponentInputStatus, "
+#$ControllerJobStatus += "create-environment-matrix status: $createEnvironmentMatrixStatus, "
+#$ControllerJobStatus += "set-environment-runner status: $setEnvironmentRunnerStatus"
 
 # Set output for Controller_Job_Status
-Add-Content -Path $env:GITHUB_OUTPUT -Value "Controller-Job-Status=$ControllerJobStatus"
+#Add-Content -Path $env:GITHUB_OUTPUT -Value "Controller-Job-Status=$ControllerJobStatus"
 
-$components = @("check-component-input", "create-environment-matrix", "set-environment-runner")
-foreach ($component in $components) {
-    $componentStatus = ($ControllerJobStatus -split "$component status: ")[1] -split ", " | Select-Object -First 1
+
+#$components = @("check-component-input", "create-environment-matrix", "set-environment-runner")
+#foreach ($component in $components) {
+    #$componentStatus = ($ControllerJobStatus -split "$component status: ")[1] -split ", " | Select-Object -First 1
+    #Add-Content -Path $env:GITHUB_OUTPUT -Value "$component-status=$component status: $componentStatus"
+#}
+
+#Controller newly added code
+# Set controllerStatus as output
+Add-Content -Path $env:GITHUB_OUTPUT -Value "Controller-Job-Status=$controllerStatus"
+
+$controllers = @("check-component-input", "create-environment-matrix", "set-environment-runner")
+ foreach ($component in $controllers) {
+    $componentStatus = ($controllerStatus -split "$component status: ")[1] -split ", " | Select-Object -First 1
     Add-Content -Path $env:GITHUB_OUTPUT -Value "$component-status=$component status: $componentStatus"
 }
-    # Set phaseStatus as output
-    Add-Content -Path $env:GITHUB_OUTPUT -Value "overall-phase-status=$phaseStatus"
+
+# Set phaseStatus as output
+Add-Content -Path $env:GITHUB_OUTPUT -Value "overall-phase-status=$phaseStatus"
 
 # Process Phase Status
 $phases = @("check-approvals", "deploy-single-component", "deploy-phase-one", "deploy-phase-two")
