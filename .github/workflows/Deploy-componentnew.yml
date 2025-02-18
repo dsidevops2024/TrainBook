@@ -42,8 +42,16 @@ jobs:
       - name: Report job statuses
         id: report-status
         run: |
-          status=""
-          for job in ${{ toJson(needs) }}; do
-            status+="${job} status: ${{ needs[job].result }}, "
-          done
-          echo "compstatus=${status}" >> $GITHUB_OUTPUT
+          # Initialize an empty JSON object
+          statuses="{}"
+          
+          # Collect job statuses (hardcoded for now)
+          job1_status="${{ needs.create-component-matrix.result }}"
+          job2_status="${{ needs.deploy-to-AzService.result }}"
+
+          # Dynamically add job statuses to the JSON object using jq
+          statuses=$(echo $statuses | jq --arg job1 "$job1_status" --arg job2 "$job2_status" \
+            '. + {create-component-matrix: $job1, deploy-to-AzService: $job2}')
+
+          # Set the final result as the output
+          echo "compstatus=$statuses" >> $GITHUB_OUTPUT
