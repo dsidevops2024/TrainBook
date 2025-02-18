@@ -26,22 +26,22 @@ param (
 
 #Controller newly added code
 # Set controllerStatus as output
-#Add-Content -Path $env:GITHUB_OUTPUT -Value "controller-status=$controllerStatus"
+Add-Content -Path $env:GITHUB_OUTPUT -Value "controller-status=$controllerStatus"
 
 # Debugging: Print out the controller status
 Write-Host "Controller Status: $controllerStatus"
 
 # Set controllerStatus as output using set-output (echo to $GITHUB_ENV)
-echo "controller-status=$controllerStatus" >> $GITHUB_OUTPUT
+#echo "controller-status=$controllerStatus" >> $GITHUB_OUTPUT
 
 $controllers = @("check-component-input", "create-environment-matrix", "set-environment-runner")
  foreach ($component in $controllers) {
     $componentStatus = ($controllerStatus -split "$component status: ")[1] -split ", " | Select-Object -First 1
-    #Add-Content -Path $env:GITHUB_OUTPUT -Value "$component-status=$component status: $componentStatus"
+    Add-Content -Path $env:GITHUB_OUTPUT -Value "$component-status=$component status: $componentStatus"
     Write-Host "Processing component: $component"
     Write-Host "Component Status: $componentStatus"
      # Set each component status as output
-    echo "$component-status=$component status: $componentStatus" >> $GITHUB_OUTPUT
+    #echo "$component-status=$component status: $componentStatus" >> $GITHUB_OUTPUT
 }
 
 # Set phaseStatus as output
