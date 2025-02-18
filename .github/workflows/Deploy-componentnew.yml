@@ -64,41 +64,38 @@ jobs:
           echo "secondword=job2 from deploy component" 
   
   component-status:
-    runs-on: windows-latest
+    runs-on: ubuntu-latest
     needs: [create-component-matrix, deploy-to-AzService]
     outputs:
       output1: ${{ steps.report-status.outputs.compjob }}
     steps:
       - name: Report job statuses
         id: report-status
-        shell: pwsh
         run: |
-          compjob=""
-
-          # Loop over each job in the 'needs' context and add its status dynamically
-          for job in create-component-matrix deploy-to-AzService; do
-            job_status="${{ needs[$job].result }}"
-            compjob+="$job status: $job_status, "
-          done
-
-          # Remove trailing comma and space
-          compjob="${compjob%, }"
-          
-          # Output the collected job statuses
+          compjob="create-component-matrix status: ${{ needs.create-component-matrix.result }}, "
+          compjob+="deploy-to-AzService status: ${{ needs.deploy-to-AzService.result }}"
           echo "compjob=$compjob" >> $GITHUB_OUTPUT
 
-          # Set output for Controller_Job_Status
-          #Add-Content -Path $env:GITHUB_OUTPUT -Value "compjob=$ControllerJobStatus"
-          
-          # Create an empty string to store all job statuses
-          #compjob=""
+  extract-job-names:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Extract job names using PowerShell
+        shell: pwsh
+        run: |
+          # Read the YAML file and extract job names using PowerShell
+          $yamlFilePath = ".github/workflows/Deploy-componentnew.yml"
 
-          # Loop through each job dynamically using `toJSON` (or manually in the script for each job)
-          #job_statuses='{"create-component-matrix": "${{ needs.create-component-matrix.result }}", "deploy-to-AzService": "${{ needs.deploy-to-AzService.result }}"}'
+          # Read the YAML content as text
+          $yamlContent = Get-Content $yamlFilePath
 
-          # Dynamically build the compjob string
-          #compjob=$(echo $job_statuses | jq -r 'to_entries | map("\(.key) status: \(.value)") | join(", ")')
+          # Find all job names (assuming jobs are listed as keys at the top level)
+          $jobNames = $yamlContent | Select-String -Pattern '^\s*(\w+):' | ForEach-Object { $_.Matches.Groups[1].Value }
 
-          # Output the concatenated job status
-          #echo "compjob=$compjob" 
-          ##>> $GITHUB_OUTPUT
+          # Filter out the 'jobs' section itself
+          $jobNames = $jobNames | Where-Object { $_ -ne 'jobs' }
+
+          # Print the job names
+          Write-Host "Job names extracted: $($jobNames -join ', ')"
+
+          # Optionally, you can save them to an output file if you need
+          # $jobNames | Out-File 'extracted_job_names.txt'
