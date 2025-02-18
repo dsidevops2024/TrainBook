@@ -190,7 +190,7 @@ jobs:
            #echo "${{ steps.report-status.outputs.Controller-Job-Status }}"
            echo "${{ steps.report-status.outputs.controller-status }}"
            echo "ControllerJob1Status:"
-           echo " heck-component-input status: ${{ steps.report-status.outputs.check-component-input-status }}"
+           echo "${{ steps.report-status.outputs.check-component-input-status }}"
            echo "ControllerJob2Status:"
            echo "${{ steps.report-status.outputs.create-environment-matrix-status }}"
            echo "ControllerJob3Status:"
