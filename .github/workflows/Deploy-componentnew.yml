@@ -86,17 +86,21 @@ jobs:
       - name: Extract job names using PowerShell
         shell: pwsh
         run: |
-          # Read the YAML file and extract job names using PowerShell
+          # Path to the YAML file
           $yamlFilePath = ".github/workflows/Deploy-componentnew.yml"
-
+          
           # Check if the file exists before proceeding
           if (Test-Path $yamlFilePath) {
+              # Read the file content into an array
               $yamlContent = Get-Content $yamlFilePath
 
-              # Refined regex pattern to match first-level job names in 'jobs'
-              $jobNames = $yamlContent | Select-String -Pattern '^\s*(\w+):' | ForEach-Object { $_.Matches.Groups[1].Value }
+              # Use regular expression to extract top-level job names under 'jobs'
+              # Match lines that are top-level keys under 'jobs:'
+              $jobNames = $yamlContent | Select-String -Pattern '^\s*(\w+):' | ForEach-Object { 
+                  $_.Matches.Groups[1].Value
+              }
 
-              # Filter out the 'jobs' section itself
+              # Filter out unwanted matches (e.g., 'jobs' itself)
               $jobNames = $jobNames | Where-Object { $_ -ne 'jobs' }
 
               # Print the job names
