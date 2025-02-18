@@ -64,39 +64,38 @@ jobs:
           echo "secondword=job2 from deploy component" 
   
   component-status:
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
     needs: [create-component-matrix, deploy-to-AzService]
     outputs:
       output1: ${{ steps.report-status.outputs.compjob }}
     steps:
-      - name: Report job statuses
-        id: report-status
-        run: |
-          compjob="create-component-matrix status: ${{ needs.create-component-matrix.result }}, "
-          compjob+="deploy-to-AzService status: ${{ needs.deploy-to-AzService.result }}"
-          echo "compjob=$compjob" >> $GITHUB_OUTPUT
-
-  extract-job-names:
-    runs-on: ubuntu-latest
-    needs: [create-component-matrix, deploy-to-AzService, component-status]
-    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+      
       - name: Extract job names using PowerShell
         shell: pwsh
         run: |
           # Read the YAML file and extract job names using PowerShell
           $yamlFilePath = ".github/workflows/Deploy-componentnew.yml"
 
-          # Read the YAML content as text
-          $yamlContent = Get-Content $yamlFilePath
+          # Check if the file exists before proceeding
+          if (Test-Path $yamlFilePath) {
+              $yamlContent = Get-Content $yamlFilePath
 
-          # Find all job names (assuming jobs are listed as keys at the top level)
-          $jobNames = $yamlContent | Select-String -Pattern '^\s*(\w+):' | ForEach-Object { $_.Matches.Groups[1].Value }
+              # Find all job names
+              $jobNames = $yamlContent | Select-String -Pattern '^\s*(\w+):' | ForEach-Object { $_.Matches.Groups[1].Value }
+              $jobNames = $jobNames | Where-Object { $_ -ne 'jobs' }
 
-          # Filter out the 'jobs' section itself
-          $jobNames = $jobNames | Where-Object { $_ -ne 'jobs' }
+              # Print the job names
+              Write-Host "Job names extracted: $($jobNames -join ', ')"
+          } else {
+              Write-Host "YAML file not found: $yamlFilePath"
+              exit 1
+          }
 
-          # Print the job names
-          Write-Host "Job names extracted: $($jobNames -join ', ')"
-
-          # Optionally, you can save them to an output file if you need
-          # $jobNames | Out-File 'extracted_job_names.txt'
+      - name: Report job statuses
+        id: report-status
+        run: |
+          compjob="create-component-matrix status: ${{ needs.create-component-matrix.result }}, "
+          compjob+="deploy-to-AzService status: ${{ needs.deploy-to-AzService.result }}"
+          echo "compjob=$compjob" >> $GITHUB_OUTPUT 
