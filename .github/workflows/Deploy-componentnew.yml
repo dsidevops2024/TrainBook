@@ -64,23 +64,33 @@ jobs:
           echo "secondword=job2 from deploy component" 
   
   component-status:
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
     needs: [create-component-matrix, deploy-to-AzService]
     outputs:
       output1: ${{ steps.report-status.outputs.compjob }}
     steps:
       - name: Report job statuses
         id: report-status
+        shell: pwsh
         run: |
+          $ControllerJobStatus = ""
+          $jobNames = @("create-component-matrix", "deploy-to-AzService")
+          for ($i = 0; $i -lt $jobNames.Length; $i++) {
+            $ControllerJobStatus += "$($jobNames[$i]) status: $($jobStatuses[$i])), "
+          }
+
+          # Set output for Controller_Job_Status
+          #Add-Content -Path $env:GITHUB_OUTPUT -Value "compjob=$ControllerJobStatus"
+          
           # Create an empty string to store all job statuses
-          compjob=""
+          #compjob=""
 
           # Loop through each job dynamically using `toJSON` (or manually in the script for each job)
-          job_statuses='{"create-component-matrix": "${{ needs.create-component-matrix.result }}", "deploy-to-AzService": "${{ needs.deploy-to-AzService.result }}"}'
+          #job_statuses='{"create-component-matrix": "${{ needs.create-component-matrix.result }}", "deploy-to-AzService": "${{ needs.deploy-to-AzService.result }}"}'
 
           # Dynamically build the compjob string
-          compjob=$(echo $job_statuses | jq -r 'to_entries | map("\(.key) status: \(.value)") | join(", ")')
+          #compjob=$(echo $job_statuses | jq -r 'to_entries | map("\(.key) status: \(.value)") | join(", ")')
 
           # Output the concatenated job status
-          echo "compjob=$compjob" 
+          #echo "compjob=$compjob" 
           ##>> $GITHUB_OUTPUT
