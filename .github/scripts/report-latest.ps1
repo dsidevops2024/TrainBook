@@ -33,7 +33,9 @@ echo "controller-status=$controllerStatus" >> $GITHUB_ENV
 $controllers = @("check-component-input", "create-environment-matrix", "set-environment-runner")
  foreach ($component in $controllers) {
     $componentStatus = ($controllerStatus -split "$component status: ")[1] -split ", " | Select-Object -First 1
-    Add-Content -Path $env:GITHUB_OUTPUT -Value "$component-status=$component status: $componentStatus"
+    #Add-Content -Path $env:GITHUB_OUTPUT -Value "$component-status=$component status: $componentStatus"
+     # Set each component status as output
+    echo "$component-status=$component status: $componentStatus" >> $GITHUB_OUTPUT
 }
 
 # Set phaseStatus as output
