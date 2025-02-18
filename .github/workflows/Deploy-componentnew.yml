@@ -1,19 +1,49 @@
 name: Deploy Component New
 on:
-  workflow_call:
+  workflow_dispatch:
     inputs:
       component:
-        type: string
+        description: Input the component you wish to deploy. Use "fullstack" to deploy the entire app stack.
         required: true
+        type: string
       environment:
-        type: string
+        description: Select a deployment environment.
+        type: choice
+        options:
+          - dev
+          - qa
+          - uat
+          - prod
+          - id
+          - standalone
         required: true
-      runner:
+      target_environment:
+        description: "Input target environment(s) for Prod. For multiple environments input them with comma separated i.e. (env1, env2)"
         type: string
-        required: true
-    outputs:        
-      compstatus:
-        value: ${{ jobs.component-status.outputs.output1 }}
+        default: 'All'
+        required: false
+      keep:
+        description: Check to Overwrite the current AppConfig.
+        type:  boolean
+        required: false
+          
+permissions:
+  contents: read
+  id-token: write
+  #workflow_call:
+    #inputs:
+      #component:
+        #type: string
+        #required: true
+      #environment:
+        #type: string
+        #required: true
+      #runner:
+        #type: string
+        #required: true
+    #outputs:        
+      #compstatus:
+        #value: ${{ jobs.component-status.outputs.output1 }}
     
 jobs:
   create-component-matrix:
