@@ -73,11 +73,19 @@ jobs:
         id: report-status
         shell: pwsh
         run: |
-          $ControllerJobStatus = ""
-          $jobNames = @("create-component-matrix", "deploy-to-AzService")
-          for ($i = 0; $i -lt $jobNames.Length; $i++) {
-            $ControllerJobStatus += "$($jobNames[$i]) status: $($jobStatuses[$i])), "
-          }
+          compjob=""
+
+          # Loop over each job in the 'needs' context and add its status dynamically
+          for job in create-component-matrix deploy-to-AzService; do
+            job_status="${{ needs[$job].result }}"
+            compjob+="$job status: $job_status, "
+          done
+
+          # Remove trailing comma and space
+          compjob="${compjob%, }"
+          
+          # Output the collected job statuses
+          echo "compjob=$compjob" >> $GITHUB_OUTPUT
 
           # Set output for Controller_Job_Status
           #Add-Content -Path $env:GITHUB_OUTPUT -Value "compjob=$ControllerJobStatus"
