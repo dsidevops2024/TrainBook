@@ -42,16 +42,14 @@ jobs:
       - name: Report job statuses
         id: report-status
         run: |
-          # Initialize an empty JSON object
-          statuses="{}"
-          
-          # Collect job statuses (hardcoded for now)
-          job1_status="${{ needs.create-component-matrix.result }}"
-          job2_status="${{ needs.deploy-to-AzService.result }}"
+          # Create an empty string to store all job statuses
+          compjob=""
 
-          # Dynamically add job statuses to the JSON object using jq
-          statuses=$(echo $statuses | jq --arg job1 "$job1_status" --arg job2 "$job2_status" \
-            '. + {create-component-matrix: $job1, deploy-to-AzService: $job2}')
+          # Loop through each job dynamically using `toJSON` (or manually in the script for each job)
+          job_statuses='{"create-component-matrix": "${{ needs.create-component-matrix.result }}", "deploy-to-AzService": "${{ needs.deploy-to-AzService.result }}"}'
 
-          # Set the final result as the output
-          echo "compstatus=$statuses" >> $GITHUB_OUTPUT
+          # Dynamically build the compjob string
+          compjob=$(echo $job_statuses | jq -r 'to_entries | map("\(.key) status: \(.value)") | join(", ")')
+
+          # Output the concatenated job status
+          echo "compjob=$compjob" >> $GITHUB_OUTPUT
