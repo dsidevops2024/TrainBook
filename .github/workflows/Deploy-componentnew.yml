@@ -64,14 +64,24 @@ jobs:
           echo "secondword=job2 from deploy component" 
   
   component-status:
-    runs-on: windows-latest
+    runs-on: ubuntu-latest
     needs: [create-component-matrix, deploy-to-AzService]
     outputs:
       output1: ${{ steps.report-status.outputs.compjob }}
     steps:
+      - name: Report job statuses
+        id: report-status
+        run: |
+          compjob="create-component-matrix status: ${{ needs.create-component-matrix.result }}, "
+          compjob+="deploy-to-AzService status: ${{ needs.deploy-to-AzService.result }}"
+          echo "compjob=$compjob" >> $GITHUB_OUTPUT
+
+  extract-job-names:
+    runs-on: windows-latest
+    steps:
       - name: Checkout repository
         uses: actions/checkout@v3
-      
+
       - name: Extract job names using PowerShell
         shell: pwsh
         run: |
@@ -82,8 +92,10 @@ jobs:
           if (Test-Path $yamlFilePath) {
               $yamlContent = Get-Content $yamlFilePath
 
-              # Find all job names
+              # Refined regex pattern to match first-level job names in 'jobs'
               $jobNames = $yamlContent | Select-String -Pattern '^\s*(\w+):' | ForEach-Object { $_.Matches.Groups[1].Value }
+
+              # Filter out the 'jobs' section itself
               $jobNames = $jobNames | Where-Object { $_ -ne 'jobs' }
 
               # Print the job names
@@ -92,10 +104,3 @@ jobs:
               Write-Host "YAML file not found: $yamlFilePath"
               exit 1
           }
-
-      - name: Report job statuses
-        id: report-status
-        run: |
-          compjob="create-component-matrix status: ${{ needs.create-component-matrix.result }}, "
-          compjob+="deploy-to-AzService status: ${{ needs.deploy-to-AzService.result }}"
-          echo "compjob=$compjob" >> $GITHUB_OUTPUT 
