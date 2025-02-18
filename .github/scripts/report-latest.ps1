@@ -26,7 +26,9 @@ param (
 
 #Controller newly added code
 # Set controllerStatus as output
-Add-Content -Path $env:GITHUB_OUTPUT -Value "controller-status=$controllerStatus"
+#Add-Content -Path $env:GITHUB_OUTPUT -Value "controller-status=$controllerStatus"
+# Set controllerStatus as output using set-output (echo to $GITHUB_ENV)
+echo "controller-status=$controllerStatus" >> $GITHUB_ENV
 
 $controllers = @("check-component-input", "create-environment-matrix", "set-environment-runner")
  foreach ($component in $controllers) {
