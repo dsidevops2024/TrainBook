@@ -78,6 +78,7 @@ jobs:
 
   extract-job-names:
     runs-on: ubuntu-latest
+    needs: [create-component-matrix, deploy-to-AzService, component-status]
     steps:
       - name: Extract job names using PowerShell
         shell: pwsh
