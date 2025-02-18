@@ -126,8 +126,8 @@ jobs:
   report-job-status:
     needs: [check-component-input, create-environment-matrix, set-environment-runner, call-phase]
     runs-on: windows-latest
-    outputs:
-      controller-status: ${{ steps.report.outputs.Controllerstatus }}
+    #outputs:
+      #controller-status: ${{ steps.report.outputs.Controllerstatus }}
     #outputs:
         #Controller_Job_Status: ${{ steps.report-status.outputs.Controller-Job-Status }}
         #Controller_Job1_Status: ${{ steps.report-status.outputs.check-component-input-status }}
@@ -157,11 +157,11 @@ jobs:
           $Controllerstatus="check-component-input status: ${{ needs.check-component-input.result }}, "
           $Controllerstatus+="create-environment-matrix status: ${{ needs.create-environment-matrix.result }}, " 
           $Controllerstatus+="set-environment-runner status: ${{ needs.set-environment-runner.result }}"
-          echo "Controllerstatus=$Controllerstatus" >> $GITHUB_OUTPUT 
+          echo "controller-status=$Controllerstatus" >> $GITHUB_OUTPUT 
 
        - name: Debug output values
          run: |
-           echo "Controller Status: ${{ needs.report-job-status.outputs.controller-status }}"
+           echo "Controller Status: ${{ steps.report.outputs.controller-status }}"
            echo "Phase Status: ${{ needs.call-phase.outputs.phase-status }}"
            echo "Comp Status Phase 1: ${{ needs.call-phase.outputs.comp-status-phase1 }}"
            echo "Comp Status Phase 2: ${{ needs.call-phase.outputs.comp-status-phase2 }}"
@@ -176,7 +176,7 @@ jobs:
             #-checkComponentInputStatus "${{ needs.check-component-input.result }}" `
             #-createEnvironmentMatrixStatus "${{ needs.create-environment-matrix.result }}" `
             #-setEnvironmentRunnerStatus "${{ needs.set-environment-runner.result }}" `
-            -controllerStatus "${{ needs.report-job-status.outputs.controller-status }}" `
+            -controllerStatus "${{ steps.report.outputs.controller-status }}" `
             -phaseStatus "${{ needs.call-phase.outputs.phase-status }}" `
             -compStatusPhase1 "${{ needs.call-phase.outputs.comp-status-phase1 }}" `
             -compStatusPhase2 "${{ needs.call-phase.outputs.comp-status-phase2 }}" `
