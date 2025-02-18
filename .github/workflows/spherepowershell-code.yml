@@ -117,7 +117,7 @@ jobs:
           fi
   call-phase:
     needs: [check-component-input, create-environment-matrix]
-    uses: ./.github/workflows/deploy-phasenew.yml
+    uses: ./.github/workflows/deploy-phase.yml
     with: 
       component: ${{ inputs.component }}
       environment: ${{ inputs.environment }}
@@ -148,6 +148,14 @@ jobs:
     steps:
        - name: Checkout repository
          uses: actions/checkout@v3
+         
+       - name: Report job statuses
+         id: report
+         run: |
+          Controllerstatus="check-component-input status: ${{ needs.check-component-input.result }}, "
+          Controllerstatus+="create-environment-matrix status: ${{ needs.create-environment-matrix.result }}, " 
+          Controllerstatus+="set-environment-runner status: ${{ needs.set-environment-runner.result }}"
+          echo "Controllerstatus=$Controllerstatus" >> $GITHUB_OUTPUT  
 
        - name: Run PowerShell script to report job statuses
          id: report-status
