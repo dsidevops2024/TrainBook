@@ -187,13 +187,14 @@ jobs:
        - name: Use the outputs from report-job-status
          run: |
            echo "ControllerJobStatus:"
-           echo "${{ steps.report-status.outputs.Controller-Job-Status }}"
+           #echo "${{ steps.report-status.outputs.Controller-Job-Status }}"
+           echo "${{ steps.report-status.outputs.controller-status }}"
            echo "ControllerJob1Status:"
-           echo "${{ steps.report-status.outputs.check-component-input-status }}"
+           echo "${{ steps.report-status.outputs.check-component-input_status }}"
            echo "ControllerJob2Status:"
-           echo "${{ steps.report-status.outputs.create-environment-matrix-status }}"
+           echo "${{ steps.report-status.outputs.create-environment-matrix_status }}"
            echo "ControllerJob3Status:"
-           echo "${{ steps.report-status.outputs.set-environment-runner-status }}"
+           echo "${{ steps.report-status.outputs.set-environment-runner_status }}"
            echo "OverallPhaseJobStatus:"
            echo "${{ steps.report-status.outputs.overall-phase-status }}"
            echo "Overall_Job_Status_phase1:"
