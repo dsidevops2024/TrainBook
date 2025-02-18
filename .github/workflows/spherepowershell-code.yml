@@ -154,9 +154,9 @@ jobs:
        - name: Report job statuses
          id: report
          run: |
-           Controllerstatus="check-component-input status: ${{ needs.check-component-input.result }}, "
-           Controllerstatus+="create-environment-matrix status: ${{ needs.create-environment-matrix.result }}, " 
-           Controllerstatus+="set-environment-runner status: ${{ needs.set-environment-runner.result }}"
+           $Controllerstatus="check-component-input status: ${{ needs.check-component-input.result }}, "
+           $Controllerstatus+="create-environment-matrix status: ${{ needs.create-environment-matrix.result }}, " 
+           $Controllerstatus+="set-environment-runner status: ${{ needs.set-environment-runner.result }}"
            echo "controller-status=$Controllerstatus" >> $GITHUB_OUTPUT 
 
        - name: Debug output values
