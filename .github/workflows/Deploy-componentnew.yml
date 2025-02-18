@@ -82,4 +82,5 @@ jobs:
           compjob=$(echo $job_statuses | jq -r 'to_entries | map("\(.key) status: \(.value)") | join(", ")')
 
           # Output the concatenated job status
-          echo "compjob=$compjob" >> $GITHUB_OUTPUT
+          echo "compjob=$compjob" 
+          ##>> $GITHUB_OUTPUT
