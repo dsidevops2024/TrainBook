@@ -125,9 +125,9 @@ jobs:
 
   report-job-status:
     needs: [check-component-input, create-environment-matrix, set-environment-runner, call-phase]
-    runs-on: windows-latest
+    runs-on: ubuntu-latest
     #outputs:
-      #controller-status: ${{ steps.report.outputs.Controllerstatus }}
+      #controller-status: ${{ steps.report.outputs.controller-status }}
     #outputs:
         #Controller_Job_Status: ${{ steps.report-status.outputs.Controller-Job-Status }}
         #Controller_Job1_Status: ${{ steps.report-status.outputs.check-component-input-status }}
@@ -154,10 +154,10 @@ jobs:
        - name: Report job statuses
          id: report
          run: |
-          $Controllerstatus="check-component-input status: ${{ needs.check-component-input.result }}, "
-          $Controllerstatus+="create-environment-matrix status: ${{ needs.create-environment-matrix.result }}, " 
-          $Controllerstatus+="set-environment-runner status: ${{ needs.set-environment-runner.result }}"
-          echo "controller-status=$Controllerstatus" >> $GITHUB_OUTPUT 
+           Controllerstatus="check-component-input status: ${{ needs.check-component-input.result }}, "
+           Controllerstatus+="create-environment-matrix status: ${{ needs.create-environment-matrix.result }}, " 
+           Controllerstatus+="set-environment-runner status: ${{ needs.set-environment-runner.result }}"
+           echo "controller-status=$Controllerstatus" >> $GITHUB_OUTPUT 
 
        - name: Debug output values
          run: |
@@ -166,6 +166,7 @@ jobs:
            echo "Comp Status Phase 1: ${{ needs.call-phase.outputs.comp-status-phase1 }}"
            echo "Comp Status Phase 2: ${{ needs.call-phase.outputs.comp-status-phase2 }}"
            echo "Comp Status Phase 3: ${{ needs.call-phase.outputs.comp-status-phase3 }}"
+
 
        - name: Run PowerShell script to report job statuses
          id: report-status
