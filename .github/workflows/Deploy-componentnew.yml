@@ -78,34 +78,15 @@ jobs:
 
   extract-job-names:
     needs: [create-component-matrix, deploy-to-AzService, component-status]
-    runs-on: windows-latest
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      - name: Extract job names using PowerShell
-        shell: pwsh
+      - name: Install yq
         run: |
-          # Path to the YAML file
-          $yamlFilePath = ".github/workflows/Deploy-componentnew.yml"
-          
-          # Check if the file exists before proceeding
-          if (Test-Path $yamlFilePath) {
-              # Read the file content into an array
-              $yamlContent = Get-Content $yamlFilePath
+          sudo apt-get install -y yq
 
-              # Use regular expression to extract top-level job names under 'jobs'
-              # Match lines that are top-level keys under 'jobs:'
-              $jobNames = $yamlContent | Select-String -Pattern '^\s*(\w+):' | ForEach-Object { 
-                  $_.Matches.Groups[1].Value
-              }
-
-              # Filter out unwanted matches (e.g., 'jobs' itself)
-              $jobNames = $jobNames | Where-Object { $_ -ne 'jobs' }
-
-              # Print the job names
-              Write-Host "Job names extracted: $($jobNames -join ', ')"
-          } else {
-              Write-Host "YAML file not found: $yamlFilePath"
-              exit 1
-          }
+      - name: Extract job names using yq
+        run: |
+          yq eval '.jobs | keys | .[]' .github/workflows/Deploy-componentnew.yml
