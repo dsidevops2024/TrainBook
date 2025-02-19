@@ -3,7 +3,7 @@ param (
     [string]$phaseStatus,
     [string]$compStatusPhase1,
     [string]$compStatusPhase2,
-    [string]$compStatusPhase3,
+    [string]$compStatusPhase3
 )
 
 # Function to extract job names and statuses dynamically from a status string
