@@ -78,15 +78,24 @@ jobs:
 
   extract-job-names:
     needs: [create-component-matrix, deploy-to-AzService, component-status]
-    runs-on: ubuntu-latest
+    runs-on: windows-latest  # PowerShell works on Windows
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      - name: Install yq
+      - name: Extract Job Names using PowerShell
         run: |
-          sudo apt-get install -y yq
+          # Define the relative path to your workflow YAML file
+          $scriptPath = ".github/workflows/Deploy-componentnew.yml"  # Adjust this path if needed
 
-      - name: Extract job names using yq
-        run: |
-          yq eval '.jobs | keys | .[]' .github/workflows/Deploy-componentnew.yml
+          # Read the content of the workflow file
+          $scriptContent = Get-Content $scriptPath
+
+          # Extract job names by searching for lines that start with a job name (e.g., 'create-component-matrix:')
+          $jobNames = $scriptContent | Select-String -Pattern '^\s*(\w+):' | ForEach-Object { $_.Matches.Groups[1].Value }
+
+          # Display the job names in the logs
+          Write-Output $jobNames
+
+          # Save job names to an output variable (optional)
+          echo "jobNames=$($jobNames -join ', ')" >> $GITHUB_ENV
