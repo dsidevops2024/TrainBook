@@ -13,14 +13,14 @@ function Get-Jobs {
     )
 
     # Regular expression to match job names (assuming the pattern "job-name status: <status>")
-    $regex = '([a-zA-Z0-9\-_]+) status: ([^,]+)'  # Matches job names and their statuses
+    $regex = '([a-zA-Z0-9\-_]+) status: ([^\n,]+)'  # Matches job names and their statuses
 
     $matches = [regex]::Matches($status, $regex)
     $jobDetails = @()
 
     foreach ($match in $matches) {
         $jobDetails += [PSCustomObject]@{
-            JobName = $match.Groups[1].Value
+            JobName  = $match.Groups[1].Value
             JobStatus = $match.Groups[2].Value
         }
     }
@@ -36,17 +36,20 @@ Add-Content -Path $env:GITHUB_OUTPUT -Value "controller-status=$controllerStatus
 
 # Loop through each controller job dynamically and add job status to output
 foreach ($job in $controllerJobs) {
+    Write-Host "Controller Job: $($job.JobName) - Status: $($job.JobStatus)"  # Debugging log
     Add-Content -Path $env:GITHUB_OUTPUT -Value "$($job.JobName)-status=$($job.JobName) status: $($job.JobStatus)"
 }
-
-# Set phaseStatus as output
-Add-Content -Path $env:GITHUB_OUTPUT -Value "overall-phase-status=$phaseStatus"
 
 # Phase dynamically extracted jobs (from phaseStatus string)
 $phaseJobs = Get-Jobs -status $phaseStatus
 
+
+# Set phaseStatus as output
+Add-Content -Path $env:GITHUB_OUTPUT -Value "overall-phase-status=$phaseStatus"
+
 # Loop through each phase job dynamically and add phase job status to output
 foreach ($job in $phaseJobs) {
+    Write-Host "Phase Job: $($job.JobName) - Status: $($job.JobStatus)"  # Debugging log
     Add-Content -Path $env:GITHUB_OUTPUT -Value "$($job.JobName)-status=$($job.JobName) status: $($job.JobStatus)"
 }
 
@@ -73,26 +76,26 @@ foreach ($job in $phaseJobs) {
     $compStatus = $phaseJobToCompStatusMap[$phase]
 
     # Add the component status for each phase
+    Write-Host "Processing Phase: $phase - Component Status: $compStatus"  # Debugging log
     Add-Content -Path $env:GITHUB_OUTPUT -Value "${phase}-status=$compStatus"
 
     # Extract jobs dynamically from the component status
     $compStatusJobs = @()  # Array to hold dynamically extracted job names for each phase
 
     # If a component status is available, try to extract job statuses dynamically
-    if ($compStatus) {
+    if ($compStatus -ne "Component status: not available") {
         # Extract all job names dynamically from the component status (no hardcoded job names)
         $compStatusJobs = Get-Jobs -status $compStatus
 
         # Loop through each extracted job and process its status dynamically
         foreach ($compJob in $compStatusJobs) {
-            # Add job status dynamically to the output
+            Write-Host "Component Job: ${phase}-${compJob.JobName} - Status: $($compJob.JobStatus)"  # Debugging log
             Add-Content -Path $env:GITHUB_OUTPUT -Value "${phase}-${compJob.JobName}-status=$($compJob.JobName) status: $($compJob.JobStatus)"
         }
     }
 
     # **Handle the case when no jobs were found**:
     if ($compStatusJobs.Count -eq 0) {
-        # If no job details were found, dynamically add skipped statuses for all job names found in phaseStatus
         $jobNames = $phaseJobs.JobName  # Get the names of all jobs in this phase
 
         foreach ($jobName in $jobNames) {
