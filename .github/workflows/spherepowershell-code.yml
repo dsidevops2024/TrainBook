@@ -156,7 +156,7 @@ jobs:
          shell: pwsh
          run: |
            #$ErrorActionPreference = "Stop"
-           .\.github\scripts\report-latest.ps1 -controllerStatus "${{ steps.report.outputs.controller-status }}" `
+           .\.github\scripts\dynamic-handling.ps1 -controllerStatus "${{ steps.report.outputs.controller-status }}" `
             -phaseStatus "${{ needs.call-phase.outputs.phase-status }}" `
             -compStatusPhase1 "${{ needs.call-phase.outputs.comp-status-phase1 }}" `
             -compStatusPhase2 "${{ needs.call-phase.outputs.comp-status-phase2 }}" `
