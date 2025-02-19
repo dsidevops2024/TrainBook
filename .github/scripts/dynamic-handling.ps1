@@ -34,41 +34,42 @@ foreach ($match in $phaseJobs) {
     Add-Content -Path $env:GITHUB_OUTPUT -Value "${phaseName}_status=$phaseName status: $phaseStatusValue"
 }
 
-# Dynamically handle jobs that start with 'deploy-' (e.g., deploy-single-component, deploy-phase-one, etc.)
+# Dynamically extract all phases from phaseStatus
 $allPhaseJobs = [regex]::Matches($phaseStatus, "(deploy-[\w\-]+) status:") | ForEach-Object { $_.Groups[1].Value }
 
-# Handle component statuses dynamically for each 'deploy-' phase job
+# Dynamically extract component statuses from phaseStatus
+$compStatuses = @()
 foreach ($phase in $allPhaseJobs) {
-    # Dynamically construct the compStatus variable name based on the phase
-    $compStatusVariableName = "compStatus$($phase -replace 'deploy-', '')" # e.g., compStatussinglecomponent, compStatusphaseone
-    
-    try {
-        # Attempt to get the compStatus dynamically based on the phase name
-        $compStatus = Get-Variable -Name $compStatusVariableName -ValueOnly
+    $compStatusMatch = [regex]::Match($phaseStatus, "$phase.*status: (.*?)(,|$)")
+    if ($compStatusMatch.Success) {
+        $compStatuses += $compStatusMatch.Groups[1].Value
+    } else {
+        $compStatuses += "not available"
     }
-    catch {
-        # Handle case where the variable doesn't exist
-        Write-Warning "Variable '$compStatusVariableName' not found. Skipping..."
-        $compStatus = ""
-    }
+}
 
+# Dynamically process each phase and job status
+foreach ($index in 0..($allPhaseJobs.Count - 1)) {
+    $phase = $allPhaseJobs[$index]
+    $compStatus = $compStatuses[$index]  # Get the component status dynamically for each phase
+
+    $phaseStatusValue = ($phaseStatus -split "$phase status: ")[1] -split ", " | Select-Object -First 1
+    Add-Content -Path $env:GITHUB_OUTPUT -Value "${phase}_status=$phase status: $phaseStatusValue"
+
+    # Set the component status dynamically for each phase
     Add-Content -Path $env:GITHUB_OUTPUT -Value "${phase}-status=$compStatus"
 
-    if (-not $compStatus) {
-        # If no compStatus, mark jobs as skipped dynamically
-        $compStatusJobs = @("create-component-matrix", "deploy-to-AzService")
-        
-        foreach ($job in $compStatusJobs) {
-            Add-Content -Path $env:GITHUB_OUTPUT -Value "${phase}-${job}-status=status: skipped"
+    # Dynamically extract job statuses (handles any number of jobs)
+    # Find all jobs associated with the current phase (jobs can be extracted from phaseStatus)
+    $jobMatches = [regex]::Matches($phaseStatus, "$phase.*?([\w\-]+) status: (.*?)(,|$)")
+
+    if ($jobMatches.Count -gt 0) {
+        foreach ($jobMatch in $jobMatches) {
+            $jobName = $jobMatch.Groups[1].Value
+            $jobStatus = $jobMatch.Groups[2].Value
+            Add-Content -Path $env:GITHUB_OUTPUT -Value "${phase}-${jobName}-status=$jobName status: $jobStatus"
         }
-    }
-    else {
-        # Extract job statuses for the compStatus
-        $compStatusJobs = [regex]::Matches($compStatus, "(?<jobName>[\w\-]+) status: ")
-        foreach ($match in $compStatusJobs) {
-            $jobName = $match.Groups["jobName"].Value
-            $compStatusJob = Get-JobStatus $compStatus $jobName
-            Add-Content -Path $env:GITHUB_OUTPUT -Value "${phase}-${jobName}-status=$compStatusJob"
-        }
+    } else {
+        Add-Content -Path $env:GITHUB_OUTPUT -Value "${phase}-job-statuses=No jobs found"
     }
 }
