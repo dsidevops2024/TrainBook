@@ -27,9 +27,9 @@ foreach ($match in $controllerJobs) {
 Add-Content -Path $env:GITHUB_OUTPUT -Value "overall-phase-status=$phaseStatus"
 
 # Extract and process phases dynamically
-$phaseJobs = [regex]::Matches($phaseStatus, "(deploy-[\w\-]+) status:")
+$phaseJobs = [regex]::Matches($phaseStatus, "(?<jobName>[\w\-]+) status:")
 foreach ($match in $phaseJobs) {
-    $phaseName = $match.Groups[1].Value
+    $phaseName = $match.Groups["jobName"].Value
     $phaseStatusValue = Get-JobStatus $phaseStatus $phaseName
     Add-Content -Path $env:GITHUB_OUTPUT -Value "${phaseName}_status=$phaseName status: $phaseStatusValue"
 }
