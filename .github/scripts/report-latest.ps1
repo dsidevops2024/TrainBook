@@ -1,7 +1,4 @@
 param (
-    #[string]$checkComponentInputStatus,
-    #[string]$createEnvironmentMatrixStatus,
-    #[string]$setEnvironmentRunnerStatus,
     [string]$controllerStatus,
     [string]$phaseStatus,
     [string]$compStatusPhase1,
@@ -9,39 +6,14 @@ param (
     [string]$compStatusPhase3
 )
 
-# Constructing Controller Job Status
-#$ControllerJobStatus = "check-component-input status: $checkComponentInputStatus, "
-#$ControllerJobStatus += "create-environment-matrix status: $createEnvironmentMatrixStatus, "
-#$ControllerJobStatus += "set-environment-runner status: $setEnvironmentRunnerStatus"
-
-# Set output for Controller_Job_Status
-#Add-Content -Path $env:GITHUB_OUTPUT -Value "Controller-Job-Status=$ControllerJobStatus"
-
-
-#$components = @("check-component-input", "create-environment-matrix", "set-environment-runner")
-#foreach ($component in $components) {
-    #$componentStatus = ($ControllerJobStatus -split "$component status: ")[1] -split ", " | Select-Object -First 1
-    #Add-Content -Path $env:GITHUB_OUTPUT -Value "$component-status=$component status: $componentStatus"
-#}
-
-#Controller newly added code
+                #Controller newly added code
 # Set controllerStatus as output
 Add-Content -Path $env:GITHUB_OUTPUT -Value "controller-status=$controllerStatus"
-
-# Debugging: Print out the controller status
-Write-Host "Controller Status: $controllerStatus"
-
-# Set controllerStatus as output using set-output (echo to $GITHUB_ENV)
-#echo "controller-status=$controllerStatus" >> $GITHUB_OUTPUT
 
 $controllers = @("check-component-input", "create-environment-matrix", "set-environment-runner")
  foreach ($component in $controllers) {
     $componentStatus = ($controllerStatus -split "$component status: ")[1] -split ", " | Select-Object -First 1
     Add-Content -Path $env:GITHUB_OUTPUT -Value "$component-status=$component status: $componentStatus"
-    Write-Host "Processing component: $component"
-    Write-Host "Component Status: $componentStatus"
-     # Set each component status as output
-    #echo "$component-status=$component status: $componentStatus" >> $GITHUB_OUTPUT
 }
 
 # Set phaseStatus as output
