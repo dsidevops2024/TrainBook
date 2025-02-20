@@ -65,14 +65,12 @@ jobs:
       - name: Get Job Statuses from GitHub API
         id: get_status
         run: |
-          WORKFLOW_NAME="${{ github.workflow }}"  # Get current workflow name
           STATUSES=$(curl -s -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
-          -H "Accept: application/vnd.github+json" \
-          "https://api.github.com/repos/${{ github.repository }}/actions/runs/${{ github.run_id }}/jobs" | \
-          jq -r --arg WORKFLOW_NAME "$WORKFLOW_NAME" \
-          '[.jobs[] | select(.workflow_name == $WORKFLOW_NAME and .name != "collect-status") | "\(.name) status: \(.conclusion // "in_progress")"] | join(", ")')
-    
-          echo "Filtered statuses: $STATUSES"
+            -H "Accept: application/vnd.github+json" \
+            "https://api.github.com/repos/${{ github.repository }}/actions/runs/${{ github.run_id }}/jobs" | \
+            jq -r '[.jobs[] | select(.name != "collect-status") | "\(.name) status: \(.conclusion // "in_progress")"] | join(", ")')
+
+          echo "Collected statuses: $STATUSES"
           echo "statuses=$STATUSES" >> "$GITHUB_ENV"
         shell: bash
           
