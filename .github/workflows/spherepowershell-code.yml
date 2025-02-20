@@ -176,46 +176,41 @@ jobs:
            echo "OverallPhaseJobStatus:"
            echo "${{ steps.report-status.outputs.overall-phase-status }}"
            echo "Overall_Job_Status_phase1:"
-           echo "${{ steps.report-status.outputs.Check-Approvals-status }}"
+           echo "${{ steps.report-status.outputs.Check-Approvals_status }}"
            echo "Overall_Job_Status_phase2:"
-           echo "${{ steps.report-status.outputs.deploy-single-component-status }}"
+           echo "${{ steps.report-status.outputs.deploy-single-component_status }}"
            echo "Overall_Job_Status_phase3:"
-           echo "${{ steps.report-status.outputs.deploy-phase-one-status }}"
+           echo "${{ steps.report-status.outputs.deploy-phase-one_status }}"
            echo "Overall_Job_Status_phase4:"
-           echo "${{ steps.report-status.outputs.deploy-phase-two-status }}"
+           echo "${{ steps.report-status.outputs.deploy-phase-two_status }}"
 
            echo "ComponentJobStatus-for-Phase2:"
            echo "${{ steps.report-status.outputs.deploy-single-component-status }}"
 
-           echo "ComponentJobStatus-for-Phase2-job1:"
-           echo "${{ steps.report-status.outputs.deploy-single-component-create-component-matrix-status }}"
-
-           echo "ComponentJobStatus-for-Phase2-job2:"
-           echo "${{ steps.report-status.outputs.deploy-single-component-deploy-to-AzService-status }}"
-
+           
            echo "ComponentJobStatus-for-Phase2-job1-check:"
-           echo "${{ steps.report-status.outputs.deploy-single-component-component-status }}"
+           echo "${{ steps.report-status.outputs.deploy-single-component_status }}"
 
            echo "ComponentJobStatus-for-Phase2-job2-check:"
-           echo "${{ steps.report-status.outputs.deploy-single-component-component-status }}"
+           echo "${{ steps.report-status.outputs.deploy-single-component_status }}"
            
            echo "ComponentJobStatus-for-Phase3:"
            echo "${{ steps.report-status.outputs.deploy-phase-one-status }}"
 
            echo "ComponentJobStatus-for-Phase3-job1:"
-           echo "${{ steps.report-status.outputs.deploy-phase-one-create-component-matrix-status }}"
+           echo "${{ steps.report-status.outputs.deploy-phase-one_status }}"
 
            echo "ComponentJobStatus-for-Phase3-job2:"
-           echo "${{ steps.report-status.outputs.deploy-phase-one-deploy-to-AzService-status }}"
+           echo "${{ steps.report-status.outputs.deploy-phase-one_status }}"
 
            echo "ComponentJobStatus-for-Phase4:"
            echo "${{ steps.report-status.outputs.deploy-phase-two-status }}"
 
            echo "ComponentJobStatus-for-Phase4-job1:"
-           echo "${{ steps.report-status.outputs.deploy-phase-two-create-component-matrix-status }}"
+           echo "${{ steps.report-status.outputs.deploy-phase-two_status }}"
 
            echo "ComponentJobStatus-for-Phase4-job2:"
-           echo "${{ steps.report-status.outputs.deploy-phase-two-deploy-to-AzService-status }}"
+           echo "${{ steps.report-status.outputs.deploy-phase-two_status }}"
 
            
            #echo "ComponentJobStatus-for-Phase2:"
