@@ -46,6 +46,16 @@ $allPhaseJobs = [regex]::Matches($phaseStatus, "(deploy-[\w\-]+) status:") | For
 # Process component statuses dynamically for each extracted deploy phase
 $compStatuses = @($compStatusPhase1, $compStatusPhase2, $compStatusPhase3)
 
+# Dynamically extract default jobs from all component statuses
+$defaultJobs = @()
+foreach ($compStatus in $compStatuses) {
+    if ($compStatus) {
+        $jobs = [regex]::Matches($compStatus, "(?<jobName>[\w\-]+) status:") | ForEach-Object { $_.Groups["jobName"].Value }
+        $defaultJobs += $jobs
+    }
+}
+$defaultJobs = $defaultJobs | Select-Object -Unique  # Remove duplicates
+
 for ($i = 0; $i -lt $compStatuses.Length; $i++) {
     if ($i -ge $allPhaseJobs.Count) { continue }  # Ensure index is within bounds
 
@@ -55,8 +65,7 @@ for ($i = 0; $i -lt $compStatuses.Length; $i++) {
     Add-Content -Path $env:GITHUB_OUTPUT -Value "$phaseName-status=$compStatus"
 
     if (-not $compStatus) {
-        # Default to skipped if no status is available
-        $defaultJobs = @("create-component-matrix", "deploy-to-AzService")
+        # Use dynamically extracted default jobs
         foreach ($job in $defaultJobs) {
             Add-Content -Path $env:GITHUB_OUTPUT -Value "$phaseName-$job-status=$job status: skipped"
         }
