@@ -1,7 +1,8 @@
 name: Deploy Component New
 
 on:
-  push:
+  #push:
+  workflow_dispatch:
 
 jobs:
   create-component-matrix:
