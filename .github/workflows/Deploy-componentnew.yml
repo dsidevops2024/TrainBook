@@ -29,12 +29,12 @@ jobs:
           STATUSES=$(curl -s -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
             -H "Accept: application/vnd.github+json" \
             "https://api.github.com/repos/${{ github.repository }}/actions/runs/${{ github.run_id }}/jobs" | \
-            jq -c '[.jobs[] | select(.name != "collect-status") | {(.name): (.conclusion // "in_progress")}] | add')
+            jq -r '[.jobs[] | select(.name != "collect-status") | "\(.name) status: \(.conclusion // "in_progress")"] | join(", ")')
 
           echo "Collected statuses: $STATUSES"
           echo "statuses=$STATUSES" >> "$GITHUB_ENV"
         shell: bash
-
+          
       - name: Save Job Status as Output
         id: save_output
         run: echo "all_statuses=${{ env.statuses }}" >> "$GITHUB_OUTPUT"
