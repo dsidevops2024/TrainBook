@@ -22,7 +22,7 @@ on:
         #value: ${{ jobs.component-status.outputs.output2 }}
       compstatus:
         #value: ${{ jobs.component-status.outputs.output1 }}
-        value: ${{ jobs.collect-status.outputs.all_statuses }}
+        value: ${{ jobs.collect-status.outputs.compjob }}
     
 jobs:
   create-component-matrix:
@@ -76,6 +76,12 @@ jobs:
           echo "statuses=$STATUSES" >> "$GITHUB_ENV"
         shell: bash
           
-      - name: Save Job Status as Output
-        id: save_output
-        run: echo "all_statuses=${{ env.statuses }}" >> "$GITHUB_OUTPUT"
+      - name: Extract Required Job Statuses
+        id: filter_statuses
+        run: |
+          # Extract only create-component-matrix and deploy-to-AzService statuses
+          COMPJOB=$(echo "${{ env.statuses }}" | grep -oE "create-component-matrix status: [a-zA-Z]+|deploy-to-AzService status: [a-zA-Z]+" | paste -sd ", ")
+
+          echo "Filtered statuses: $COMPJOB"
+          echo "compjob=$COMPJOB" >> "$GITHUB_OUTPUT"
+        shell: bash
