@@ -14,7 +14,7 @@ on:
     outputs:
       phase-status:
         #value: ${{ jobs.phase-status.outputs.phaseop }}
-        value: ${{ jobs.collect-status-new.outputs.all_statuses_new }}
+        value: ${{ jobs.collect-status-new.outputs.compjobnew }}
       comp-status-phase1:
         #value: ${{ jobs.Phase1.outputs.compstatus }}
         value: ${{ jobs.deploy-single-component.outputs.compstatus }}
@@ -99,19 +99,23 @@ jobs:
       - name: Get Job Statuses from GitHub API
         id: get_status_new
         run: |
-          WORKFLOW_NAME="${{ github.workflow }}"  # Get current workflow name
           STATUSES=$(curl -s -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
           -H "Accept: application/vnd.github+json" \
           "https://api.github.com/repos/${{ github.repository }}/actions/runs/${{ github.run_id }}/jobs" | \
-          jq -r --arg WORKFLOW_NAME "$WORKFLOW_NAME" \
-          '[.jobs[] | select(.workflow_name == $WORKFLOW_NAME and .name != "collect-status") | "\(.name) status: \(.conclusion // "in_progress")"] | join(", ")')
-    
-           echo "Filtered statuses: $STATUSES"
-           echo "statuses=$STATUSES" >> "$GITHUB_ENV"
+          jq -r '[.jobs[] | select(.name != "collect-status") | "\(.name) status: \(.conclusion // "in_progress")"] | join(", ")')
+
+          echo "Collected statuses: $STATUSES"
+          echo "statuses=$STATUSES" >> "$GITHUB_ENV"
         shell: bash
           
-      - name: Save Job Status as Output
-        id: save_output_new
-        run: echo "all_statuses_new=${{ env.statuses }}" >> "$GITHUB_OUTPUT"
+      - name: Extract Required Job Statuses
+        id: filter_statuses
+        run: |
+          # Extract only create-component-matrix and deploy-to-AzService statuses
+          #COMPJOB=$(echo "${{ env.statuses }}" | grep -oE "create-component-matrix status: [a-zA-Z]+|deploy-to-AzService status: [a-zA-Z]+" | paste -sd ", ")
+          COMPJOB=$(echo "${{ env.statuses }}" | grep -oE "check-approvals status: [a-zA-Z]+|deploy-single-component status: [a-zA-Z]+|deploy-phase-one status: [a-zA-Z]+|deploy-phase-two status: [a-zA-Z]+" | paste -sd ", ")
 
+          echo "Filtered statuses: $COMPJOB"
+          echo "compjobnew=$COMPJOB" >> "$GITHUB_OUTPUT"
+        shell: bash
           
