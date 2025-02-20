@@ -14,7 +14,7 @@ on:
     outputs:
       phase-status:
         #value: ${{ jobs.phase-status.outputs.phaseop }}
-        value: ${{ jobs.collect-status.outputs.all_statuses }}
+        value: ${{ jobs.collect-status-new.outputs.all_statuses_new }}
       comp-status-phase1:
         #value: ${{ jobs.Phase1.outputs.compstatus }}
         value: ${{ jobs.deploy-single-component.outputs.compstatus }}
@@ -91,24 +91,24 @@ jobs:
           #Phasestatus+="deploy-phase-two status: ${{ needs.deploy-phase-two.result }}"
           #echo "Phasestatus=$Phasestatus" >> $GITHUB_OUTPUT 
 
-  collect-status:
+  collect-status-new:
     needs: [check-approvals,deploy-single-component, deploy-phase-one, deploy-phase-two]
     runs-on: ubuntu-latest
     if: always()  # Ensures this runs even if some jobs fail
     steps:
       - name: Get Job Statuses from GitHub API
-        id: get_status
+        id: get_status_new
         run: |
           STATUSES=$(curl -s -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
             -H "Accept: application/vnd.github+json" \
             "https://api.github.com/repos/${{ github.repository }}/actions/runs/${{ github.run_id }}/jobs" | \
-            jq -r '[.jobs[] | select(.name != "collect-status") | "\(.name) status: \(.conclusion // "in_progress")"] | join(", ")')
-          echo "Collected statuses: $STATUSES"
+            jq -r '[.jobs[] | select(.name != "collect-status-new") | "\(.name) status: \(.conclusion // "in_progress")"] | join(", ")')
+          echo "Collected statuses new: $STATUSES"
           echo "statuses=$STATUSES" >> "$GITHUB_ENV"
         shell: bash
           
       - name: Save Job Status as Output
-        id: save_output
-        run: echo "all_statuses=${{ env.statuses }}" >> "$GITHUB_OUTPUT"
+        id: save_output_new
+        run: echo "all_statuses_new=${{ env.statuses }}" >> "$GITHUB_OUTPUT"
 
           
