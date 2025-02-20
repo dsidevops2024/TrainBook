@@ -11,12 +11,14 @@ jobs:
         run: echo "firstword=job1 from deploy component"
 
   deploy-to-AzService:
+    needs: create-component-matrix
     runs-on: ubuntu-latest
     steps:
       - name: Job 2 step
         run: echo "secondword=job2 from deploy component"
 
   collect-status:
+    needs: [create-component-matrix, deploy-to-AzService]
     runs-on: ubuntu-latest
     if: always()  # Ensures this runs even if some jobs fail
     steps:
