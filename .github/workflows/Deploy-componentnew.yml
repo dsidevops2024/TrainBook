@@ -1,20 +1,7 @@
 name: Deploy Component New
 
 on:
-  workflow_call:
-    inputs:
-      component:
-        type: string
-        required: true
-      environment:
-        type: string
-        required: true
-      runner:
-        type: string
-        required: true
-    outputs:
-      compstatus:
-        value: ${{ jobs.collect-status.outputs.all_statuses }}
+  workflow_dispatch:
 
 jobs:
   create-component-matrix:
