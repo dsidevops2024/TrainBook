@@ -22,7 +22,7 @@ on:
         #value: ${{ jobs.component-status.outputs.output2 }}
       compstatus:
         #value: ${{ jobs.component-status.outputs.output1 }}
-        value: ${{ jobs.collect-status.outputs.compjob }}
+        value: ${{ jobs.collect-status.outputs.output1 }}
     
 jobs:
   create-component-matrix:
@@ -60,7 +60,9 @@ jobs:
   collect-status:
     needs: [create-component-matrix, deploy-to-AzService]
     runs-on: ubuntu-latest
-    if: always()  # Ensures this runs even if some jobs fail
+    outputs:
+       output1: ${{ steps.filter_statuses.outputs.compjob}}
+    if: always()  # Ensures this runs even if some jobs fail   
     steps:
       - name: Get Job Statuses from GitHub API
         id: get_status
