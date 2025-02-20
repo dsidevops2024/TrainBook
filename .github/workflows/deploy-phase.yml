@@ -13,7 +13,8 @@ on:
         required: true
     outputs:
       phase-status:
-        value: ${{ jobs.phase-status.outputs.phaseop }}
+        #value: ${{ jobs.phase-status.outputs.phaseop }}
+        value: ${{ jobs.collect-status.outputs.all_statuses }}
       comp-status-phase1:
         #value: ${{ jobs.Phase1.outputs.compstatus }}
         value: ${{ jobs.deploy-single-component.outputs.compstatus }}
@@ -60,20 +61,20 @@ jobs:
       environment: ${{ inputs.environment }}
       runner: ${{ inputs.runner }}
       
-  phase-status:
-    needs: [check-approvals,deploy-single-component, deploy-phase-one, deploy-phase-two]
-    if: always()
-    continue-on-error: true
-    runs-on: ubuntu-latest
-    outputs: 
+  #phase-status:
+    #needs: [check-approvals,deploy-single-component, deploy-phase-one, deploy-phase-two]
+    #if: always()
+    #continue-on-error: true
+    #runs-on: ubuntu-latest
+    #outputs: 
       #phase1op: ${{ steps.report.outputs.Phase1status }}
       #phase2op: ${{ steps.report.outputs.Phase2status }}
-      phaseop: ${{ steps.report.outputs.Phasestatus }}
+      #phaseop: ${{ steps.report.outputs.Phasestatus }}
           
-    steps:
-      - name: Report job statuses
-        id: report
-        run: |
+    #steps:
+      #- name: Report job statuses
+        #id: report
+        #run: |
           #echo "Phase1status=${{ needs.Phase1.result }}" >> $GITHUB_OUTPUT
           #echo "Phase2status=${{ needs.Phase2.result }}" >> $GITHUB_OUTPUT
           #echo "comp1status:${{ needs.Phase1.outputs.compstatus1 }}" 
@@ -84,9 +85,30 @@ jobs:
           #Phasestatus="phase 1 status: ${{ needs.Phase1.result }}, " 
           #Phasestatus+="phase 2 status: ${{ needs.Phase2.result }}, "
           #Phasestatus+="phase 3 status: ${{ needs.Phase3.result }}"
-          Phasestatus="check-approvals status: ${{ needs.check-approvals.result }}, "
-          Phasestatus+="deploy-single-component status: ${{ needs.deploy-single-component.result }}, " 
-          Phasestatus+="deploy-phase-one status: ${{ needs.deploy-phase-one.result }}, "
-          Phasestatus+="deploy-phase-two status: ${{ needs.deploy-phase-two.result }}"
-          echo "Phasestatus=$Phasestatus" >> $GITHUB_OUTPUT  
+          #Phasestatus="check-approvals status: ${{ needs.check-approvals.result }}, "
+          #Phasestatus+="deploy-single-component status: ${{ needs.deploy-single-component.result }}, " 
+          #Phasestatus+="deploy-phase-one status: ${{ needs.deploy-phase-one.result }}, "
+          #Phasestatus+="deploy-phase-two status: ${{ needs.deploy-phase-two.result }}"
+          #echo "Phasestatus=$Phasestatus" >> $GITHUB_OUTPUT 
+
+  collect-status:
+    needs: [check-approvals,deploy-single-component, deploy-phase-one, deploy-phase-two]
+    runs-on: ubuntu-latest
+    if: always()  # Ensures this runs even if some jobs fail
+    steps:
+      - name: Get Job Statuses from GitHub API
+        id: get_status
+        run: |
+          STATUSES=$(curl -s -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+            -H "Accept: application/vnd.github+json" \
+            "https://api.github.com/repos/${{ github.repository }}/actions/runs/${{ github.run_id }}/jobs" | \
+            jq -r '[.jobs[] | select(.name != "collect-status") | "\(.name) status: \(.conclusion // "in_progress")"] | join(", ")')
+          echo "Collected statuses: $STATUSES"
+          echo "statuses=$STATUSES" >> "$GITHUB_ENV"
+        shell: bash
+          
+      - name: Save Job Status as Output
+        id: save_output
+        run: echo "all_statuses=${{ env.statuses }}" >> "$GITHUB_OUTPUT"
+
           
