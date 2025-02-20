@@ -95,7 +95,7 @@ jobs:
     needs: [check-approvals,deploy-single-component, deploy-phase-one, deploy-phase-two]
     runs-on: ubuntu-latest
     outputs:
-       phaseop: ${{ steps.filter_statuses.outputs.all_statuses }}
+       phaseop: ${{ steps.consolidated_status.outputs.all_statuses }}
     if: always()  # Ensures this runs even if some jobs fail
     steps:
       - name: Get Job Statuses from GitHub API
@@ -104,7 +104,7 @@ jobs:
           STATUSES=$(curl -s -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
           -H "Accept: application/vnd.github+json" \
           "https://api.github.com/repos/${{ github.repository }}/actions/runs/${{ github.run_id }}/jobs" | \
-          jq -r '[.jobs[] | select(.name != "collect-status") | "\(.name) status: \(.conclusion // "in_progress")"] | join(", ")')
+          jq -r '[.jobs[] | select(.name != "collect-status-new") | "\(.name) status: \(.conclusion // "in_progress")"] | join(", ")')
 
           echo "Collected statuses: $STATUSES"
           echo "statuses=$STATUSES" >> "$GITHUB_ENV"
@@ -133,9 +133,9 @@ jobs:
 
           # Combine all statuses
           ALL_STATUSES="check-approvals status: $CHECK_APPROVALS_STATUS, "
+          ALL_STATUSES+="deploy-single-component status: $DEPLOY_SINGLE_STATUS, "
           ALL_STATUSES+="deploy-phase-one status: $DEPLOY_PHASE_ONE_STATUS, "
-          ALL_STATUSES+="deploy-phase-two status: $DEPLOY_PHASE_TWO_STATUS, "
-          ALL_STATUSES+="deploy-single-component status: $DEPLOY_SINGLE_STATUS"
+          ALL_STATUSES+="deploy-phase-two status: $DEPLOY_PHASE_TWO_STATUS"
 
           echo "Final Collected Statuses: $ALL_STATUSES"
           echo "all_statuses=$ALL_STATUSES" >> "$GITHUB_OUTPUT"
