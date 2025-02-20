@@ -1,73 +1,53 @@
 param (
     [string]$controllerStatus,
-    [string]$phaseStatus,
-    [string]$compStatusPhase1,
-    [string]$compStatusPhase2,
-    [string]$compStatusPhase3
+    [string]$phaseStatus
 )
 
-# Helper function to extract the status of a job dynamically
-function Get-JobStatus($statusString, $jobName) {
-    $jobStatus = ($statusString -split "$jobName status: ")[1] -split ", " | Select-Object -First 1
-    return $jobStatus
+# Helper function to extract job status dynamically using regex
+function Get-JobStatus {
+    param (
+        [string]$statusString,
+        [string]$jobName
+    )
+    $match = [regex]::Match($statusString, "$jobName status: ([\w\.\-\s]+)(,|$)")
+    return $match.Success ? $match.Groups[1].Value.Trim() : "not available"
 }
 
-# Dynamically extract and process controller jobs
+# ✅ Extract and process controller jobs dynamically
 Add-Content -Path $env:GITHUB_OUTPUT -Value "controller-status=$controllerStatus"
 
-# Extract all controller jobs by matching "job status" patterns
-$controllerJobs = [regex]::Matches($controllerStatus, "(?<jobName>[\w\-]+) status:")
+$controllerJobs = [regex]::Matches($controllerStatus, "(?<jobName>[\w\.\-]+) status:")
 foreach ($match in $controllerJobs) {
     $jobName = $match.Groups["jobName"].Value
-    $componentStatus = Get-JobStatus $controllerStatus $jobName
-    Add-Content -Path $env:GITHUB_OUTPUT -Value "$jobName-status=$jobName status: $componentStatus"
+    $jobStatus = Get-JobStatus -statusString $controllerStatus -jobName $jobName
+    Add-Content -Path $env:GITHUB_OUTPUT -Value "$jobName-status=$jobStatus"
 }
 
-# Set phase status as output
+# ✅ Set overall phase status
 Add-Content -Path $env:GITHUB_OUTPUT -Value "overall-phase-status=$phaseStatus"
 
-# Extract and process phases dynamically
-$phaseJobs = [regex]::Matches($phaseStatus, "(?<jobName>[\w\-]+) status:")
-foreach ($match in $phaseJobs) {
-    $phaseName = $match.Groups["jobName"].Value
-    $phaseStatusValue = Get-JobStatus $phaseStatus $phaseName
-    Add-Content -Path $env:GITHUB_OUTPUT -Value "${phaseName}_status=$phaseName status: $phaseStatusValue"
-}
+# Extract all phases dynamically
+$allPhaseJobs = [regex]::Matches($phaseStatus, "(deploy-[\w\.\-]+) status:") | ForEach-Object { $_.Groups[1].Value }
 
-# Dynamically extract all phases from phaseStatus
-$allPhaseJobs = [regex]::Matches($phaseStatus, "(deploy-[\w\-]+) status:") | ForEach-Object { $_.Groups[1].Value }
-
-# Dynamically extract component statuses from phaseStatus
-$compStatuses = @()
+# ✅ Dynamically extract and process each phase's status
 foreach ($phase in $allPhaseJobs) {
-    $compStatusMatch = [regex]::Match($phaseStatus, "$phase.*status: (.*?)(,|$)")
-    if ($compStatusMatch.Success) {
-        $compStatuses += $compStatusMatch.Groups[1].Value
-    } else {
-        $compStatuses += "not available"
-    }
-}
+    $phaseStatusValue = Get-JobStatus -statusString $phaseStatus -jobName $phase
+    Add-Content -Path $env:GITHUB_OUTPUT -Value "${phase}-status=$phaseStatusValue"
 
-# Dynamically process each phase and job status
-foreach ($index in 0..($allPhaseJobs.Count - 1)) {
-    $phase = $allPhaseJobs[$index]
-    $compStatus = $compStatuses[$index]  # Get the component status dynamically for each phase
+    # ✅ Dynamically extract component statuses within each phase
+    $compStatusMatch = [regex]::Match($phaseStatus, "$phase.*status: ([\w\.\-\s]+)(,|$)")
+    $compStatus = $compStatusMatch.Success ? $compStatusMatch.Groups[1].Value.Trim() : "not available"
 
-    $phaseStatusValue = ($phaseStatus -split "$phase status: ")[1] -split ", " | Select-Object -First 1
-    Add-Content -Path $env:GITHUB_OUTPUT -Value "${phase}_status=$phase status: $phaseStatusValue"
+    Add-Content -Path $env:GITHUB_OUTPUT -Value "${phase}-component-status=$compStatus"
 
-    # Set the component status dynamically for each phase
-    Add-Content -Path $env:GITHUB_OUTPUT -Value "${phase}-status=$compStatus"
-
-    # Dynamically extract job statuses (handles any number of jobs)
-    # Find all jobs associated with the current phase (jobs can be extracted from phaseStatus)
-    $jobMatches = [regex]::Matches($phaseStatus, "$phase.*?([\w\-]+) status: (.*?)(,|$)")
+    # ✅ Dynamically extract jobs associated with the phase
+    $jobMatches = [regex]::Matches($phaseStatus, "$phase.*?([\w\.\-]+) status: ([\w\.\-\s]+)(,|$)")
 
     if ($jobMatches.Count -gt 0) {
         foreach ($jobMatch in $jobMatches) {
             $jobName = $jobMatch.Groups[1].Value
-            $jobStatus = $jobMatch.Groups[2].Value
-            Add-Content -Path $env:GITHUB_OUTPUT -Value "${phase}-${jobName}-status=$jobName status: $jobStatus"
+            $jobStatus = $jobMatch.Groups[2].Value.Trim()
+            Add-Content -Path $env:GITHUB_OUTPUT -Value "${phase}-${jobName}-status=$jobStatus"
         }
     } else {
         Add-Content -Path $env:GITHUB_OUTPUT -Value "${phase}-job-statuses=No jobs found"
