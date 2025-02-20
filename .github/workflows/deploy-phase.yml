@@ -14,7 +14,7 @@ on:
     outputs:
       phase-status:
         #value: ${{ jobs.phase-status.outputs.phaseop }}
-        value: ${{ jobs.collect-status-new.outputs.compjobnew }}
+        value: ${{ jobs.collect-status-new.outputs.phaseop }}
       comp-status-phase1:
         #value: ${{ jobs.Phase1.outputs.compstatus }}
         value: ${{ jobs.deploy-single-component.outputs.compstatus }}
@@ -94,6 +94,8 @@ jobs:
   collect-status-new:
     needs: [check-approvals,deploy-single-component, deploy-phase-one, deploy-phase-two]
     runs-on: ubuntu-latest
+    outputs:
+       phaseop: ${{ steps.filter_statuses.outputs.compjobnew }}
     if: always()  # Ensures this runs even if some jobs fail
     steps:
       - name: Get Job Statuses from GitHub API
