@@ -1,26 +1,27 @@
 name: Deploy Component
 
 on:
-  workflow_call:
-    inputs:
-      component:
-        type: string
-        required: true
-      environment:
-        type: string
-        required: true
-      runner:
-        type: string
-        required: true
-    outputs:
+ push: 
+ #workflow_call:
+    #inputs:
+      #component:
+        #type: string
+        #required: true
+      #environment:
+        #type: string
+        #required: true
+      #runner:
+        #type: string
+        #required: true
+    #outputs:
       #compstatus1:
         #description: "First output from the component"
         #value: ${{ jobs.component-status.outputs.output1 }}
       #compstatus2:
         #description: "Second output from the component"
         #value: ${{ jobs.component-status.outputs.output2 }}
-      compstatus:
-        value: ${{ jobs.component-status.outputs.output1 }}
+      #compstatus:
+        #value: ${{ jobs.component-status.outputs.output1 }}
     
 jobs:
   create-component-matrix:
@@ -58,5 +59,6 @@ jobs:
           #compjob+="job2 status: ${{ needs.job2.result }}"
           compjob="create-component-matrix status: ${{ needs.create-component-matrix.result }}, "
           compjob+="deploy-to-AzService status: ${{ needs.deploy-to-AzService.result }}"
-          echo "compjob=$compjob" >> $GITHUB_OUTPUT
+          echo "compjob=$compjob" 
+          #>> $GITHUB_OUTPUT
  
