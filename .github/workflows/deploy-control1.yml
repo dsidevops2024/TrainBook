@@ -127,7 +127,7 @@ jobs:
     needs: [check-component-input, create-environment-matrix, set-environment-runner, call-phase]
     runs-on: ubuntu-latest
     outputs:
-      con-status: ${{ steps.filter_statuses.outputs.conjob }}
+      con-status: ${{ steps.get_status.outputs.controllerstatus }}
     
     steps:
       - name: Get Job Statuses from GitHub API
