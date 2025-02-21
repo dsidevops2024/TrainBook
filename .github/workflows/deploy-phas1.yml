@@ -53,6 +53,15 @@ jobs:
       component: ${{ inputs.component }}
       environment: ${{ inputs.environment }}
       runner: ${{ inputs.runner }}
+
+  Reset-Approvals:
+   needs: [check-approvals, deploy-single-component, deploy-phase-one, deploy-phase-two]
+   runs-on: ubuntu-latest
+   steps:
+      - name: reset step
+        id: step2  # We add an ID for job2
+        run: |
+          echo "reset-check=Test for approval" 
       
   #collect-status-new:
     #needs: [check-approvals,deploy-single-component, deploy-phase-one, deploy-phase-two]
