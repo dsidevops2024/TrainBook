@@ -128,6 +128,7 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       con-status: ${{ steps.get_status.outputs.controllerstatus }}
+      phase-status: ${{ steps.get_status.outputs.phasejobs }}
     
     steps:
       - name: Get Job Statuses from GitHub API
@@ -176,7 +177,7 @@ jobs:
          run: |
            #$ErrorActionPreference = "Stop"
            .\.github\scripts\dynamic-handling-new.ps1 -controllerStatus "${{ needs.collect-control-status.outputs.con-status }}" `
-            -phaseStatus "${{ needs.call-phase.outputs.phase-status }}" `
+            -phaseStatus "${{ needs.needs.collect-control-status.outputs.phase-status }}" `
             -compStatusPhase1 "${{ needs.call-phase.outputs.comp-status-phase1 }}" `
             -compStatusPhase2 "${{ needs.call-phase.outputs.comp-status-phase2 }}" `
             -compStatusPhase3 "${{ needs.call-phase.outputs.comp-status-phase3 }}"
