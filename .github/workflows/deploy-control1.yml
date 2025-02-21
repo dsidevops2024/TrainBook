@@ -141,36 +141,32 @@ jobs:
              # Display the collected statuses
             echo "Collected statuses: $STATUSES"
     
-             IFS=', ' read -r -a status_array <<< "$STATUSES"
-             for status in "${status_array[@]}"; do
-              # Strip any leading/trailing spaces
-              status=$(echo "$status" | xargs)
-  
-              # Check if it contains no slashes (controller status)
-              if [[ "$status" =~ ^[^/]+$ ]]; then
-                controllerstatus+="$status, "
-  
-              # Check if it contains one slash (phase status)
-              elif [[ "$status" =~ ^[^/]+/[^/]+$ ]]; then
-                phasestatus+="$status, "
-  
-              # Check if it contains two slashes (component phase status)
-              elif [[ "$status" =~ ^[^/]+/[^/]+/[^/]+$ ]]; then
-                comphasestatus+="$status, "
-              fi
-            done
+             # Extract controller statuses (jobs with no slashes)
+            controllerstatus=$(echo $STATUSES | sed -e 's/\([^/]\+ status:[^,]*\)/\1 /g' | tr -s ' ' | sed 's/ $//')
 
-            # Remove the trailing comma and space
-            controllerstatus=${controllerstatus%, }
-            phasestatus=${phasestatus%, }
-            comphasestatus=${comphasestatus%, }
+             # Extract phase statuses (jobs with a single slash)
+            phasejobs=$(echo $STATUSES | sed -e 's/\([^/]\+ \/[^/]\+ status:[^,]*\)/\1 /g' | tr -s ' ' | sed 's/ $//')
 
-            # Display the categorized statuses
+             # Extract component phase statuses (jobs with double slashes)
+            compstatusone=$(echo $STATUSES | sed -e 's/\([^/]\+ \/[^/]\+ \/[^/]\+ status:[^,]*\)/\1 /g' | tr -s ' ' | sed 's/ $//')
+
+             # Further split component phase statuses based on conditions
+            compstatustwo=$(echo $compstatusone | grep -i "deploy-phase-two")
+            compstatusone=$(echo $compstatusone | grep -i "deploy-phase-one")
+
+             # Debug output
             echo "Controller Statuses: $controllerstatus"
-            echo "Phase Statuses: $phasestatus"
-            echo "Component Phase Statuses: $comphasestatus"
+            echo "Phase Statuses: $phasejobs"
+            echo "Component Phase Statuses: $compstatusone"
+            echo "Additional Component Phase Statuses (Phase Two): $compstatustwo"
+
+            # Export the variables to be used in the next steps or jobs by writing to the GITHUB_OUTPUT file
+            echo "controllerstatus=$controllerstatus" >> $GITHUB_OUTPUT
+            echo "phasejobs=$phasejobs" >> $GITHUB_OUTPUT
+            echo "compstatusone=$compstatusone" >> $GITHUB_OUTPUT
+            echo "compstatustwo=$compstatustwo" >> $GITHUB_OUTPUT
         shell: bash
-      
+
   report-job-status:
     needs: [check-component-input, create-environment-matrix, set-environment-runner, call-phase, collect-control-status]
     runs-on: windows-latest
