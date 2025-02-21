@@ -31,7 +31,7 @@ jobs:
           echo "Approval-check=Test for approval" 
   deploy-single-component:
     if: ${{ ! contains(inputs.component, 'fullstack') }}
-    uses: ./.github/workflows/deploy-component.yml
+    uses: ./.github/workflows/deploy-comp1.yml
     with: 
       component: ${{ inputs.component }}
       environment: ${{ inputs.environment }}
@@ -39,7 +39,7 @@ jobs:
 
   deploy-phase-one:
     if: ${{  inputs.component == 'fullstack' }}
-    uses: ./.github/workflows/deploy-component.yml
+    uses: ./.github/workflows/deploy-comp1.yml
     with: 
       component: ${{ inputs.component }}
       environment: ${{ inputs.environment }}
@@ -48,7 +48,7 @@ jobs:
   deploy-phase-two:
     if: ${{  inputs.component == 'fullstack' }}
     needs: deploy-phase-one
-    uses: ./.github/workflows/deploy-component.yml
+    uses: ./.github/workflows/deploy-comp1.yml
     with: 
       component: ${{ inputs.component }}
       environment: ${{ inputs.environment }}
