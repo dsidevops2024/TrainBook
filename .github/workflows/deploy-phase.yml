@@ -110,36 +110,37 @@ jobs:
           echo "statuses=$STATUSES" >> "$GITHUB_ENV"
         shell: bash
 
-      #- name: Determine Consolidated Statuses
-        #id: consolidated_status
-        #run: |
+      - name: Determine Consolidated Statuses
+        id: consolidated_status
+        run: |
           # Extract required job statuses
-          #CHECK_APPROVALS_STATUS=$(echo "${{ env.statuses }}" | grep -oE "check-approvals status: [a-zA-Z]+" | awk '{print $NF}')
-          #DEPLOY_PHASE_ONE_STATUS=$(echo "${{ env.statuses }}" | grep -oE "deploy-phase-one status: [a-zA-Z]+" | awk '{print $NF}')
-          #DEPLOY_PHASE_TWO_STATUS=$(echo "${{ env.statuses }}" | grep -oE "deploy-phase-two status: [a-zA-Z]+" | awk '{print $NF}')
+          CHECK_APPROVALS_STATUS=$(echo "${{ env.statuses }}" | grep -oE "check-approvals status: [a-zA-Z]+" | awk '{print $NF}')
+          DEPLOY_PHASE_ONE_STATUS=$(echo "${{ env.statuses }}" | grep -oE "deploy-phase-one status: [a-zA-Z]+" | awk '{print $NF}')
+          DEPLOY_PHASE_TWO_STATUS=$(echo "${{ env.statuses }}" | grep -oE "deploy-phase-two status: [a-zA-Z]+" | awk '{print $NF}')
     
           # Extract statuses for deploy-single-component's child jobs
-          #COMPONENT_MATRIX_STATUS=$(echo "${{ env.statuses }}" | grep -oE "create-component-matrix status: [a-zA-Z]+" | awk '{print $NF}')
-          #DEPLOY_TO_AZ_SERVICE_STATUS=$(echo "${{ env.statuses }}" | grep -oE "deploy-to-AzService status: [a-zA-Z]+" | awk '{print $NF}')
+          COMPONENT_MATRIX_STATUS=$(echo "${{ env.statuses }}" | grep -oE "create-component-matrix status: [a-zA-Z]+" | awk '{print $NF}')
+          DEPLOY_TO_AZ_SERVICE_STATUS=$(echo "${{ env.statuses }}" | grep -oE "deploy-to-AzService status: [a-zA-Z]+" | awk '{print $NF}')
     
           # Determine deploy-single-component status based on its children
-          #if [[ "$COMPONENT_MATRIX_STATUS" == "failure" || "$DEPLOY_TO_AZ_SERVICE_STATUS" == "failure" ]]; then
-             #DEPLOY_SINGLE_STATUS="failure"
-          #elif [[ "$COMPONENT_MATRIX_STATUS" == "in_progress" || "$DEPLOY_TO_AZ_SERVICE_STATUS" == "in_progress" ]]; then
-             #DEPLOY_SINGLE_STATUS="in_progress"
-          #else
-             #DEPLOY_SINGLE_STATUS="success"
-          #fi
+          if [[ "$COMPONENT_MATRIX_STATUS" == "failure" || "$DEPLOY_TO_AZ_SERVICE_STATUS" == "failure" ]]; then
+             DEPLOY_SINGLE_STATUS="failure"
+          elif [[ "$COMPONENT_MATRIX_STATUS" == "in_progress" || "$DEPLOY_TO_AZ_SERVICE_STATUS" == "in_progress" ]]; then
+             DEPLOY_SINGLE_STATUS="in_progress"
+          else
+             DEPLOY_SINGLE_STATUS="success"
+          fi
 
           # Combine all statuses
-          #ALL_STATUSES="check-approvals status: $CHECK_APPROVALS_STATUS, "
-          #ALL_STATUSES+="deploy-single-component status: $DEPLOY_SINGLE_STATUS, "
-          #ALL_STATUSES+="deploy-phase-one status: $DEPLOY_PHASE_ONE_STATUS, "
-          #ALL_STATUSES+="deploy-phase-two status: $DEPLOY_PHASE_TWO_STATUS"
+          ALL_STATUSES="check-approvals status: $CHECK_APPROVALS_STATUS, "
+          ALL_STATUSES+="deploy-single-component status: $DEPLOY_SINGLE_STATUS, "
+          ALL_STATUSES+="deploy-phase-one status: $DEPLOY_PHASE_ONE_STATUS, "
+          ALL_STATUSES+="deploy-phase-two status: $DEPLOY_PHASE_TWO_STATUS"
 
-          #echo "Final Collected Statuses: $ALL_STATUSES"
-          #echo "all_statuses=$ALL_STATUSES" >> "$GITHUB_OUTPUT"
-        #shell: bash   works correctly for single not for fullstack
+          echo "Final Collected Statuses: $ALL_STATUSES"
+          echo "all_statuses=$ALL_STATUSES" >> "$GITHUB_OUTPUT"
+        shell: bash   
+        #works correctly for single not for fullstack
   
           
       #- name: Extract Required Job Statuses
@@ -154,55 +155,4 @@ jobs:
           #echo "compjobnew=$COMPJOB" >> "$GITHUB_OUTPUT"
         #shell: bash
 
-      - name: Determine Consolidated Statuses
-        id: consolidated_status
-        run: |
-          declare -A STATUSES_MAP
-          PHASES=("check-approvals" "deploy-single-component" "deploy-phase-one" "deploy-phase-two")
-
-          # Extract and store job statuses dynamically
-          for PHASE in "${PHASES[@]}"; do
-            if [[ "$PHASE" == "deploy-single-component" ]]; then
-              CHILD_JOBS=("create-component-matrix" "deploy-to-AzService")
-              CHILD_STATUS=()
-        
-           for JOB in "${CHILD_JOBS[@]}"; do
-             STATUS=$(echo "${{ env.statuses }}" | grep -oE "$JOB status: [a-zA-Z]+" | awk '{print $NF}')
-             [[ -n "$STATUS" ]] && CHILD_STATUS+=("$STATUS")
-           done
-
-           if [[ " ${CHILD_STATUS[@]} " =~ "failure" ]]; then
-             STATUSES_MAP[$PHASE]="failure"
-           elif [[ " ${CHILD_STATUS[@]} " =~ "in_progress" ]]; then
-             STATUSES_MAP[$PHASE]="in_progress"
-           elif [[ ${#CHILD_STATUS[@]} -eq 0 ]]; then
-             STATUSES_MAP[$PHASE]="skipped"
-           else
-             STATUSES_MAP[$PHASE]="success"
-           fi
-
-           else
-             JOB_STATUSES=$(echo "${{ env.statuses }}" | grep -oE "$PHASE( / [^,]+)? status: [a-zA-Z]+" | awk '{print $NF}')
-        
-           if echo "$JOB_STATUSES" | grep -q "failure"; then
-             STATUSES_MAP[$PHASE]="failure"
-           elif echo "$JOB_STATUSES" | grep -q "in_progress"; then
-             STATUSES_MAP[$PHASE]="in_progress"
-           elif [[ -z "$JOB_STATUSES" ]]; then
-             STATUSES_MAP[$PHASE]="skipped"
-           else
-             STATUSES_MAP[$PHASE]="success"
-           fi
-          fi
-          done
-
-            # Combine all statuses dynamically
-           ALL_STATUSES=""
-          for PHASE in "${PHASES[@]}"; do
-             ALL_STATUSES+="$PHASE status: ${STATUSES_MAP[$PHASE]}, "
-          done
-
-          ALL_STATUSES="${ALL_STATUSES%, }"  # Trim trailing comma
-          echo "Final Collected Statuses: $ALL_STATUSES"
-          echo "all_statuses=$ALL_STATUSES" >> "$GITHUB_OUTPUT"
-        shell: bash
+      
