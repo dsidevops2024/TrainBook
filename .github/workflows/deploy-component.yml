@@ -81,7 +81,7 @@ jobs:
           # Dynamically extract job statuses excluding "collect-status"
           COMPJOB=$(echo "${{ env.statuses }}" | grep -oE "[a-zA-Z0-9-]+ status: [a-zA-Z]+" | grep -v "collect-status" | paste -sd ", ")
 
-          echo "Filtered statuses: $COMPJOB"
+          echo "Filtered comp statuses: $COMPJOB"
           echo "compjob=$COMPJOB" >> "$GITHUB_OUTPUT"
         shell: bash  
       #- name: Extract compJob Statuses
