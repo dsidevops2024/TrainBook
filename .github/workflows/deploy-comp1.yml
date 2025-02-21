@@ -62,7 +62,7 @@ jobs:
 
            echo "Filtered statuses: $STATUSES"
            echo "filtered_statuses=$STATUSES" >> "$GITHUB_ENV"
-          shell: bash
+        shell: bash
       #- name: Get Job Statuses from GitHub API
         #id: get_status
         #run: |
