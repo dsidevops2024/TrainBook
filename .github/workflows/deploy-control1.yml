@@ -141,27 +141,35 @@ jobs:
              # Display the collected statuses
             echo "Collected statuses: $STATUSES"
     
-              # Split statuses into different categories based on the number of slashes in job names
-            controllerstatus=$(echo $STATUSES | sed -e 's/\([^/]\+ status:[^,]*\)/\1 /g' | tr -s ' ' | sed 's/ $//')
-            phasejobs=$(echo $STATUSES | sed -e 's/\([^/]\+ \/[^/]\+ status:[^,]*\)/\1 /g' | tr -s ' ' | sed 's/ $//')
-            compstatusone=$(echo $STATUSES | sed -e 's/\([^/]\+ \/[^/]\+ \/[^/]\+ status:[^,]*\)/\1 /g' | tr -s ' ' | sed 's/ $//')
-    
-             # Further split compstatusone into compstatustwo based on conditions
-             compstatustwo=$(echo $compstatusone | grep -i "deploy-phase-two")
-             compstatusone=$(echo $compstatusone | grep -i "deploy-phase-one")
-    
-             # Display variables for debugging
-             echo "controllerstatus=$controllerstatus"
-             echo "phasejobs=$phasejobs"
-             echo "compstatusone=$compstatusone"
-             echo "compstatustwo=$compstatustwo"
-    
-             # Export the variables to be used in the next steps or jobs by writing to the GITHUB_OUTPUT file
-             echo "controllerstatus=$controllerstatus" >> $GITHUB_OUTPUT
-             echo "phasejobs=$phasejobs" >> $GITHUB_OUTPUT
-             echo "compstatusone=$compstatusone" >> $GITHUB_OUTPUT
-             echo "compstatustwo=$compstatustwo" >> $GITHUB_OUTPUT
-          shell: bash
+              # Initialize empty variables
+            controllerstatus=""
+            phasejobs=""
+            compstatusone=""
+            compstatustwo=""
+
+            # Extract jobs based on the number of slashes
+            # Jobs with no slashes (controller job)
+            controllerstatus=$(echo "$STATUSES" | tr ',' '\n' | grep -v '/' | tr '\n' ',' | sed 's/,$//')
+
+            # Jobs with single slash (phase jobs)
+            phasejobs=$(echo "$STATUSES" | tr ',' '\n' | grep -E '^[^/]+/[^/]+$' | tr '\n' ',' | sed 's/,$//')
+
+            # Jobs with double slashes (component jobs)
+            compstatusone=$(echo "$STATUSES" | tr ',' '\n' | grep -E '^[^/]+/[^/]+/[^/]+$' | grep -i "deploy-phase-one" | tr '\n' ',' | sed 's/,$//')
+            compstatustwo=$(echo "$STATUSES" | tr ',' '\n' | grep -E '^[^/]+/[^/]+/[^/]+$' | grep -i "deploy-phase-two" | tr '\n' ',' | sed 's/,$//')
+
+            # Debug output to verify the splits
+            echo "controllerstatus=$controllerstatus"
+            echo "phasejobs=$phasejobs"
+            echo "compstatusone=$compstatusone"
+            echo "compstatustwo=$compstatustwo"
+
+            # Export the variables to be used in the next steps or jobs by writing to the GITHUB_OUTPUT file
+            echo "controllerstatus=$controllerstatus" >> $GITHUB_OUTPUT
+            echo "phasejobs=$phasejobs" >> $GITHUB_OUTPUT
+            echo "compstatusone=$compstatusone" >> $GITHUB_OUTPUT
+            echo "compstatustwo=$compstatustwo" >> $GITHUB_OUTPUT
+        shell: bash
       
   report-job-status:
     needs: [check-component-input, create-environment-matrix, set-environment-runner, call-phase, collect-control-status]
