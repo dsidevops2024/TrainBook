@@ -11,19 +11,19 @@ on:
       runner:
         type: string
         required: true
-    #outputs:
-      #phase-status:
+    outputs:
+      phase-status:
         #value: ${{ jobs.phase-status.outputs.phaseop }}
-        #value: ${{ jobs.collect-status-new.outputs.phaseop }}
-      #comp-status-phase1:
+        value: ${{ jobs.collect-status-new.outputs.phaseop }}
+      comp-status-phase1:
         #value: ${{ jobs.Phase1.outputs.compstatus }}
-        #value: ${{ jobs.deploy-single-component.outputs.compstatus }}
-      #comp-status-phase2:
+        value: ${{ jobs.deploy-single-component.outputs.compstatus }}
+      comp-status-phase2:
         #value: ${{ jobs.Phase2.outputs.compstatus }}
-        #value: ${{ jobs.deploy-phase-one.outputs.compstatus }}
-      #comp-status-phase3:
+        value: ${{ jobs.deploy-phase-one.outputs.compstatus }}
+      comp-status-phase3:
         #value: ${{ jobs.Phase3.outputs.compstatus }}
-        #value: ${{ jobs.deploy-phase-two.outputs.compstatus }}
+        value: ${{ jobs.deploy-phase-two.outputs.compstatus }}
         
 jobs:
   check-approvals:
@@ -61,15 +61,6 @@ jobs:
       environment: ${{ inputs.environment }}
       runner: ${{ inputs.runner }}
 
-  Reset-approvals:
-    needs: [ check-approvals, deploy-single-component, deploy-phase-two]
-    runs-on: ubuntu-latest
-    steps:
-      - name: Approval step
-        id: step2  # We add an ID for job2
-        run: |
-          echo "Approval-check=Test for approval" 
-          
   #phase-status:
     #needs: [check-approvals,deploy-single-component, deploy-phase-one, deploy-phase-two]
     #if: always()
@@ -100,4 +91,66 @@ jobs:
           #Phasestatus+="deploy-phase-two status: ${{ needs.deploy-phase-two.result }}"
           #echo "Phasestatus=$Phasestatus" >> $GITHUB_OUTPUT 
 
+  collect-status-new:
+    needs: [check-approvals,deploy-single-component, deploy-phase-one, deploy-phase-two]
+    runs-on: ubuntu-latest
+    outputs:
+       phaseop: ${{ steps.consolidated_status.outputs.all_statuses }}
+    if: always()  # Ensures this runs even if some jobs fail
+    steps:
+      - name: Get PhaseJob Status-GitHub API
+        id: get_status_new
+        run: |
+          STATUSES=$(curl -s -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+          -H "Accept: application/vnd.github+json" \
+          "https://api.github.com/repos/${{ github.repository }}/actions/runs/${{ github.run_id }}/jobs" | \
+          jq -r '[.jobs[] | select(.name != "collect-status-new") | "\(.name) status: \(.conclusion // "in_progress")"] | join(", ")')
+
+          echo "Collected statuses: $STATUSES"
+          echo "statuses=$STATUSES" >> "$GITHUB_ENV"
+        shell: bash
+
+      - name: Consolidated phase Status
+        id: consolidated_status
+        run: |
+          # Extract required job statuses
+          CHECK_APPROVALS_STATUS=$(echo "${{ env.statuses }}" | grep -oE "check-approvals status: [a-zA-Z]+" | awk '{print $NF}')
+          DEPLOY_PHASE_ONE_STATUS=$(echo "${{ env.statuses }}" | grep -oE "deploy-phase-one status: [a-zA-Z]+" | awk '{print $NF}')
+          DEPLOY_PHASE_TWO_STATUS=$(echo "${{ env.statuses }}" | grep -oE "deploy-phase-two status: [a-zA-Z]+" | awk '{print $NF}')
+    
+          # Extract statuses for deploy-single-component's child jobs
+          COMPONENT_MATRIX_STATUS=$(echo "${{ env.statuses }}" | grep -oE "create-component-matrix status: [a-zA-Z]+" | awk '{print $NF}')
+          DEPLOY_TO_AZ_SERVICE_STATUS=$(echo "${{ env.statuses }}" | grep -oE "deploy-to-AzService status: [a-zA-Z]+" | awk '{print $NF}')
+    
+          # Determine deploy-single-component status based on its children
+          if [[ "$COMPONENT_MATRIX_STATUS" == "failure" || "$DEPLOY_TO_AZ_SERVICE_STATUS" == "failure" ]]; then
+             DEPLOY_SINGLE_STATUS="failure"
+          elif [[ "$COMPONENT_MATRIX_STATUS" == "in_progress" || "$DEPLOY_TO_AZ_SERVICE_STATUS" == "in_progress" ]]; then
+             DEPLOY_SINGLE_STATUS="in_progress"
+          else
+             DEPLOY_SINGLE_STATUS="success"
+          fi
+
+          # Combine all statuses
+          ALL_STATUSES="check-approvals status: $CHECK_APPROVALS_STATUS, "
+          ALL_STATUSES+="deploy-single-component status: $DEPLOY_SINGLE_STATUS, "
+          ALL_STATUSES+="deploy-phase-one status: $DEPLOY_PHASE_ONE_STATUS, "
+          ALL_STATUSES+="deploy-phase-two status: $DEPLOY_PHASE_TWO_STATUS"
+
+          echo "Final phase Statuses: $ALL_STATUSES"
+          echo "all_statuses=$ALL_STATUSES" >> "$GITHUB_OUTPUT"
+        shell: bash   
+        #works correctly for single not for fullstack
   
+          
+      #- name: Extract Required Job Statuses
+        #id: filter_statuses
+        #run: |
+          # Extract only create-component-matrix and deploy-to-AzService statuses
+          #COMPJOB=$(echo "${{ env.statuses }}" | grep -oE "create-component-matrix status: [a-zA-Z]+|deploy-to-AzService status: [a-zA-Z]+" | paste -sd ", ")
+          #COMPJOB=$(echo "${{ env.statuses }}" | grep -oE "check-approvals status: [a-zA-Z]+|call-phase / deploy-single-component / [a-zA-Z-]+ status: [a-zA-Z]+|deploy-phase-one status: [a-zA-Z]+|deploy-phase-two status: [a-zA-Z]+" | paste -sd ", ")
+          #COMPJOB=$(echo "${{ env.statuses }}" | grep -oE "check-approvals status: [a-zA-Z]+|deploy-single-component status: [a-zA-Z]+|deploy-phase-one status: [a-zA-Z]+|deploy-phase-two status: [a-zA-Z]+" | paste -sd ", ")
+
+          #echo "Filtered statuses: $COMPJOB"
+          #echo "compjobnew=$COMPJOB" >> "$GITHUB_OUTPUT"
+        #shell: bash
