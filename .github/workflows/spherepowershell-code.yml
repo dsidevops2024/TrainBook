@@ -162,22 +162,22 @@ jobs:
        - name: Checkout repository
          uses: actions/checkout@v3
          
-       - name: Report job statuses
-         id: report
-         run: |
-           $Controllerstatus="check-component-input status: ${{ needs.check-component-input.result }}, "
-           $Controllerstatus+="create-environment-matrix status: ${{ needs.create-environment-matrix.result }}, " 
-           $Controllerstatus+="set-environment-runner status: ${{ needs.set-environment-runner.result }}"
-           echo "controller-status=$Controllerstatus" >> $env:GITHUB_OUTPUT 
+       #- name: Report job statuses
+         #id: report
+         #run: |
+           #$Controllerstatus="check-component-input status: ${{ needs.check-component-input.result }}, "
+           #$Controllerstatus+="create-environment-matrix status: ${{ needs.create-environment-matrix.result }}, " 
+           #$Controllerstatus+="set-environment-runner status: ${{ needs.set-environment-runner.result }}"
+           #echo "controller-status=$Controllerstatus" >> $env:GITHUB_OUTPUT 
            #echo "::set-output name=controller-status::$Controllerstatus"
 
-       - name: Debug output values
-         run: |
-           echo "Controller Status: ${{ steps.report.outputs.controller-status }}"
-           echo "Phase Status: ${{ needs.call-phase.outputs.phase-status }}"
-           echo "Comp Status Phase 1: ${{ needs.call-phase.outputs.comp-status-phase1 }}"
-           echo "Comp Status Phase 2: ${{ needs.call-phase.outputs.comp-status-phase2 }}"
-           echo "Comp Status Phase 3: ${{ needs.call-phase.outputs.comp-status-phase3 }}"
+       #- name: Debug output values
+         #run: |
+           #echo "Controller Status: ${{ steps.report.outputs.controller-status }}"
+           #echo "Phase Status: ${{ needs.call-phase.outputs.phase-status }}"
+           #echo "Comp Status Phase 1: ${{ needs.call-phase.outputs.comp-status-phase1 }}"
+           #echo "Comp Status Phase 2: ${{ needs.call-phase.outputs.comp-status-phase2 }}"
+           #echo "Comp Status Phase 3: ${{ needs.call-phase.outputs.comp-status-phase3 }}"
 
 
        - name: Run PowerShell script to report job statuses
