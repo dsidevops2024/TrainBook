@@ -117,7 +117,7 @@ jobs:
           fi
   call-phase:
     needs: [check-component-input, create-environment-matrix]
-    uses: ./.github/workflows/deploy-phase.yml
+    uses: ./.github/workflows/deploy-phas1.yml
     with: 
       component: ${{ inputs.component }}
       environment: ${{ inputs.environment }}
