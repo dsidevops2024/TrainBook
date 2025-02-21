@@ -84,12 +84,12 @@ jobs:
           #echo "Filtered statuses: $COMPJOB"
           #echo "compjob=$COMPJOB" >> "$GITHUB_OUTPUT"
         #shell: bash  
-      #- name: Extract Required Job Statuses
-        #id: filter_statuses
-        #run: |
+      - name: Extract Required Job Statuses
+        id: filter_statuses
+        run: |
           # Extract only create-component-matrix and deploy-to-AzService statuses
-          #COMPJOB=$(echo "${{ env.statuses }}" | grep -oE "create-component-matrix status: [a-zA-Z]+|deploy-to-AzService status: [a-zA-Z]+" | paste -sd ", ")
+          COMPJOB=$(echo "${{ env.statuses }}" | grep -oE "create-component-matrix status: [a-zA-Z]+|deploy-to-AzService status: [a-zA-Z]+" | paste -sd ", ")
 
-          #echo "Filtered statuses: $COMPJOB"
-          #echo "compjob=$COMPJOB" >> "$GITHUB_OUTPUT"
-        #shell: bash
+          echo "Filtered statuses: $COMPJOB"
+          echo "compjob=$COMPJOB" >> "$GITHUB_OUTPUT"
+        shell: bash
