@@ -141,38 +141,32 @@ jobs:
              # Display the collected statuses
             echo "Collected statuses: $STATUSES"
     
-              # Initialize empty variables
+              # Initialize the status variables
             controllerstatus=""
-            phasejobs=""
-            compstatusone=""
-            compstatustwo=""
+            phasestatus=""
+            comphasestatus=""
 
-            # Extract jobs based on the number of slashes
-            # Jobs with no slashes (controller job)
-            controllerstatus=$(echo "$STATUSES" | tr ',' '\n' | grep -v '/' | tr '\n' ',' | sed 's/,$//')
+            # Iterate over each status and categorize based on slashes
+            IFS=', ' read -r -a status_array <<< "$STATUSES"
+            for status in "${status_array[@]}"; do
+              if [[ "$status" =~ [^/]+ ]]; then
+                controllerstatus+="$status, "
+              elif [[ "$status" =~ [^/]+/[^/]+ ]]; then
+                phasestatus+="$status, "
+              elif [[ "$status" =~ [^/]+/[^/]+/[^/]+ ]]; then
+                comphasestatus+="$status, "
+              fi
+            done
 
-            # Jobs with single slash (phase jobs)
-            phasejobs=$(echo "$STATUSES" | tr ',' '\n' | grep -E '^[^/]+/[^/]+$' | tr '\n' ',' | sed 's/,$//')
+            # Remove the trailing comma and space
+            controllerstatus=${controllerstatus%, }
+            phasestatus=${phasestatus%, }
+            comphasestatus=${comphasestatus%, }
 
-            # Jobs with double slashes (component jobs)
-            compstatusone=$(echo "$STATUSES" | tr ',' '\n' | grep -E '^[^/]+/[^/]+/[^/]+$' | grep -i "deploy-phase-one" | tr '\n' ',' | sed 's/,$//')
-            compstatustwo=$(echo "$STATUSES" | tr ',' '\n' | grep -E '^[^/]+/[^/]+/[^/]+$' | grep -i "deploy-phase-two" | tr '\n' ',' | sed 's/,$//')
-
-            # Debug output to verify the splits
-            echo "controllerstatus=$controllerstatus"
-            echo "phasejobs=$phasejobs"
-            echo "compstatusone=$compstatusone"
-            echo "compstatustwo=$compstatustwo"
-
-            # Export the variables to be used in the next steps or jobs by writing to the GITHUB_OUTPUT file
-            echo "controllerstatus=$controllerstatus" 
-            #>> $GITHUB_OUTPUT
-            echo "phasejobs=$phasejobs"
-            #>> $GITHUB_OUTPUT
-            echo "compstatusone=$compstatusone" 
-            #>> $GITHUB_OUTPUT
-            echo "compstatustwo=$compstatustwo"
-            #>> $GITHUB_OUTPUT
+            # Display the categorized statuses
+            echo "Controller Statuses: $controllerstatus"
+            echo "Phase Statuses: $phasestatus"
+            echo "Component Phase Statuses: $comphasestatus"
         shell: bash
       
   report-job-status:
