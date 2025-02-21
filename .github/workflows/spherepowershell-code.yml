@@ -127,10 +127,10 @@ jobs:
     needs: [check-component-input, create-environment-matrix, set-environment-runner, call-phase]
     runs-on: ubuntu-latest
     outputs:
-      con-status: ${{ steps.filter_statuses.outputs.conjob }}
+      controller-status: ${{ steps.filter_statuses.outputs.conjob }}
     
     steps:
-      - name: Get Job Statuses from GitHub API
+      - name: Get controller JobStatuses-GitHub API
         id: get_status
         run: |
           STATUSES=$(curl -s -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
@@ -145,10 +145,10 @@ jobs:
       - name: Extract Required Job Statuses
         id: filter_statuses
         run: |
-          # Extract only create-component-matrix and deploy-to-AzService statuses
+          # Extract only needed statuses
           COMPJOB=$(echo "${{ env.statuses }}" | grep -oE "check-component-input status: [a-zA-Z]+|create-environment-matrix status: [a-zA-Z]+|set-environment-runner status: [a-zA-Z]+|call-phase status: [a-zA-Z]+" | paste -sd ", ")
 
-          echo "Filtered statuses: $COMPJOB"
+          echo "Filtered controller statuses: $COMPJOB"
           echo "conjob=$COMPJOB" >> "$GITHUB_OUTPUT"
         shell: bash
     
@@ -185,7 +185,8 @@ jobs:
          shell: pwsh
          run: |
            #$ErrorActionPreference = "Stop"
-           .\.github\scripts\dynamic-handling-new.ps1 -controllerStatus "${{ steps.report.outputs.controller-status }}" `
+           #.\.github\scripts\dynamic-handling-new.ps1 -controllerStatus "${{ steps.report.outputs.controller-status }}" `
+           .\.github\scripts\dynamic-handling-new.ps1 -controllerStatus "${{ needs.collect-control-status.outputs.controller-status }}" `
             -phaseStatus "${{ needs.call-phase.outputs.phase-status }}" `
             -compStatusPhase1 "${{ needs.call-phase.outputs.comp-status-phase1 }}" `
             -compStatusPhase2 "${{ needs.call-phase.outputs.comp-status-phase2 }}" `
