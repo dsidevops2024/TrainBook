@@ -98,7 +98,7 @@ jobs:
        phaseop: ${{ steps.consolidated_status.outputs.all_statuses }}
     if: always()  # Ensures this runs even if some jobs fail
     steps:
-      - name: Get Job Statuses from GitHub API
+      - name: Get PhaseJob Status-GitHub API
         id: get_status_new
         run: |
           STATUSES=$(curl -s -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
@@ -110,7 +110,7 @@ jobs:
           echo "statuses=$STATUSES" >> "$GITHUB_ENV"
         shell: bash
 
-      - name: Determine Consolidated Statuses
+      - name: Consolidated phase Status
         id: consolidated_status
         run: |
           # Extract required job statuses
@@ -137,7 +137,7 @@ jobs:
           ALL_STATUSES+="deploy-phase-one status: $DEPLOY_PHASE_ONE_STATUS, "
           ALL_STATUSES+="deploy-phase-two status: $DEPLOY_PHASE_TWO_STATUS"
 
-          echo "Final Collected Statuses: $ALL_STATUSES"
+          echo "Final phase Statuses: $ALL_STATUSES"
           echo "all_statuses=$ALL_STATUSES" >> "$GITHUB_OUTPUT"
         shell: bash   
         #works correctly for single not for fullstack
