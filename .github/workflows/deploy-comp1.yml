@@ -40,10 +40,10 @@ jobs:
     needs: [create-component-matrix, deploy-to-AzService]
     runs-on: ubuntu-latest
     outputs:
-       output1: ${{ steps.collected_statuses.outputs.compjob}}
+       output1: ${{ steps.get_status_new.outputs.filtered_statuses }}
     if: always()  # Ensures this runs even if some jobs fail   
     steps:
-      - name: Get Job Statuses from GitHub API
+      - name: Checking new method
         id: get_status_new
         run: |
           # Fetch the jobs JSON from GitHub API
