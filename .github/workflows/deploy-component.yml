@@ -13,16 +13,16 @@ on:
       runner:
         type: string
         required: true
-    #outputs:
+    outputs:
       #compstatus1:
         #description: "First output from the component"
         #value: ${{ jobs.component-status.outputs.output1 }}
       #compstatus2:
         #description: "Second output from the component"
         #value: ${{ jobs.component-status.outputs.output2 }}
-      #compstatus:
+      compstatus:
         #value: ${{ jobs.component-status.outputs.output1 }}
-        #value: ${{ jobs.collect-status.outputs.output1 }}
+        value: ${{ jobs.collect-status.outputs.output1 }}
     
 jobs:
   create-component-matrix:
@@ -57,4 +57,41 @@ jobs:
           #compjob="create-component-matrix status: ${{ needs.create-component-matrix.result }}, "
           #compjob+="deploy-to-AzService status: ${{ needs.deploy-to-AzService.result }}"
           #echo "compjob=$compjob" >> $GITHUB_OUTPUT
+
+  collect-status:
+    needs: [create-component-matrix, deploy-to-AzService]
+    runs-on: ubuntu-latest
+    outputs:
+       output1: ${{ steps.filter_status.outputs.compjob}}
+    if: always()  # Ensures this runs even if some jobs fail   
+    steps:
+      - name: Get compjob Statuses-GitHub API
+        id: get_status
+        run: |
+          STATUSES=$(curl -s -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+            -H "Accept: application/vnd.github+json" \
+            "https://api.github.com/repos/${{ github.repository }}/actions/runs/${{ github.run_id }}/jobs" | \
+            jq -r '[.jobs[] | select(.name != "collect-status") | "\(.name) status: \(.conclusion // "in_progress")"] | join(", ")')
+
+          echo "Collected statuses: $STATUSES"
+          echo "statuses=$STATUSES" >> "$GITHUB_ENV"
+        shell: bash
+      #- name: Extract Required Job Statuses
+        #id: filter_statuses
+        #run: |
+          # Dynamically extract job statuses excluding "collect-status"
+          #COMPJOB=$(echo "${{ env.statuses }}" | grep -oE "[a-zA-Z0-9-]+ status: [a-zA-Z]+" | grep -v "collect-status" | paste -sd ", ")
+
+          #echo "Filtered comp statuses: $COMPJOB"
+          #echo "compjob=$COMPJOB" >> "$GITHUB_OUTPUT"
+        #shell: bash  
+      - name: Extract compJob Statuses
+        id: filter_status
+        run: |
+          # Extract only create-component-matrix and deploy-to-AzService statuses
+          COMPJOB=$(echo "${{ env.statuses }}" | grep -oE "create-component-matrix status: [a-zA-Z]+|deploy-to-AzService status: [a-zA-Z]+" | paste -sd ", ")
+
+          echo "Filtered statuses: $COMPJOB"
+          echo "compjob=$COMPJOB" >> "$GITHUB_OUTPUT"
+        shell: bash      
   
