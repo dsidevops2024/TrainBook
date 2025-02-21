@@ -153,7 +153,7 @@ jobs:
         shell: bash
     
   report-job-status:
-    needs: [check-component-input, create-environment-matrix, set-environment-runner, call-phase]
+    needs: [check-component-input, create-environment-matrix, set-environment-runner, call-phase, collect-control-status]
     runs-on: windows-latest
     #outputs:
       #controller-status: ${{ steps.report.outputs.controller-status }}
