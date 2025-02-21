@@ -75,21 +75,21 @@ jobs:
           echo "Collected statuses: $STATUSES"
           echo "statuses=$STATUSES" >> "$GITHUB_ENV"
         shell: bash
-      #- name: Extract Required Job Statuses
-        #id: filter_statuses
-        #run: |
-          # Dynamically extract job statuses excluding "collect-status"
-          #COMPJOB=$(echo "${{ env.statuses }}" | grep -oE "[a-zA-Z0-9-]+ status: [a-zA-Z]+" | grep -v "collect-status" | paste -sd ", ")
-
-          #echo "Filtered statuses: $COMPJOB"
-          #echo "compjob=$COMPJOB" >> "$GITHUB_OUTPUT"
-        #shell: bash  
-      - name: Extract compJob Statuses
-        id: filter_status
+      - name: Extract Required Job Statuses
+        id: filter_statuses
         run: |
-          # Extract only create-component-matrix and deploy-to-AzService statuses
-          COMPJOB=$(echo "${{ env.statuses }}" | grep -oE "create-component-matrix status: [a-zA-Z]+|deploy-to-AzService status: [a-zA-Z]+" | paste -sd ", ")
+          # Dynamically extract job statuses excluding "collect-status"
+          COMPJOB=$(echo "${{ env.statuses }}" | grep -oE "[a-zA-Z0-9-]+ status: [a-zA-Z]+" | grep -v "collect-status" | paste -sd ", ")
 
           echo "Filtered statuses: $COMPJOB"
           echo "compjob=$COMPJOB" >> "$GITHUB_OUTPUT"
-        shell: bash
+        shell: bash  
+      #- name: Extract compJob Statuses
+        #id: filter_status
+        #run: |
+          # Extract only create-component-matrix and deploy-to-AzService statuses
+          #COMPJOB=$(echo "${{ env.statuses }}" | grep -oE "create-component-matrix status: [a-zA-Z]+|deploy-to-AzService status: [a-zA-Z]+" | paste -sd ", ")
+
+          #echo "Filtered statuses: $COMPJOB"
+          #echo "compjob=$COMPJOB" >> "$GITHUB_OUTPUT"
+        #shell: bash
