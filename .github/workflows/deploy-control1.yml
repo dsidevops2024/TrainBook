@@ -164,7 +164,7 @@ jobs:
          shell: pwsh
          run: |
            #$ErrorActionPreference = "Stop"
-           .\.github\scripts\dynamic-handling-new.ps1 -controllerStatus "${{ steps.collect-control-status.outputs.con-status }}" `
+           .\.github\scripts\dynamic-handling-new.ps1 -controllerStatus "${{ jobs.collect-control-status.outputs.con-status }}" `
             -phaseStatus "${{ needs.call-phase.outputs.phase-status }}" `
             -compStatusPhase1 "${{ needs.call-phase.outputs.comp-status-phase1 }}" `
             -compStatusPhase2 "${{ needs.call-phase.outputs.comp-status-phase2 }}" `
