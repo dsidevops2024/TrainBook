@@ -64,7 +64,7 @@ jobs:
        output1: ${{ steps.filter_statuses.outputs.compjob}}
     if: always()  # Ensures this runs even if some jobs fail   
     steps:
-      - name: Get Job Statuses from GitHub API
+      - name: Get compjob Statuses-GitHub API
         id: get_status
         run: |
           STATUSES=$(curl -s -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
@@ -84,8 +84,8 @@ jobs:
           #echo "Filtered statuses: $COMPJOB"
           #echo "compjob=$COMPJOB" >> "$GITHUB_OUTPUT"
         #shell: bash  
-      - name: Extract Required Job Statuses
-        id: filter_statuses
+      - name: Extract compJob Statuses
+        id: filter_status
         run: |
           # Extract only create-component-matrix and deploy-to-AzService statuses
           COMPJOB=$(echo "${{ env.statuses }}" | grep -oE "create-component-matrix status: [a-zA-Z]+|deploy-to-AzService status: [a-zA-Z]+" | paste -sd ", ")
