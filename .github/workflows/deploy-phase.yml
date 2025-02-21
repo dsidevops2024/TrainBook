@@ -60,7 +60,16 @@ jobs:
       component: ${{ inputs.component }}
       environment: ${{ inputs.environment }}
       runner: ${{ inputs.runner }}
-      
+
+  Reset-approvals:
+    needs: [ check-approvals, deploy-single-component, deploy-phase-one, deploy-phase-two]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Approval step
+        id: step2  # We add an ID for job2
+        run: |
+          echo "Approval-check=Test for approval" 
+          
   #phase-status:
     #needs: [check-approvals,deploy-single-component, deploy-phase-one, deploy-phase-two]
     #if: always()
