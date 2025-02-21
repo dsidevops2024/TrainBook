@@ -138,20 +138,31 @@ jobs:
             "https://api.github.com/repos/${{ github.repository }}/actions/runs/${{ github.run_id }}/jobs" | \
             jq -r '[.jobs[] | select(.name != "collect-control-status") | "\(.name) status: \(.conclusion // "in_progress")"] | join(", ")')
 
-          echo "Collected statuses: $STATUSES"
-          echo "statuses=$STATUSES" >> "$GITHUB_ENV"
-        shell: bash
-      
-      - name: Extract Required Job Statuses
-        id: filter_statuses
-        run: |
-          # Extract only create-component-matrix and deploy-to-AzService statuses
-          COMPJOB=$(echo "${{ env.statuses }}" | grep -oE "check-component-input status: [a-zA-Z]+|create-environment-matrix status: [a-zA-Z]+|set-environment-runner status: [a-zA-Z]+|call-phase status: [a-zA-Z]+" | paste -sd ", ")
-
-          echo "Filtered statuses: $COMPJOB"
-          echo "conjob=$COMPJOB" >> "$GITHUB_OUTPUT"
-        shell: bash
+             # Display the collected statuses
+            echo "Collected statuses: $STATUSES"
     
+              # Split statuses into different categories based on the number of slashes in job names
+            controllerstatus=$(echo $STATUSES | sed -e 's/\([^/]\+ status:[^,]*\)/\1 /g' | tr -s ' ' | sed 's/ $//')
+            phasejobs=$(echo $STATUSES | sed -e 's/\([^/]\+ \/[^/]\+ status:[^,]*\)/\1 /g' | tr -s ' ' | sed 's/ $//')
+            compstatusone=$(echo $STATUSES | sed -e 's/\([^/]\+ \/[^/]\+ \/[^/]\+ status:[^,]*\)/\1 /g' | tr -s ' ' | sed 's/ $//')
+    
+             # Further split compstatusone into compstatustwo based on conditions
+             compstatustwo=$(echo $compstatusone | grep -i "deploy-phase-two")
+             compstatusone=$(echo $compstatusone | grep -i "deploy-phase-one")
+    
+             # Display variables for debugging
+             echo "controllerstatus=$controllerstatus"
+             echo "phasejobs=$phasejobs"
+             echo "compstatusone=$compstatusone"
+             echo "compstatustwo=$compstatustwo"
+    
+             # Export the variables to be used in the next steps or jobs by writing to the GITHUB_OUTPUT file
+             echo "controllerstatus=$controllerstatus" >> $GITHUB_OUTPUT
+             echo "phasejobs=$phasejobs" >> $GITHUB_OUTPUT
+             echo "compstatusone=$compstatusone" >> $GITHUB_OUTPUT
+             echo "compstatustwo=$compstatustwo" >> $GITHUB_OUTPUT
+          shell: bash
+      
   report-job-status:
     needs: [check-component-input, create-environment-matrix, set-environment-runner, call-phase, collect-control-status]
     runs-on: windows-latest
