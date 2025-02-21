@@ -123,6 +123,35 @@ jobs:
       environment: ${{ inputs.environment }}
       runner: ${{ inputs.runner }}
 
+  collect-control-status:
+    needs: [check-component-input, create-environment-matrix, set-environment-runner, call-phase]
+    runs-on: ubuntu-latest
+    outputs:
+      con-status: ${{ steps.filter_statuses.outputs.conjob }}
+    
+    steps:
+      - name: Get Job Statuses from GitHub API
+        id: get_status
+        run: |
+          STATUSES=$(curl -s -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+            -H "Accept: application/vnd.github+json" \
+            "https://api.github.com/repos/${{ github.repository }}/actions/runs/${{ github.run_id }}/jobs" | \
+            jq -r '[.jobs[] | select(.name != "collect-control-status") | "\(.name) status: \(.conclusion // "in_progress")"] | join(", ")')
+
+          echo "Collected statuses: $STATUSES"
+          echo "statuses=$STATUSES" >> "$GITHUB_ENV"
+        shell: bash
+      
+      - name: Extract Required Job Statuses
+        id: filter_statuses
+        run: |
+          # Extract only create-component-matrix and deploy-to-AzService statuses
+          COMPJOB=$(echo "${{ env.statuses }}" | grep -oE "check-component-input status: [a-zA-Z]+|create-environment-matrix status: [a-zA-Z]+|set-environment-runner status: [a-zA-Z]+|call-phase status: [a-zA-Z]+" | paste -sd ", ")
+
+          echo "Filtered statuses: $COMPJOB"
+          echo "conjob=$COMPJOB" >> "$GITHUB_OUTPUT"
+        shell: bash
+    
   report-job-status:
     needs: [check-component-input, create-environment-matrix, set-environment-runner, call-phase]
     runs-on: windows-latest
