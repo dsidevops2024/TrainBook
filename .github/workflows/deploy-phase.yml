@@ -62,7 +62,7 @@ jobs:
       runner: ${{ inputs.runner }}
 
   Reset-approvals:
-    needs: [ check-approvals, deploy-single-component, deploy-phase-one, deploy-phase-two]
+    needs: [ check-approvals, deploy-single-component, deploy-phase-two]
     runs-on: ubuntu-latest
     steps:
       - name: Approval step
