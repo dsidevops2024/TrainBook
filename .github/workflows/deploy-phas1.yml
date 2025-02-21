@@ -1,0 +1,89 @@
+name: Deploy Phase
+on:
+  workflow_call:
+    inputs:
+      component:
+        type: string
+        required: true
+      environment:
+        type: string
+        required: true
+      runner:
+        type: string
+        required: true
+    outputs:
+      phase-status:
+        value: ${{ jobs.collect-status-new.outputs.phaseop }}
+      comp-status-phase1:
+        value: ${{ jobs.deploy-single-component.outputs.compstatus }}
+      comp-status-phase2:
+        value: ${{ jobs.deploy-phase-one.outputs.compstatus }}
+      comp-status-phase3:
+        value: ${{ jobs.deploy-phase-two.outputs.compstatus }}
+        
+jobs:
+  check-approvals:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Approval step
+        id: step2  # We add an ID for job2
+        run: |
+          echo "Approval-check=Test for approval" 
+  deploy-single-component:
+    if: ${{ ! contains(inputs.component, 'fullstack') }}
+    uses: ./.github/workflows/deploy-component.yml
+    with: 
+      component: ${{ inputs.component }}
+      environment: ${{ inputs.environment }}
+      runner: ${{ inputs.runner }}
+
+  deploy-phase-one:
+    if: ${{  inputs.component == 'fullstack' }}
+    uses: ./.github/workflows/deploy-component.yml
+    with: 
+      component: ${{ inputs.component }}
+      environment: ${{ inputs.environment }}
+      runner: ${{ inputs.runner }}
+
+  deploy-phase-two:
+    if: ${{  inputs.component == 'fullstack' }}
+    needs: deploy-phase-one
+    uses: ./.github/workflows/deploy-component.yml
+    with: 
+      component: ${{ inputs.component }}
+      environment: ${{ inputs.environment }}
+      runner: ${{ inputs.runner }}
+      
+  collect-status-new:
+    needs: [check-approvals,deploy-single-component, deploy-phase-one, deploy-phase-two]
+    runs-on: ubuntu-latest
+    outputs:
+       #phaseop: ${{ steps.consolidated_status.outputs.all_statuses }}
+       phaseop: ${{ steps.filter_statuses.outputs.compjobnew }}
+    if: always()  # Ensures this runs even if some jobs fail
+    steps:
+      - name: Get Job Statuses from GitHub API
+        id: get_status_new
+        run: |
+          STATUSES=$(curl -s -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+          -H "Accept: application/vnd.github+json" \
+          "https://api.github.com/repos/${{ github.repository }}/actions/runs/${{ github.run_id }}/jobs" | \
+          jq -r '[.jobs[] | select(.name != "collect-status-new") | "\(.name) status: \(.conclusion // "in_progress")"] | join(", ")')
+
+          echo "Collected statuses: $STATUSES"
+          echo "statuses=$STATUSES" >> "$GITHUB_ENV"
+        shell: bash
+          
+      - name: Extract Required Job Statuses
+        id: filter_statuses
+        run: |
+          # Extract only create-component-matrix and deploy-to-AzService statuses
+          COMPJOB=$(echo "${{ env.statuses }}" | grep -oE "create-component-matrix status: [a-zA-Z]+|deploy-to-AzService status: [a-zA-Z]+" | paste -sd ", ")
+          COMPJOB=$(echo "${{ env.statuses }}" | grep -oE "check-approvals status: [a-zA-Z]+|call-phase / deploy-single-component / [a-zA-Z-]+ status: [a-zA-Z]+|deploy-phase-one status: [a-zA-Z]+|deploy-phase-two status: [a-zA-Z]+" | paste -sd ", ")
+          COMPJOB=$(echo "${{ env.statuses }}" | grep -oE "check-approvals status: [a-zA-Z]+|deploy-single-component status: [a-zA-Z]+|deploy-phase-one status: [a-zA-Z]+|deploy-phase-two status: [a-zA-Z]+" | paste -sd ", ")
+
+          echo "Filtered statuses: $COMPJOB"
+          echo "compjobnew=$COMPJOB" >> "$GITHUB_OUTPUT"
+        shell: bash
+
+      
