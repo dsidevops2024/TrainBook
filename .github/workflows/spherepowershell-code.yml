@@ -123,14 +123,7 @@ jobs:
       environment: ${{ inputs.environment }}
       runner: ${{ inputs.runner }}
 
-  check1:
-    runs-on: ubuntu-latest
-    needs: [check-component-input, create-environment-matrix, call-phase]
-    steps:
-      - name: set runner group
-        id: env-runner
-        run: |
-          echo "checking=step2"
+  
 
   collect-control-status:
     needs: [check-component-input, create-environment-matrix, set-environment-runner, call-phase]
