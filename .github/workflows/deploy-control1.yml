@@ -142,29 +142,23 @@ jobs:
             echo "Collected statuses: $STATUSES"
     
              # Extract controller statuses (jobs with no slashes)
-            controllerstatus=$(echo $STATUSES | sed -e 's/\([^/]\+ status:[^,]*\)/\1 /g' | tr -s ' ' | sed 's/ $//')
+            controllerstatus=$(echo $STATUSES | tr ',' '\n' | grep -v '/' | tr '\n' ',' | sed 's/,$//')
 
-             # Extract phase statuses (jobs with a single slash)
-            phasejobs=$(echo $STATUSES | sed -e 's/\([^/]\+ \/[^/]\+ status:[^,]*\)/\1 /g' | tr -s ' ' | sed 's/ $//')
+             # Extract phase statuses (jobs with one slash)
+            phasejobs=$(echo $STATUSES | tr ',' '\n' | grep -E '^([^/]+ /[^/]+)' | tr '\n' ',' | sed 's/,$//')
 
-             # Extract component phase statuses (jobs with double slashes)
-            compstatusone=$(echo $STATUSES | sed -e 's/\([^/]\+ \/[^/]\+ \/[^/]\+ status:[^,]*\)/\1 /g' | tr -s ' ' | sed 's/ $//')
+             # Extract component phase statuses (jobs with two slashes)
+            compstatusone=$(echo $STATUSES | tr ',' '\n' | grep -E '^([^/]+ /[^/]+ /[^/]+)' | tr '\n' ',' | sed 's/,$//')
 
-             # Further split component phase statuses based on conditions
-            compstatustwo=$(echo $compstatusone | grep -i "deploy-phase-two")
-            compstatusone=$(echo $compstatusone | grep -i "deploy-phase-one")
-
-             # Debug output
+             # Debug output for verification
             echo "Controller Statuses: $controllerstatus"
             echo "Phase Statuses: $phasejobs"
             echo "Component Phase Statuses: $compstatusone"
-            echo "Additional Component Phase Statuses (Phase Two): $compstatustwo"
 
             # Export the variables to be used in the next steps or jobs by writing to the GITHUB_OUTPUT file
             echo "controllerstatus=$controllerstatus" >> $GITHUB_OUTPUT
             echo "phasejobs=$phasejobs" >> $GITHUB_OUTPUT
             echo "compstatusone=$compstatusone" >> $GITHUB_OUTPUT
-            echo "compstatustwo=$compstatustwo" >> $GITHUB_OUTPUT
         shell: bash
 
   report-job-status:
