@@ -141,19 +141,21 @@ jobs:
              # Display the collected statuses
             echo "Collected statuses: $STATUSES"
     
-              # Initialize the status variables
-            controllerstatus=""
-            phasestatus=""
-            comphasestatus=""
-
-            # Iterate over each status and categorize based on slashes
-            IFS=', ' read -r -a status_array <<< "$STATUSES"
-            for status in "${status_array[@]}"; do
-              if [[ "$status" =~ [^/]+ ]]; then
+             IFS=', ' read -r -a status_array <<< "$STATUSES"
+             for status in "${status_array[@]}"; do
+              # Strip any leading/trailing spaces
+              status=$(echo "$status" | xargs)
+  
+              # Check if it contains no slashes (controller status)
+              if [[ "$status" =~ ^[^/]+$ ]]; then
                 controllerstatus+="$status, "
-              elif [[ "$status" =~ [^/]+/[^/]+ ]]; then
+  
+              # Check if it contains one slash (phase status)
+              elif [[ "$status" =~ ^[^/]+/[^/]+$ ]]; then
                 phasestatus+="$status, "
-              elif [[ "$status" =~ [^/]+/[^/]+/[^/]+ ]]; then
+  
+              # Check if it contains two slashes (component phase status)
+              elif [[ "$status" =~ ^[^/]+/[^/]+/[^/]+$ ]]; then
                 comphasestatus+="$status, "
               fi
             done
