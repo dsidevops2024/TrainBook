@@ -61,7 +61,7 @@ jobs:
     needs: [create-component-matrix, deploy-to-AzService]
     runs-on: ubuntu-latest
     outputs:
-       output1: ${{ steps.filter_statuses.outputs.compjob}}
+       output1: ${{ steps.filter_status.outputs.compjob}}
     if: always()  # Ensures this runs even if some jobs fail   
     steps:
       - name: Get compjob Statuses-GitHub API
