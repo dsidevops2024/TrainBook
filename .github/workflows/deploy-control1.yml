@@ -129,6 +129,9 @@ jobs:
     outputs:
       con-status: ${{ steps.get_status.outputs.controllerstatus }}
       phase-status: ${{ steps.get_status.outputs.phasejobs }}
+      comstatus_deploy_single_component: ${{ steps.get_status.outputs.comstatus_deploy_single_component }}
+      comstatus_deploy_phase_one: ${{ steps.get_status.outputs.comstatus_deploy_phase_one }}
+      comstatus_deploy_phase_two: ${{ steps.get_status.outputs.comstatus_deploy_phase_two }}
     
     steps:
       - name: Get Job Statuses from GitHub API
@@ -198,9 +201,9 @@ jobs:
            #$ErrorActionPreference = "Stop"
            .\.github\scripts\dynamic-handling-new.ps1 -controllerStatus "${{ needs.collect-control-status.outputs.con-status }}" `
             -phaseStatus "${{ needs.collect-control-status.outputs.phase-status }}" `
-            -compStatusPhase1 "${{ needs.call-phase.outputs.comp-status-phase1 }}" `
-            -compStatusPhase2 "${{ needs.call-phase.outputs.comp-status-phase2 }}" `
-            -compStatusPhase3 "${{ needs.call-phase.outputs.comp-status-phase3 }}"
+            -compStatusPhase1 "${{ needs.collect-control-status.outputs.comstatus_deploy_single_component }}" `
+            -compStatusPhase2 "${{ needs.collect-control-status.outputs.comstatus_deploy_phase_one }}" `
+            -compStatusPhase3 "${{ needs.collect-control-status.outputs.comstatus_deploy_phase_two }}"
            
        - name: Use the outputs from report-job-status
          run: |
