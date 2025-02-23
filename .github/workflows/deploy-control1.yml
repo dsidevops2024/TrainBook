@@ -164,44 +164,42 @@ jobs:
             # Declare an associative array to store statuses for each phase
             declare -A phase_statuses
 
-            # Process each entry dynamically
             while IFS= read -r line; do
-                 # Extract phase name (before `/`)
-                 phase=$(echo "$line" | awk -F' / ' '{print $1}' | xargs)
+                # Extract phase name (first two parts before the second slash)
+                phase=$(echo "$line" | awk -F' / ' '{print $2}' | xargs)
     
-                # Extract the status message (after `/`)
-                 status=$(echo "$line" | awk -F' / ' '{print $2}' | xargs)
+                 # Extract the status message (after phase name)
+                status=$(echo "$line" | awk -F' / ' '{print $3}' | xargs)
     
-                # Append status to the corresponding phase
-                phase_statuses["$phase"]+="$status, "
+                 # Ensure phase is not empty before adding to array
+                if [[ -n "$phase" ]]; then
+                   phase_statuses["$phase"]+="$status, "
+                fi
             done < <(echo "$compstatus" | tr ',' '\n')
 
             # Automatically generate comstatus variables dynamically
             index=2
             for phase in $(printf "%s\n" "${!phase_statuses[@]}" | sort); do
                # Remove trailing comma and space
-              cleaned_status=${phase_statuses[$phase]%, }
+               cleaned_status=${phase_statuses[$phase]%, }
     
-              # Dynamically create variables
-              eval "comstatus$index='$cleaned_status'"
+               # Dynamically create variables
+               declare "comstatus$index=$cleaned_status"
     
-              # Print the output
-              echo "comstatus$index: ${!comstatus$index}"
+               # Print the output
+               echo "comstatus$index: $(eval echo \"\$comstatus$index\")"
     
-              ((index++)) # Auto-increment for next phase
+               ((index++)) # Auto-increment for next phase
             done
-          # Export the variables to GitHub Actions
-          echo "controllerstatus=$controllerstatus" >> $GITHUB_OUTPUT
-          echo "phasejobs=$phasejobs" >> $GITHUB_OUTPUT
-          echo "compstatus=$output_string" >> $GITHUB_OUTPUT
-        shell: bash
-
-            
+            # Export the variables to GitHub Actions
+            echo "controllerstatus=$controllerstatus" >> $GITHUB_OUTPUT
+            echo "phasejobs=$phasejobs" >> $GITHUB_OUTPUT
+            echo "compstatus=$compstatus" >> $GITHUB_OUTPUT
             # Export the variables to be used in the next steps or jobs by writing to the GITHUB_OUTPUT file
             #echo "controllerstatus=$controllerstatus" >> $GITHUB_OUTPUT
             #echo "phasejobs=$phasejobs" >> $GITHUB_OUTPUT
             #echo "compstatusone=$compstatus" >> $GITHUB_OUTPUT
-        #shell: bash
+        shell: bash
 
   report-job-status:
     needs: [check-component-input, create-environment-matrix, set-environment-runner, call-phase, collect-control-status]
