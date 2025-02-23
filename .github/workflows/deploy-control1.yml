@@ -159,7 +159,7 @@ jobs:
              # Debug output for verification
             echo "Controller Statuses: $controllerstatus"
             echo "Phase Statuses: $phasejobs"
-            echo "Component Phase Statuses: $compstatusone"
+            echo "Component Phase Statuses: $compstatus"
 
             # Export the variables to be used in the next steps or jobs by writing to the GITHUB_OUTPUT file
             echo "controllerstatus=$controllerstatus" >> $GITHUB_OUTPUT
