@@ -161,38 +161,21 @@ jobs:
             echo "Phase Statuses: $phasejobs"
             echo "CompPhase Statuses: $compstatus"
 
-            # Declare an associative array to store statuses for each phase
-            declare -A phase_statuses
+            declare -A compStatus
 
-            # Process each line from compstatus
-            while IFS= read -r line; do
-                # Extract phase name (first two parts before the last slash)
-                phase=$(echo "$line" | sed -E 's|^([^/]+ /[^/]+) /.*|\1|' | xargs)
+           # Extract phase names dynamically and populate the array
+          while IFS='/' read -r phase status; do
+               phase=$(echo "$phase" | xargs)  # Trim spaces
+               status=$(echo "$status" | xargs)  # Trim spaces
+               compStatus["$phase"]+="${status}, "
+          done <<< "$(echo "$compstatus" | tr ',' '\n')"  # Convert commas to new lines
 
-                # Extract the component job name and its status
-                component_status=$(echo "$line" | sed -E 's|^.*/([^/]+) status: (.*)|\1 : \2|' | xargs)
-
-                # Ensure phase is not empty before adding to array
-               if [[ -n "$phase" && -n "$component_status" ]]; then
-                   phase_statuses["$phase"]+="$component_status, "
-               fi
-           done < <(echo "$compstatus" | tr ',' '\n')
-
-           # Dynamically create comstatus variables
-            index=2
-          for phase in $(printf "%s\n" "${!phase_statuses[@]}" | sort); do
-                 # Remove trailing comma and space
-              cleaned_status=${phase_statuses[$phase]%, }
-
-               # Dynamically create variables
-              declare "comstatus$index='$cleaned_status'"
-
-             # Print output for debugging
-              echo "comstatus$index: $(eval echo \"\$comstatus$index\")"
-
-              ((index++)) # Auto-increment for next phase
+          # Loop through associative array and create dynamic variables
+          for key in "${!compStatus[@]}"; do
+               varname="comstatus_${key//-/_}"  # Convert phase name to a valid variable format
+               declare "$varname"="$(echo "${compStatus[$key]}" | sed 's/, $//')"  # Remove trailing comma
+               echo "$varname: ${!varname}"  # Print the result
           done
-
             # Export the variables to GitHub Actions
             echo "controllerstatus=$controllerstatus" >> $GITHUB_OUTPUT
             echo "phasejobs=$phasejobs" >> $GITHUB_OUTPUT
