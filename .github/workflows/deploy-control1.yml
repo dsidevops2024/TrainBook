@@ -153,45 +153,43 @@ jobs:
             phasejobs=$(echo "$STATUSES" | tr ',' '\n' | grep -E '^[^/]+/[^/]+ ' | sed -E 's/^[^/]+\/([^/]+).*status: ([^ ]+)/\1status: \2/g' | sort -u | tr '\n' ',' | sed 's/,$//')
 
              # Extract component phase statuses (jobs with two slashes)
-            compstatusone=$(echo $STATUSES | tr ',' '\n' | grep -E '^([^/]+ /[^/]+ /[^/]+)' | tr '\n' ',' | sed 's/,$//')
-            #compstatus=$(echo "$STATUSES" | tr ',' '\n' | grep -E '^[^/]+ /[^/]+ /' | sed -E 's/^[^/]+ \/([^/]+ \/[^/]+).*status: ([^ ]+)/\1status: \2/g' | tr '\n' ',' | sed 's/,$//')
+            #compstatusone=$(echo $STATUSES | tr ',' '\n' | grep -E '^([^/]+ /[^/]+ /[^/]+)' | tr '\n' ',' | sed 's/,$//')
+            compstatus=$(echo "$STATUSES" | tr ',' '\n' | grep -E '^[^/]+ /[^/]+ /' | sed -E 's/^[^/]+ \/([^/]+ \/[^/]+).*status: ([^ ]+)/\1status: \2/g' | tr '\n' ',' | sed 's/,$//')
             
             # Debug output for verification
             echo "Controller Statuses: $controllerstatus"
             echo "Phase Statuses: $phasejobs"
             echo "CompPhase Statuses: $compstatusone"
 
-            # Process compstatus dynamically
-            declare -A phases
+            # Declare an associative array to store statuses for each phase
+            declare -A phase_statuses
 
-            # Process each entry
-          IFS=',' read -ra entries <<< "$compstatusone"
-          for entry in "${entries[@]}"; do
-              entry=$(echo "$entry" | xargs)  # Trim spaces
+            # Process each entry dynamically
+            while IFS= read -r line; do
+                 # Extract phase name (before `/`)
+                 phase=$(echo "$line" | awk -F' / ' '{print $1}' | xargs)
+    
+                # Extract the status message (after `/`)
+                 status=$(echo "$line" | awk -F' / ' '{print $2}' | xargs)
+    
+                # Append status to the corresponding phase
+                phase_statuses["$phase"]+="$status, "
+            done < <(echo "$component_phase_statuses" | tr ',' '\n')
 
-              # Extract the phase and component with status
-              phase=$(echo "$entry" | cut -d',' -f1)  # Extract the phase (e.g., deploy-phase-one)
-              component_status=$(echo "$entry" | cut -d',' -f2)  # Extract component and status
-
-              # Store values dynamically
-              if [[ -n "${phases[$phase]}" ]]; then
-                  phases["$phase"]+=", $component_status"  # Append with comma separator
-              else
-                  phases["$phase"]="$component_status"
-              fi
-          done
-
-          # Prepare output for GitHub Actions
-          output_string=""
-          for phase in "${!phases[@]}"; do
-              phase_name="com_${phase//-/_}"  # Convert phase name (e.g., deploy-phase-one -> com_deploy_phase_one)
-              output_string+="$phase_name: ${phases[$phase]}, "
-          done
-          output_string=${output_string%, }  # Remove trailing comma
-
-          # Debug final output
-          echo "Final Component Phase Statuses: $output_string"
-
+            # Automatically generate comstatus variables dynamically
+            index=2
+            for phase in $(printf "%s\n" "${!phase_statuses[@]}" | sort); do
+               # Remove trailing comma and space
+              cleaned_status=${phase_statuses[$phase]%, }
+    
+              # Dynamically create variables
+              eval "comstatus$index='$cleaned_status'"
+    
+              # Print the output
+              echo "comstatus$index: ${!comstatus$index}"
+    
+              ((index++)) # Auto-increment for next phase
+            done
           # Export the variables to GitHub Actions
           echo "controllerstatus=$controllerstatus" >> $GITHUB_OUTPUT
           echo "phasejobs=$phasejobs" >> $GITHUB_OUTPUT
