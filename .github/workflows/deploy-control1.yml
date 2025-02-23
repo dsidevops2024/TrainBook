@@ -164,7 +164,7 @@ jobs:
             # Export the variables to be used in the next steps or jobs by writing to the GITHUB_OUTPUT file
             echo "controllerstatus=$controllerstatus" >> $GITHUB_OUTPUT
             echo "phasejobs=$phasejobs" >> $GITHUB_OUTPUT
-            echo "compstatusone=$compstatusone" >> $GITHUB_OUTPUT
+            echo "compstatusone=$compstatus" >> $GITHUB_OUTPUT
         shell: bash
 
   report-job-status:
