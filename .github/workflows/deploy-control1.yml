@@ -159,7 +159,7 @@ jobs:
             # Debug output for verification
             echo "Controller Statuses: $controllerstatus"
             echo "Phase Statuses: $phasejobs"
-            echo "CompPhase Statuses: $compstatusone"
+            echo "CompPhase Statuses: $compstatus"
 
             # Declare an associative array to store statuses for each phase
             declare -A phase_statuses
