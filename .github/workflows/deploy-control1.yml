@@ -165,12 +165,12 @@ jobs:
                status=$(echo "$status" | xargs)  # Trim spaces
                compStatus["$phase"]+="${status}, "
           done <<< "$(echo "$compstatus" | tr ',' '\n')"  # Convert commas to new lines
-
           {
            for key in "${!compStatus[@]}"; do
              varname="comstatus_${key//-/_}"  # Convert phase name to a valid variable format
              value="$(echo "${compStatus[$key]}" | sed 's/, $//')"  # Remove trailing comma
              echo "$varname=$value" >> "$GITHUB_OUTPUT"  # Save to GitHub Actions output
+             echo "$varname: $value"  # Print the value to console
           done
           } 
           # Loop through associative array and create dynamic variables
