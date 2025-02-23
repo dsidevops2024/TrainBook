@@ -146,9 +146,9 @@ jobs:
             controllerstatus=$(echo $STATUSES | tr ',' '\n' | grep -v '/' | tr '\n' ',' | sed 's/,$//')
 
              # Extract phase statuses (jobs with one slash)
-            phasejobs=$(echo $STATUSES | tr ',' '\n' | grep -E '^([^/]+ /[^/]+)' | tr '\n' ',' | sed 's/,$//')
+            #phasejobs=$(echo $STATUSES | tr ',' '\n' | grep -E '^([^/]+ /[^/]+)' | tr '\n' ',' | sed 's/,$//')
             # Extract only the part after the first slash in phase statuses (values after the slash)
-            #phasejobs_cleaned=$(echo $phasejobs | tr ',' '\n' | sed 's/^[^/]*\/\(.*\)/\1/' | tr '\n' ',' | sed 's/,$//')
+            phasejobs=$(echo $STATUSES | tr ',' '\n' | grep -E '^[^/]+/[^/]+ ' | sed 's/^[^/]+\/\([^ ]*\) status:/\1 status:/g' | tr '\n' ',' | sed 's/,$//')
 
              # Extract component phase statuses (jobs with two slashes)
             compstatusone=$(echo $STATUSES | tr ',' '\n' | grep -E '^([^/]+ /[^/]+ /[^/]+)' | tr '\n' ',' | sed 's/,$//')
