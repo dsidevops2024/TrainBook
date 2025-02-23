@@ -155,24 +155,6 @@ jobs:
              # Extract component phase statuses (jobs with two slashes)
             compstatusone=$(echo $STATUSES | tr ',' '\n' | grep -E '^([^/]+ /[^/]+ /[^/]+)' | tr '\n' ',' | sed 's/,$//')
             #compstatus=$(echo "$STATUSES" | tr ',' '\n' | grep -E '^[^/]+ /[^/]+ /' | sed -E 's/^[^/]+ \/([^/]+ \/[^/]+).*status: ([^ ]+)/\1status: \2/g' | tr '\n' ',' | sed 's/,$//')
-
-            # Process each unique phase dynamically
-            for phase in $compstatusone; do
-               # Convert phase name to a valid variable format (replace dashes and spaces with underscores)
-               var_name="$(echo "$phase" | tr '-' '_' | tr ' ' '_')"  # Example: deploy-phase-one → deploy_phase_one
-
-               # Extract the statuses related to this phase
-               value=$(echo "$STATUSES" | grep " $phase " | sed "s|.*$phase /||" | tr '\n' ',' | sed 's/,$//')
-
-               # Assign value dynamically
-               declare "$var_name"="$value"
-
-               # Print for verification in GitHub Actions console
-               echo "$var_name: ${!var_name}"
-
-               # Export to GitHub Actions environment
-               echo "${var_name^^}=${!var_name}" >> "$GITHUB_OUTPUT"
-            done
             
             # Debug output for verification
             echo "Controller Statuses: $controllerstatus"
