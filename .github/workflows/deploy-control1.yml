@@ -174,7 +174,7 @@ jobs:
     
                 # Append status to the corresponding phase
                 phase_statuses["$phase"]+="$status, "
-            done < <(echo "$component_phase_statuses" | tr ',' '\n')
+            done < <(echo "$compstatus" | tr ',' '\n')
 
             # Automatically generate comstatus variables dynamically
             index=2
