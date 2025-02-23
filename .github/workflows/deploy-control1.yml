@@ -150,7 +150,7 @@ jobs:
             # Extract only the part after the first slash in phase statuses (values after the slash)
             #phasejobs=$(echo $STATUSES | tr ',' '\n' | grep -E '^[^/]+/[^/]+ ' | sed -E 's/^[^/]+\/([^/]+).*status: ([^ ]+)/\1 status: \2/g' | tr '\n' ',' | sed 's/,$//')
             #phasejobs=$(echo "$STATUSES" | tr ',' '\n' | grep -E '^[^/]+/[^/]+ ' | sed -E 's/^[^/]+\/([^/]+).*status: ([^ ]+)/\1status: \2/g' | tr '\n' ',' | sed 's/,$//')
-            phasejobs=$(echo "$STATUSES" | tr ',' '\n' | grep -E '^[^/]+/[^/]+ ' | sed -E 's/^[^/]+\/([^/]+).*status: ([^ ]+)/\1 status: \2/g' | sort -u | tr '\n' ',' | sed 's/,$//')
+            phasejobs=$(echo "$STATUSES" | tr ',' '\n' | grep -E '^[^/]+/[^/]+ ' | sed -E 's/^[^/]+\/([^/]+).*status: ([^ ]+)/\1status: \2/g' | sort -u | tr '\n' ',' | sed 's/,$//')
 
              # Extract component phase statuses (jobs with two slashes)
             compstatusone=$(echo $STATUSES | tr ',' '\n' | grep -E '^([^/]+ /[^/]+ /[^/]+)' | tr '\n' ',' | sed 's/,$//')
@@ -179,7 +179,7 @@ jobs:
          run: |
            #$ErrorActionPreference = "Stop"
            .\.github\scripts\dynamic-handling-new.ps1 -controllerStatus "${{ needs.collect-control-status.outputs.con-status }}" `
-            -phaseStatus "${{ needs.needs.collect-control-status.outputs.phase-status }}" `
+            -phaseStatus "${{ needs.collect-control-status.outputs.phase-status }}" `
             -compStatusPhase1 "${{ needs.call-phase.outputs.comp-status-phase1 }}" `
             -compStatusPhase2 "${{ needs.call-phase.outputs.comp-status-phase2 }}" `
             -compStatusPhase3 "${{ needs.call-phase.outputs.comp-status-phase3 }}"
