@@ -165,39 +165,37 @@ jobs:
             declare -A phases
 
             # Process each entry
-            IFS=',' read -ra entries <<< "$compstatusone"
-            for entry in "${entries[@]}"; do
+          IFS=',' read -ra entries <<< "$compstatusone"
+          for entry in "${entries[@]}"; do
               entry=$(echo "$entry" | xargs)  # Trim spaces
 
-              # Extract phase and component with status
-              if [[ "$entry" =~ ([^\/]+)\/(.+) ]]; then
-                  phase="${BASH_REMATCH[1]}"  # Extract deployment phase (e.g., deploy-phase-one)
-                  component_status="${BASH_REMATCH[2]}"  # Extract component and status
+              # Extract the phase and component with status
+              phase=$(echo "$entry" | cut -d',' -f1)  # Extract the phase (e.g., deploy-phase-one)
+              component_status=$(echo "$entry" | cut -d',' -f2)  # Extract component and status
 
-                  # Store the values dynamically
-                  if [[ -n "${phases[$phase]}" ]]; then
-                      phases["$phase"]+=", $component_status"  # Append with comma separator
-                  else
-                      phases["$phase"]="$component_status"
-                  fi
+              # Store values dynamically
+              if [[ -n "${phases[$phase]}" ]]; then
+                  phases["$phase"]+=", $component_status"  # Append with comma separator
+              else
+                  phases["$phase"]="$component_status"
               fi
-            done
+          done
 
-            # Prepare output for GitHub Actions
-            output_string=""
-            for phase in "${!phases[@]}"; do
-              phase_name="com_${phase//-/_}"  # Convert phase name to avoid issues
+          # Prepare output for GitHub Actions
+          output_string=""
+          for phase in "${!phases[@]}"; do
+              phase_name="com_${phase//-/_}"  # Convert phase name (e.g., deploy-phase-one -> com_deploy_phase_one)
               output_string+="$phase_name: ${phases[$phase]}, "
-            done
-            output_string=${output_string%, }  # Remove trailing comma
+          done
+          output_string=${output_string%, }  # Remove trailing comma
 
-            # Debug final output
-            echo "Final Component Phase Statuses: $output_string"
+          # Debug final output
+          echo "Final Component Phase Statuses: $output_string"
 
-            # Export the variables to GitHub Actions
-            echo "controllerstatus=$controllerstatus" >> $GITHUB_OUTPUT
-            echo "phasejobs=$phasejobs" >> $GITHUB_OUTPUT
-            echo "compstatus=$output_string" >> $GITHUB_OUTPUT
+          # Export the variables to GitHub Actions
+          echo "controllerstatus=$controllerstatus" >> $GITHUB_OUTPUT
+          echo "phasejobs=$phasejobs" >> $GITHUB_OUTPUT
+          echo "compstatus=$output_string" >> $GITHUB_OUTPUT
         shell: bash
 
             
