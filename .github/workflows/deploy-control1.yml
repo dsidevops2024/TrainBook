@@ -170,16 +170,24 @@ jobs:
                compStatus["$phase"]+="${status}, "
           done <<< "$(echo "$compstatus" | tr ',' '\n')"  # Convert commas to new lines
 
-          # Loop through associative array and create dynamic variables
-          for key in "${!compStatus[@]}"; do
-               varname="comstatus_${key//-/_}"  # Convert phase name to a valid variable format
-               declare "$varname"="$(echo "${compStatus[$key]}" | sed 's/, $//')"  # Remove trailing comma
-               echo "$varname: ${!varname}"  # Print the result
+          {
+           for key in "${!compStatus[@]}"; do
+             varname="comstatus_${key//-/_}"  # Convert phase name to a valid variable format
+             value="$(echo "${compStatus[$key]}" | sed 's/, $//')"  # Remove trailing comma
+             echo "$varname=$value" >> "$GITHUB_OUTPUT"  # Save to GitHub Actions output
           done
+          } 
+          # Loop through associative array and create dynamic variables
+          #for key in "${!compStatus[@]}"; do
+               #varname="comstatus_${key//-/_}"  # Convert phase name to a valid variable format
+               #declare "$varname"="$(echo "${compStatus[$key]}" | sed 's/, $//')"  # Remove trailing comma
+               #echo "$varname: ${!varname}"  # Print the result
+          #done
             # Export the variables to GitHub Actions
             echo "controllerstatus=$controllerstatus" >> $GITHUB_OUTPUT
             echo "phasejobs=$phasejobs" >> $GITHUB_OUTPUT
             echo "compstatus=$compstatus" >> $GITHUB_OUTPUT
+            echo "comstatus_deploy_phase_one"
             # Export the variables to be used in the next steps or jobs by writing to the GITHUB_OUTPUT file
             #echo "controllerstatus=$controllerstatus" >> $GITHUB_OUTPUT
             #echo "phasejobs=$phasejobs" >> $GITHUB_OUTPUT
