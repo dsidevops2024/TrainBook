@@ -160,12 +160,52 @@ jobs:
             echo "Controller Statuses: $controllerstatus"
             echo "Phase Statuses: $phasejobs"
             echo "CompPhase Statuses: $compstatusone"
-            
-            # Export the variables to be used in the next steps or jobs by writing to the GITHUB_OUTPUT file
+
+            # Process compstatus dynamically
+            declare -A phases
+
+            # Process each entry
+            IFS=',' read -ra entries <<< "$compstatusone"
+            for entry in "${entries[@]}"; do
+              entry=$(echo "$entry" | xargs)  # Trim spaces
+
+              # Extract phase and component with status
+              if [[ "$entry" =~ ([^\/]+)\/(.+) ]]; then
+                  phase="${BASH_REMATCH[1]}"  # Extract deployment phase (e.g., deploy-phase-one)
+                  component_status="${BASH_REMATCH[2]}"  # Extract component and status
+
+                  # Store the values dynamically
+                  if [[ -n "${phases[$phase]}" ]]; then
+                      phases["$phase"]+=", $component_status"  # Append with comma separator
+                  else
+                      phases["$phase"]="$component_status"
+                  fi
+              fi
+            done
+
+            # Prepare output for GitHub Actions
+            output_string=""
+            for phase in "${!phases[@]}"; do
+              phase_name="com_${phase//-/_}"  # Convert phase name to avoid issues
+              output_string+="$phase_name: ${phases[$phase]}, "
+            done
+            output_string=${output_string%, }  # Remove trailing comma
+
+            # Debug final output
+            echo "Final Component Phase Statuses: $output_string"
+
+            # Export the variables to GitHub Actions
             echo "controllerstatus=$controllerstatus" >> $GITHUB_OUTPUT
             echo "phasejobs=$phasejobs" >> $GITHUB_OUTPUT
-            echo "compstatusone=$compstatus" >> $GITHUB_OUTPUT
+            echo "compstatus=$output_string" >> $GITHUB_OUTPUT
         shell: bash
+
+            
+            # Export the variables to be used in the next steps or jobs by writing to the GITHUB_OUTPUT file
+            #echo "controllerstatus=$controllerstatus" >> $GITHUB_OUTPUT
+            #echo "phasejobs=$phasejobs" >> $GITHUB_OUTPUT
+            #echo "compstatusone=$compstatus" >> $GITHUB_OUTPUT
+        #shell: bash
 
   report-job-status:
     needs: [check-component-input, create-environment-matrix, set-environment-runner, call-phase, collect-control-status]
