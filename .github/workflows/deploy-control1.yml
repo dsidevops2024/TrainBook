@@ -153,7 +153,8 @@ jobs:
             phasejobs=$(echo "$STATUSES" | tr ',' '\n' | grep -E '^[^/]+/[^/]+ ' | sed -E 's/^[^/]+\/([^/]+).*status: ([^ ]+)/\1status: \2/g' | sort -u | tr '\n' ',' | sed 's/,$//')
 
              # Extract component phase statuses (jobs with two slashes)
-            compstatusone=$(echo $STATUSES | tr ',' '\n' | grep -E '^([^/]+ /[^/]+ /[^/]+)' | tr '\n' ',' | sed 's/,$//')
+            #compstatusone=$(echo $STATUSES | tr ',' '\n' | grep -E '^([^/]+ /[^/]+ /[^/]+)' | tr '\n' ',' | sed 's/,$//')
+            compstatus=$(echo "$STATUSES" | tr ',' '\n' | grep -E '^[^/]+ /[^/]+ /' | sed -E 's/^[^/]+ \/([^/]+ \/[^/]+).*status: ([^ ]+)/\1status: \2/g' | tr '\n' ',' | sed 's/,$//')
 
              # Debug output for verification
             echo "Controller Statuses: $controllerstatus"
