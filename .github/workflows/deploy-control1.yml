@@ -148,14 +148,14 @@ jobs:
              # Extract phase statuses (jobs with one slash)
             phasejobs=$(echo $STATUSES | tr ',' '\n' | grep -E '^([^/]+ /[^/]+)' | tr '\n' ',' | sed 's/,$//')
             # Extract only the part after the first slash in phase statuses (values after the slash)
-            phasejobs_cleaned=$(echo $phasejobs | tr ',' '\n' | sed 's/^[^/]*\/\(.*\)/\1/' | tr '\n' ',' | sed 's/,$//')
+            #phasejobs_cleaned=$(echo $phasejobs | tr ',' '\n' | sed 's/^[^/]*\/\(.*\)/\1/' | tr '\n' ',' | sed 's/,$//')
 
              # Extract component phase statuses (jobs with two slashes)
             compstatusone=$(echo $STATUSES | tr ',' '\n' | grep -E '^([^/]+ /[^/]+ /[^/]+)' | tr '\n' ',' | sed 's/,$//')
 
              # Debug output for verification
             echo "Controller Statuses: $controllerstatus"
-            echo "Phase Statuses: $phasejobs_cleaned"
+            echo "Phase Statuses: $phasejobs"
             echo "Component Phase Statuses: $compstatusone"
 
             # Export the variables to be used in the next steps or jobs by writing to the GITHUB_OUTPUT file
