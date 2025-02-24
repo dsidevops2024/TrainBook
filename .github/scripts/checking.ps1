@@ -1,75 +1,78 @@
-# Function to write the status to the GitHub output
-function Write-OutputToFile {
+param (
+    [string]$controllerStatus,
+    [string]$phaseStatus,
+    [string[]]$compStatuses  # Receives component statuses as an array
+)
+
+# Helper function to extract the status of a job dynamically
+function Get-JobStatus {
     param (
-        [string]$name,
-        [string]$value
+        [string]$statusString,
+        [string]$jobName
     )
-    Write-Host "$name=$value"
-    Add-Content -Path $env:GITHUB_OUTPUT -Value "$name=$value"
-}
-
-# Construct the Controller Job Status using the GitHub Actions environment variables
-$ControllerJobStatus = "check-component-input status: $($env:CHECK_COMPONENT_INPUT), "
-$ControllerJobStatus += "create-environment-matrix status: $($env:CREATE_ENVIRONMENT_MATRIX), "
-$ControllerJobStatus += "set-environment-runner status: $($env:SET_ENVIRONMENT_RUNNER)"
-Write-Host "ControllerJobStatus:"
-Write-Host $ControllerJobStatus
-Write-OutputToFile "Controller-Job-Status" $ControllerJobStatus
-
-# Define components
-$components = @("check-component-input", "create-environment-matrix", "set-environment-runner")
-
-# Loop through components to extract their status from the ControllerJobStatus
-foreach ($component in $components) {
-    $componentStatus = ($ControllerJobStatus | Select-String -Pattern "$component status: (.*?),") -replace ".*?status: (.*?),", '$1'
-    Write-Host "$component status: $componentStatus"
-    Write-OutputToFile "$component-status" $componentStatus
-}
-
-# Overall Phase Status
-$phaseStatus = $env:PHASE_STATUS
-Write-Host "OverallPhaseJobStatus:"
-Write-Host $phaseStatus
-Write-OutputToFile "overall-phase-status" $phaseStatus
-
-# Define phases
-$phases = @("check-approvals", "deploy-single-component", "deploy-phase-one", "deploy-phase-two")
-
-# Loop through phases to extract their status
-foreach ($phase in $phases) {
-    $phaseStatusValue = ($phaseStatus | Select-String -Pattern "$phase status: (.*?),") -replace ".*?status: (.*?),", '$1'
-    Write-Host "$phase status: $phaseStatusValue"
-    Write-OutputToFile "${phase}_status" $phaseStatusValue
-}
-
-# Phase job statuses
-$phaseJobs = @("deploy-single-component", "deploy-phase-one", "deploy-phase-two")
-
-# Loop through phase jobs to extract their status
-foreach ($phase in $phaseJobs) {
-    $compStatus = ""
-    if ($phase -eq "deploy-single-component") {
-        $compStatus = $env:DEPLOY_SINGLE_COMPONENT_STATUS
-    } elseif ($phase -eq "deploy-phase-one") {
-        $compStatus = $env:DEPLOY_PHASE_ONE_STATUS
-    } elseif ($phase -eq "deploy-phase-two") {
-        $compStatus = $env:DEPLOY_PHASE_TWO_STATUS
+    if ($statusString -match "$jobName status: ([^,]+)") {
+        return $matches[1]
     }
+    return "not available"
+}
 
-    Write-Host "$phase status: $compStatus"
-    Write-OutputToFile "${phase}-status" $compStatus
+# Dynamically extract and process controller jobs
+Add-Content -Path $env:GITHUB_OUTPUT -Value "controller-status=$controllerStatus"
 
-    # Define additional job statuses within each phase
+# Extract all controller jobs dynamically
+$controllerJobs = [regex]::Matches($controllerStatus, "(?<jobName>[\w\-]+) status:") 
+foreach ($match in $controllerJobs) {
+    $jobName = $match.Groups["jobName"].Value
+    $componentStatus = Get-JobStatus -statusString $controllerStatus -jobName $jobName
+    Add-Content -Path $env:GITHUB_OUTPUT -Value "$jobName-status=$jobName status: $componentStatus"
+}
+
+# Set phase status as output
+Add-Content -Path $env:GITHUB_OUTPUT -Value "overall-phase-status=$phaseStatus"
+
+# Extract and process phases dynamically
+$phaseJobs = [regex]::Matches($phaseStatus, "(?<jobName>[\w\-]+) status:") 
+foreach ($match in $phaseJobs) {
+    $phaseName = $match.Groups["jobName"].Value
+    $phaseStatusValue = Get-JobStatus -statusString $phaseStatus -jobName $phaseName
+    Add-Content -Path $env:GITHUB_OUTPUT -Value "${phaseName}_status=$phaseName status: $phaseStatusValue"
+}
+
+# Extract all deploy phases dynamically
+$allPhaseJobs = [regex]::Matches($phaseStatus, "(deploy-[\w\-]+) status:") | ForEach-Object { $_.Groups[1].Value }
+
+# Dynamically extract component statuses from the array (compStatuses)
+$defaultJobs = @()
+foreach ($compStatus in $compStatuses) {
+    if ($compStatus) {
+        $jobs = [regex]::Matches($compStatus, "(?<jobName>[\w\-]+) status:") | ForEach-Object { $_.Groups["jobName"].Value }
+        $defaultJobs += $jobs
+    }
+}
+$defaultJobs = $defaultJobs | Select-Object -Unique  # Remove duplicates
+
+# Process each component phase dynamically
+for ($i = 0; $i -lt $compStatuses.Length; $i++) {
+    if ($i -ge $allPhaseJobs.Count) { continue }  # Ensure index is within bounds
+
+    $phaseName = $allPhaseJobs[$i]
+    $compStatus = $compStatuses[$i]
+
+    # Output phase status
+    Add-Content -Path $env:GITHUB_OUTPUT -Value "$phaseName-status=$compStatus"
+
     if (-not $compStatus) {
-        $compStatusJob1 = "create-component-matrix status: skipped"
-        $compStatusJob2 = "deploy-to-AzService status: skipped"
+        # Use dynamically extracted default jobs when component status is missing
+        foreach ($job in $defaultJobs) {
+            Add-Content -Path $env:GITHUB_OUTPUT -Value "$phaseName-$job-status=$job status: skipped"
+        }
     } else {
-        $compStatusJob1 = ($compStatus | Select-String -Pattern "create-component-matrix status: (.*?),") -replace ".*?status: (.*?),", '$1'
-        $compStatusJob2 = ($compStatus | Select-String -Pattern "deploy-to-AzService status: (.*?),") -replace ".*?status: (.*?),", '$1'
+        # Extract job statuses dynamically from the component status
+        $phaseJobs = [regex]::Matches($compStatus, "(?<jobName>[\w\-]+) status:")
+        foreach ($match in $phaseJobs) {
+            $jobName = $match.Groups["jobName"].Value
+            $jobStatus = Get-JobStatus -statusString $compStatus -jobName $jobName
+            Add-Content -Path $env:GITHUB_OUTPUT -Value "$phaseName-$jobName-status=$jobName status: $jobStatus"
+        }
     }
-
-    Write-Host "${phase}-job1-status=$compStatusJob1"
-    Write-Host "${phase}-job2-status=$compStatusJob2"
-    Write-OutputToFile "${phase}-job1-status" $compStatusJob1
-    Write-OutputToFile "${phase}-job2-status" $compStatusJob2
 }
