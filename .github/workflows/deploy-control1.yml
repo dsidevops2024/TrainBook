@@ -141,7 +141,6 @@ jobs:
             -H "Accept: application/vnd.github+json" \
             "https://api.github.com/repos/${{ github.repository }}/actions/runs/${{ github.run_id }}/jobs" | \
             jq -r '[.jobs[] | select(.name != "collect-control-status") | "\(.name) status: \(.conclusion // "in_progress")"] | join(", ")')
-
              # Display the collected statuses
             echo "Collected statuses: $STATUSES"
     
@@ -151,7 +150,8 @@ jobs:
              # Extract phase statuses (jobs with one slash)
             #phasejobs=$(echo "$STATUSES" | tr ',' '\n' | grep -E '^[^/]+/[^/]+ ' | sed -E 's/^[^/]+\/([^/]+).*status: ([^ ]+)/\1status: \2/g' | sort -u | tr '\n' ',' | sed 's/,$//')
              phasejobs=$(echo "$STATUSES" | tr ',' '\n' | grep -E '^[^/]+/[^/]+ ' | sed -E 's/^[^/]+\/([^/]+).*status: ([^ ]+)/\1status: \2/g' | awk '!seen[$0]++' | tr '\n' ',' | sed 's/,$//')
-             # Extract component phase statuses (jobs with two slashes)
+             
+            # Extract component phase statuses (jobs with two slashes)
             #compstatusone=$(echo $STATUSES | tr ',' '\n' | grep -E '^([^/]+ /[^/]+ /[^/]+)' | tr '\n' ',' | sed 's/,$//')
             compstatus=$(echo "$STATUSES" | tr ',' '\n' | grep -E '^[^/]+ /[^/]+ /' | sed -E 's/^[^/]+ \/([^/]+ \/[^/]+).*status: ([^ ]+)/\1status: \2/g' | tr '\n' ',' | sed 's/,$//')
             
@@ -176,13 +176,6 @@ jobs:
              echo "$varname: $value"  # Print the value to console
           done
           } 
-          # Loop through associative array and create dynamic variables
-          #for key in "${!compStatus[@]}"; do
-               #varname="comstatus_${key//-/_}"  # Convert phase name to a valid variable format
-               #declare "$varname"="$(echo "${compStatus[$key]}" | sed 's/, $//')"  # Remove trailing comma
-               #echo "$varname: ${!varname}"  # Print the result
-          #done
-            # Export the variables to GitHub Actions
             echo "controllerstatus=$controllerstatus" >> $GITHUB_OUTPUT
             echo "phasejobs=$phasejobs" >> $GITHUB_OUTPUT
         shell: bash
@@ -198,21 +191,28 @@ jobs:
          run: |
            echo "Controller Status: ${{ needs.collect-control-status.outputs.con-status }}"
            echo "Phase Status: ${{ needs.collect-control-status.outputs.phase-status }}"
-           echo "Component Status - Deploy Single Component: ${{ needs.collect-control-status.outputs.comstatus_deploy_single_component }}"
-           echo "Component Status - Deploy Phase One: ${{ needs.collect-control-status.outputs.comstatus_deploy_phase_one }}"
-           echo "Component Status - Deploy Phase Two: ${{ needs.collect-control-status.outputs.comstatus_deploy_phase_two }}"
-
+           echo "Component Statuses: ${{ needs.collect-control-status.outputs.comstatus_deploy_single_component }}, ${{ needs.collect-control-status.outputs.comstatus_deploy_phase_one }}, ${{ needs.collect-control-status.outputs.comstatus_deploy_phase_two }}"
+           #echo "Component Status - Deploy Single Component: ${{ needs.collect-control-status.outputs.comstatus_deploy_single_component }}"
+           #echo "Component Status - Deploy Phase One: ${{ needs.collect-control-status.outputs.comstatus_deploy_phase_one }}"
+           #echo "Component Status - Deploy Phase Two: ${{ needs.collect-control-status.outputs.comstatus_deploy_phase_two }}"
      
        - name: Run PowerShell script to report job statuses
          id: report-status
          shell: pwsh
          run: |
+           # Create an array with all the component statuses dynamically
+           $compStatuses = @(
+            "${{ needs.collect-control-status.outputs.comstatus_deploy_single_component }}",
+            "${{ needs.collect-control-status.outputs.comstatus_deploy_phase_one }}",
+            "${{ needs.collect-control-status.outputs.comstatus_deploy_phase_two }}"
+           )
            #$ErrorActionPreference = "Stop"
-           .\.github\scripts\dynamic-handling-new.ps1 -controllerStatus "${{ needs.collect-control-status.outputs.con-status }}" `
+           .\.github\scripts\checking.ps1 -controllerStatus "${{ needs.collect-control-status.outputs.con-status }}" `
             -phaseStatus "${{ needs.collect-control-status.outputs.phase-status }}" `
-            -compStatusPhase1 "${{ needs.collect-control-status.outputs.comstatus_deploy_single_component }}" `
-            -compStatusPhase2 "${{ needs.collect-control-status.outputs.comstatus_deploy_phase_one }}" `
-            -compStatusPhase3 "${{ needs.collect-control-status.outputs.comstatus_deploy_phase_two }}"
+            -compStatuses $compStatuses
+            #-compStatusPhase1 "${{ needs.collect-control-status.outputs.comstatus_deploy_single_component }}" `
+            #-compStatusPhase2 "${{ needs.collect-control-status.outputs.comstatus_deploy_phase_one }}" `
+            #-compStatusPhase3 "${{ needs.collect-control-status.outputs.comstatus_deploy_phase_two }}"
            
        - name: Use the outputs from report-job-status
          run: |
