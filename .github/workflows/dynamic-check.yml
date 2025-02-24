@@ -1,4 +1,4 @@
-name: deploy control
+name: dynamic check
 run-name: Deploy ${{ inputs.component }} to ${{ inputs.environment }}
 
 on:
