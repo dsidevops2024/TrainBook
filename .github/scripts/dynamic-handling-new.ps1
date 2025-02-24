@@ -42,7 +42,7 @@ foreach ($match in $phaseJobs) {
 
 # Extract all deploy phases dynamically
 $allPhaseJobs = [regex]::Matches($phaseStatus, "(deploy-[\w\-]+) status:") | ForEach-Object { $_.Groups[1].Value }
-
+Write-Output $allPhaseJobs
 # Process component statuses dynamically for each extracted deploy phase
 $compStatuses = @($compStatusPhase1, $compStatusPhase2, $compStatusPhase3)
 
