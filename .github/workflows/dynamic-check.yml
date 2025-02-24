@@ -131,67 +131,68 @@ jobs:
       - name: Get Job Statuses from GitHub API
         id: get_status
         run: |
-          #STATUSES=$(curl -s -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
-          #-H "Accept: application/vnd.github+json" \
-          #"https://api.github.com/repos/${{ github.repository }}/actions/runs/${{ github.run_id }}/jobs" | \
-          #jq -r '[.jobs[] | select(.name != "collect-control-status") | "\(.name) status: \(.conclusion // "in_progress")"] | join(", ")')
-          
-          #echo "Collected statuses: $STATUSES"
+          # Define the headers for the API call
+           $headers = @{
+               "Authorization" = "Bearer $env:GITHUB_TOKEN"
+               "Accept" = "application/vnd.github+json"
+           }
 
-          $headers = @{
-              "Authorization" = "Bearer $env:GITHUB_TOKEN"
-              "Accept" = "application/vnd.github+json"
-          }
+          # Make the GET request to the GitHub API
+          $url = "https://api.github.com/repos/$env:GITHUB_REPOSITORY/actions/runs/$env:GITHUB_RUN_ID/jobs"
+          $response = Invoke-RestMethod -Uri $url -Headers $headers -Method Get
 
-          $response = Invoke-RestMethod -Uri "https://api.github.com/repos/${{ github.repository }}/actions/runs/${{ github.run_id }}/jobs" -Headers $headers -Method Get
-
+          # Extract job statuses
           $STATUSES = ($response.jobs | Where-Object { $_.name -ne "combined-status-report" } | 
           ForEach-Object { "$($_.name) status: $($_.conclusion -or "in_progress")" }) -join ", "
 
           Write-Output "Collected statuses: $STATUSES"
-    
+
           # Extract controller statuses (jobs with no slashes)
-          controllerstatus=$(echo $STATUSES | tr ',' '\n' | grep -v '/' | tr '\n' ',' | sed 's/,$//')
-    
+          $controllerstatus = ($STATUSES -split ',') | Where-Object { $_ -notmatch '/' } | Join-String -Separator ','
+
           # Extract phase statuses (jobs with one slash)
-          phasejobs=$(echo "$STATUSES" | tr ',' '\n' | grep -E '^[^/]+/[^/]+ ' | sed -E 's/^[^/]+\/([^/]+).*status: ([^ ]+)/\1status: \2/g' | awk '!seen[$0]++' | tr '\n' ',' | sed 's/,$//')
-    
+          $phasejobs = ($STATUSES -split ',') | Where-Object { $_ -match '/[^/]+ ' } | Join-String -Separator ','
+
           # Extract component phase statuses (jobs with two slashes)
-          compstatus=$(echo "$STATUSES" | tr ',' '\n' | grep -E '^[^/]+ /[^/]+ /' | sed -E 's/^[^/]+ \/([^/]+ \/[^/]+).*status: ([^ ]+)/\1status: \2/g' | tr '\n' ',' | sed 's/,$//')
+          $compstatus = ($STATUSES -split ',') | Where-Object { $_ -match '/[^/]+ /' } | Join-String -Separator ','
 
           # Debug output for verification
-          echo "Controller Statuses: $controllerstatus"
-          echo "Phase Statuses: $phasejobs"
-          echo "CompPhase Statuses: $compstatus"
-        
+          Write-Output "Controller Statuses: $controllerstatus"
+          Write-Output "Phase Statuses: $phasejobs"
+          Write-Output "CompPhase Statuses: $compstatus"
+
+           # Initialize dictionary to store component phase statuses
           $compStatus = @{}
 
-          # Split by commas and iterate through each line
-          $compstatus.Split(',') | ForEach-Object {
-                 $phase, $status = $_.Trim() -split ' /'  # Split by ' /' (if this is how the phases are split)
-    
-                 $phase = $phase.Trim()  # Trim spaces
-                 $status = $status.Trim()  # Trim spaces
+          # Split component status and iterate over each line
+           $compstatus.Split(',') | ForEach-Object {
+          # Split the phase and status
+           $phase, $status = $_.Trim() -split ' /'
 
-              if (-not $compStatus.ContainsKey($phase)) {
-                  $compStatus[$phase] = @()
-               }
-    
-              # Add status to the corresponding phase
-              $compStatus[$phase] += $status
-           }
+          # Trim spaces
+          $phase = $phase.Trim()
+          $status = $status.Trim()
 
-            # Debug output
-           $compStatus.GetEnumerator() | ForEach-Object {
-                 $varname = "comstatus_$($_.Key -replace '-', '_')"  # Convert phase name to valid variable format
-                 $value = ($_['Value'] -join ', ')  # Join statuses with a comma
-                 Write-Output "$varname=$value"  # Save or print the value
-                 #echo "$varname: $value"  # Print the value to console
-                 echo "${varname}: ${value}"
+          # Check if phase already exists, if not, create a new entry
+          if (-not $compStatus.ContainsKey($phase)) {
+              $compStatus[$phase] = @()
           }
 
-          echo "controllerstatus=$controllerstatus" >> $GITHUB_OUTPUT
-          echo "phasejobs=$phasejobs" >> $GITHUB_OUTPUT
+          # Add the status to the corresponding phase
+          $compStatus[$phase] += $status
+      }
+
+      # Output component phase statuses
+      $compStatus.GetEnumerator() | ForEach-Object {
+          $varname = "comstatus_$($_.Key -replace '-', '_')"  # Convert phase name to valid variable format
+          $value = ($_ .Value -join ', ')  # Join statuses with a comma
+          Write-Output "$varname=$value"  # Print the value to console
+          echo "$varname: $value"  # Print the value to GitHub Actions output
+      }
+
+      # Save the controller and phase statuses as outputs for later steps
+      echo "controllerstatus=$controllerstatus" >> $GITHUB_OUTPUT
+      echo "phasejobs=$phasejobs" >> $GITHUB_OUTPUT 
 
          # Step 2: Debug Inputs Before Running Script (from report-job-status)
       - name: Debug Inputs Before Running Script
