@@ -152,22 +152,31 @@ jobs:
           echo "Phase Statuses: $phasejobs"
           echo "CompPhase Statuses: $compstatus"
         
-          declare -A compStatus
-          # Extract phase names dynamically and populate the array
-          while IFS='/' read -r phase status; do
-            phase=$(echo "$phase" | xargs)  # Trim spaces
-            status=$(echo "$status" | xargs)  # Trim spaces
-            compStatus["$phase"]+="${status}, "
-          done <<< "$(echo "$compstatus" | tr ',' '\n')"  # Convert commas to new lines
-        
-          {
-            for key in "${!compStatus[@]}"; do
-              varname="comstatus_${key//-/_}"  # Convert phase name to a valid variable format
-              value="$(echo "${compStatus[$key]}" | sed 's/, $//')"  # Remove trailing comma
-              echo "$varname=$value" >> "$GITHUB_OUTPUT"  # Save to GitHub Actions output
-              echo "$varname: $value"  # Print the value to console
-            done
+          $compStatus = @{}
+
+          # Split by commas and iterate through each line
+          $compstatus.Split(',') | ForEach-Object {
+                 $phase, $status = $_.Trim() -split ' /'  # Split by ' /' (if this is how the phases are split)
+    
+                 $phase = $phase.Trim()  # Trim spaces
+                 $status = $status.Trim()  # Trim spaces
+
+              if (-not $compStatus.ContainsKey($phase)) {
+                  $compStatus[$phase] = @()
+               }
+    
+              # Add status to the corresponding phase
+              $compStatus[$phase] += $status
+           }
+
+            # Debug output
+           $compStatus.GetEnumerator() | ForEach-Object {
+                 $varname = "comstatus_$($_.Key -replace '-', '_')"  # Convert phase name to valid variable format
+                 $value = ($_ .Value -join ', ')  # Join statuses with a comma
+                 Write-Output "$varname=$value"  # Save or print the value
+                 echo "$varname: $value"  # Print the value to console
           }
+
           echo "controllerstatus=$controllerstatus" >> $GITHUB_OUTPUT
           echo "phasejobs=$phasejobs" >> $GITHUB_OUTPUT
 
