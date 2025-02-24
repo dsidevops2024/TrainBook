@@ -125,7 +125,7 @@ jobs:
 
   combined-status-report:
     needs: [check-component-input, create-environment-matrix, set-environment-runner, call-phase]
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
     steps:
        # Step 1: Get Job Statuses from GitHub API (from collect-control-status)
       - name: Get Job Statuses from GitHub API
@@ -188,7 +188,7 @@ jobs:
             "${{ steps.get_status.outputs.comstatus_deploy_phase_one }}",
             "${{ steps.get_status.outputs.comstatus_deploy_phase_two }}"
           )
-          ./.github/scripts/checking.ps1 -controllerStatus "${{ steps.get_status.outputs.controllerstatus }}" `
+          .\.github\scripts\checking.ps1 -controllerStatus "${{ steps.get_status.outputs.controllerstatus }}" `
             -phaseStatus "${{ steps.get_status.outputs.phasejobs }}" `
             -compStatuses $compStatuses
 
