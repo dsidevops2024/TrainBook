@@ -166,33 +166,33 @@ jobs:
 
           # Split component status and iterate over each line
            $compstatus.Split(',') | ForEach-Object {
-          # Split the phase and status
-           $phase, $status = $_.Trim() -split ' /'
+               # Split the phase and status
+               $phase, $status = $_.Trim() -split ' /'
 
-          # Trim spaces
-          $phase = $phase.Trim()
-          $status = $status.Trim()
+               # Trim spaces
+               $phase = $phase.Trim()
+               $status = $status.Trim()
 
-          # Check if phase already exists, if not, create a new entry
-          if (-not $compStatus.ContainsKey($phase)) {
-              $compStatus[$phase] = @()
+             # Check if phase already exists, if not, create a new entry
+              if (-not $compStatus.ContainsKey($phase)) {
+                  $compStatus[$phase] = @()
+              }
+
+               # Add the status to the corresponding phase
+               $compStatus[$phase] += $status
+           }
+
+            # Output component phase statuses
+          $compStatus.GetEnumerator() | ForEach-Object {
+                $varname = "comstatus_$($_.Key -replace '-', '_')"  # Convert phase name to valid variable format
+                $value = ($_ .Value -join ', ')  # Join statuses with a comma
+                Write-Output "$varname=$value"  # Print the value to console
+                echo "$varname: $value"  # Print the value to GitHub Actions output
           }
 
-          # Add the status to the corresponding phase
-          $compStatus[$phase] += $status
-      }
-
-      # Output component phase statuses
-      $compStatus.GetEnumerator() | ForEach-Object {
-          $varname = "comstatus_$($_.Key -replace '-', '_')"  # Convert phase name to valid variable format
-          $value = ($_ .Value -join ', ')  # Join statuses with a comma
-          Write-Output "$varname=$value"  # Print the value to console
-          echo "$varname: $value"  # Print the value to GitHub Actions output
-      }
-
-      # Save the controller and phase statuses as outputs for later steps
-      echo "controllerstatus=$controllerstatus" >> $GITHUB_OUTPUT
-      echo "phasejobs=$phasejobs" >> $GITHUB_OUTPUT 
+          # Save the controller and phase statuses as outputs for later steps
+           echo "controllerstatus=$controllerstatus" >> $GITHUB_OUTPUT
+           echo "phasejobs=$phasejobs" >> $GITHUB_OUTPUT 
 
          # Step 2: Debug Inputs Before Running Script (from report-job-status)
       - name: Debug Inputs Before Running Script
