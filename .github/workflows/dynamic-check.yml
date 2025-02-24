@@ -185,9 +185,9 @@ jobs:
             # Output component phase statuses
           $compStatus.GetEnumerator() | ForEach-Object {
                 $varname = "comstatus_$($_.Key -replace '-', '_')"  # Convert phase name to valid variable format
-                $value = ($_ .Value -join ', ')  # Join statuses with a comma
+                $value = ($_['Value'] -join ', ')   # Join statuses with a comma
                 Write-Output "$varname=$value"  # Print the value to console
-                echo "$varname: $value"  # Print the value to GitHub Actions output
+                echo "${varname}: ${value}" # Print the value to GitHub Actions output
           }
 
           # Save the controller and phase statuses as outputs for later steps
