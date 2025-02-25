@@ -149,10 +149,17 @@ jobs:
 
           # Extract job statuses
           $STATUSES = ($response.jobs | Where-Object { $_.name -ne "collect-control-status" } | 
-                      ForEach-Object { "$($_.name) status: $($_.conclusion -or 'in_progress')" }) -join ", "
+                      ForEach-Object { "$($_.name) status: $($_.conclusion -ne $null ? $_.conclusion : 'in_progress')" }) -join ", "
 
           # Output the collected statuses
           Write-Output "Collected statuses: $STATUSES"
+          
+          # Extract job statuses
+          #$STATUSES = ($response.jobs | Where-Object { $_.name -ne "collect-control-status" } | 
+                      #ForEach-Object { "$($_.name) status: $($_.conclusion -or 'in_progress')" }) -join ", "
+
+          # Output the collected statuses
+          #Write-Output "Collected statuses: $STATUSES"
 
           # Extract controller statuses (jobs with no slashes)
           $controllerstatus = ($STATUSES -split ',') | Where-Object { $_ -notmatch '/' } | Join-String -Separator ','
