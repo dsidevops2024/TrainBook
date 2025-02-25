@@ -131,6 +131,9 @@ jobs:
       - name: Get Job Statuses from GitHub API
         id: get_status
         run: |
+          Write-Output "GITHUB_TOKEN: $env:GITHUB_TOKEN"
+          Write-Output "GITHUB_REPOSITORY: $env:GITHUB_REPOSITORY"
+          Write-Output "GITHUB_RUN_ID: $env:GITHUB_RUN_ID"
           $headers = @{
               "Authorization" = "Bearer $env:GITHUB_TOKEN"  # Use the GitHub token from the environment
               "Accept" = "application/vnd.github+json"
