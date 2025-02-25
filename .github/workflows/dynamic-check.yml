@@ -174,7 +174,7 @@ jobs:
           Write-Output "Controller Statuses: $controllerstatus"
           Write-Output "Phase Statuses: $phasejobs"
           Write-Output "CompPhase Statuses: $compstatus"
-
+          
            # Initialize dictionary to store component phase statuses
           $compStatus = @{}
 
