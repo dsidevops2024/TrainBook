@@ -186,37 +186,30 @@ jobs:
           Write-Output "Phase Statuses: $phasejobs"
           Write-Output "CompPhase Statuses: $compStatus"
 
-          # Initialize the dictionary to store component phase statuses
-          $compStatusDict = @{}
-
-          # Split the component statuses and iterate over each one
+          $compStatusDict=@{}
+          # Populate the dictionary with phase statuses
           $compStatus -split ',' | ForEach-Object {
-               $phase, $status = $_.Trim() -split 'status: '
-               $phase = $phase.Trim()
-               $status = $status.Trim()
-
-          # Extract the main phase (before the first slash) and replace slash with dash for valid key
-          $mainPhase = ($phase -split '/')[0] -replace '/', '-'
-
-          # Add the status for the corresponding phase
-          if (-not $compStatusDict.ContainsKey($mainPhase)) {
-                  $compStatusDict[$mainPhase] = @()
-           }
-    
-          # Check if the exact status combination exists already in the list for that phase
-          if (-not $compStatusDict[$mainPhase].Contains("$phase status: $status")) {
-                   $compStatusDict[$mainPhase] += "$phase status: $status"
-            }
+                    $phase, $status = $_.Trim() -split 'status: '
+                    $phase = $phase.Trim()
+                    $status = $status.Trim()
+                  
+              if (-not $compStatusDict.ContainsKey($mainPhase)) {
+                  $compStatusDict[$Phase] = @()
+               }
+               $compStatusDict[$Phase] += $status
           }
 
-           # Output the results to GitHub Actions output and to console
-          foreach ($key in $compStatusDict.Keys) {
-              $varName = "comstatus_" + ($key -replace '-', '_')  # Convert phase name to a valid variable format
-              $value = ($compStatusDict[$key] -join ', ').TrimEnd(', ')  # Remove trailing comma
-
-              Write-Output "${varName}=${value}"  # Output the value for GitHub Actions
-              Write-Output "${varName}: ${value}"  # Print to console
+          # Output the results to GitHub Actions output and to console
+            foreach ($key in $compStatusDict.Keys) {
+                 $varName = "comstatus_" + ($key -replace '-', '_')
+                 $value = ($compStatusDict[$key] -join ', ').TrimEnd(', ')
+    
+                 Write-Output "${varName}=${value}"  # Output the value for GitHub Actions
+                 Write-Output "${varName}: ${value}"  # Print to console
            }
+          } else {
+               Write-Output "No component phase statuses found or $compStatus is empty."
+          }
           } else {
                Write-Output "No component phase statuses found or $compStatus is empty."
           }
