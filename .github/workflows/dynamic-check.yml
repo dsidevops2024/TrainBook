@@ -147,10 +147,10 @@ jobs:
           # Make the GET request to GitHub API
           $response = Invoke-RestMethod -Uri $url -Headers $headers -Method Get
 
-          # Extract job statuses
-          $STATUSES = ($response.jobs | Where-Object { $_.name -ne "collect-control-status" } | 
-                      ForEach-Object { "$($_.name) status: $($_.conclusion -ne $null ? $_.conclusion : 'in_progress')" }) -join ", "
-
+          # Extract job statuses, excluding 'combined-status-report' and jobs with 'in_progress' status
+          $STATUSES = ($response.jobs | Where-Object { $_.name -ne "collect-control-status" -and $_.name -ne "combined-status-report" -and $_.conclusion -ne "in_progress" } | 
+                      ForEach-Object { "$($_.name) status: $($_.conclusion)" }) -join ", "
+          
           # Output the collected statuses
           Write-Output "Collected statuses: $STATUSES"
           
@@ -162,13 +162,22 @@ jobs:
           #Write-Output "Collected statuses: $STATUSES"
 
           # Extract controller statuses (jobs with no slashes)
-          $controllerstatus = ($STATUSES -split ',') | Where-Object { $_ -notmatch '/' } | Join-String -Separator ','
+          #$controllerstatus = ($STATUSES -split ',') | Where-Object { $_ -notmatch '/' } | Join-String -Separator ','
 
           # Extract phase statuses (jobs with one slash)
-          $phasejobs = ($STATUSES -split ',') | Where-Object { $_ -match '/[^/]+ ' } | Join-String -Separator ','
+          #$phasejobs = ($STATUSES -split ',') | Where-Object { $_ -match '/[^/]+ ' } | Join-String -Separator ','
 
           # Extract component phase statuses (jobs with two slashes)
-          $compstatus = ($STATUSES -split ',') | Where-Object { $_ -match '/[^/]+ /' } | Join-String -Separator ','
+          #$compstatus = ($STATUSES -split ',') | Where-Object { $_ -match '/[^/]+ /' } | Join-String -Separator ','
+
+          # Extract controller statuses (jobs with no slashes)
+          $controllerstatus = $STATUSES -split ", " | Where-Object { $_ -notmatch "/" } -join ", "
+
+          # Extract phase statuses (jobs with one slash)
+          $phasejobs = $STATUSES -split ", " | Where-Object { $_ -match '^[^/]+/[^/]+ ' } | ForEach-Object { $_ -replace '^[^/]+/([^/]+).*status: ([^ ]+)', '$1status: $2' } | Select-Object -Unique | -join ", "
+
+          # Extract component phase statuses (jobs with two slashes)
+          $compstatus = $STATUSES -split ", " | Where-Object { $_ -match '^[^/]+ /[^/]+ /' } | ForEach-Object { $_ -replace '^[^/]+ /([^/]+ /[^/]+).*status: ([^ ]+)', '$1status: $2' } | -join ", "
 
           # Debug output for verification
           Write-Output "Controller Statuses: $controllerstatus"
