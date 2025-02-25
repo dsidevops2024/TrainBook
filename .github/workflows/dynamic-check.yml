@@ -171,14 +171,22 @@ jobs:
           $compStatus = ($STATUSES -split ", " | Where-Object { $_ -match '^[^/]+ /[^/]+ /' }) |
                         ForEach-Object { $_ -replace '^[^/]+ /([^/]+ /[^/]+).*status: ([^ ]+)', '$1status: $2' }
 
-          # Join component statuses
+           # Join component statuses
           $compStatus = $compStatus -join ", "
+          
+          # Check if $compStatus is valid and not empty
+          if (-not [string]::IsNullOrEmpty($compStatus)) {
+                 # Remove any leading/trailing whitespace
+               $compStatus = $compStatus.Trim()
+
+         
 
           # Debug output for verification
           Write-Output "Controller Statuses: $controllerstatus"
           Write-Output "Phase Statuses: $phasejobs"
           Write-Output "CompPhase Statuses: $compStatus"
 
+          $compStatusDict=@{}
           # Populate the dictionary with phase statuses
           $compStatus -split ',' | ForEach-Object {
                     $phase, $status = $_.Trim() -split 'status: '
@@ -199,6 +207,9 @@ jobs:
                  Write-Output "${varName}=${value}"  # Output the value for GitHub Actions
                  Write-Output "${varName}: ${value}"  # Print to console
            }
+          } else {
+               Write-Output "No component phase statuses found or $compStatus is empty."
+          }
 
            # Set GitHub Actions outputs
            Write-Output "controllerstatus=$controllerStatus" >> $env:GITHUB_OUTPUT
