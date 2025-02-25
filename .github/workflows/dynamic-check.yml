@@ -210,9 +210,7 @@ jobs:
           } else {
                Write-Output "No component phase statuses found or $compStatus is empty."
           }
-          } else {
-               Write-Output "No component phase statuses found or $compStatus is empty."
-          }
+         
 
            # Set GitHub Actions outputs
            Write-Output "controllerstatus=$controllerStatus" >> $env:GITHUB_OUTPUT
