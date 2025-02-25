@@ -129,9 +129,9 @@ jobs:
     steps:
        # Step 1: Get Job Statuses from GitHub API (from collect-control-status)
       - name: Get Job Statuses from GitHub API
-        id: get_status
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        #id: get_status
+        #env:
+          #GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           $headers = @{
               "Authorization" = "Bearer $env:GITHUB_TOKEN"  # Use the GitHub token from the environment
@@ -170,6 +170,11 @@ jobs:
 
            # Join component statuses
           $compStatus = $compStatus -join ", "
+
+          # Debug output for verification
+          Write-Output "Controller Statuses: $controllerstatus"
+          Write-Output "Phase Statuses: $phasejobs"
+          Write-Output "CompPhase Statuses: $compStatus"
           
           # Split the compStatus string into individual items, further cleaning and organizing them by component phase
           $compStatusDict = @{}
@@ -194,11 +199,11 @@ jobs:
           }
 
            # Dynamically create the output for comstatus_deploy_single_component
-           $comstatus_deploy_single_component = $compStatusDict.GetEnumerator() | Where-Object { $_.Key -match "deploy-single-component" } |
+           #$comstatus_deploy_single_component = $compStatusDict.GetEnumerator() | Where-Object { $_.Key -match "deploy-single-component" } |
                                          ForEach-Object { "$($_.Key): $($_.Value -join ', ')" } -join ", "
 
            # Output the dynamically generated component status
-            Write-Output "comstatus_deploy_single_component=$comstatus_deploy_single_component" >> $env:GITHUB_OUTPUT
+            #Write-Output "comstatus_deploy_single_component=$comstatus_deploy_single_component" >> $env:GITHUB_OUTPUT
 
           # Set GitHub Actions outputs
            Write-Output "controllerstatus=$controllerstatus" >> $env:GITHUB_OUTPUT
