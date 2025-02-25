@@ -131,20 +131,22 @@ jobs:
       - name: Get Job Statuses from GitHub API
         id: get_status
         run: |
-          # Define the headers for the API call
-           $headers = @{
-               "Authorization" = "Bearer $env:GITHUB_TOKEN"
-               "Accept" = "application/vnd.github+json"
-           }
+          $headers = @{
+              "Authorization" = "Bearer $env:GITHUB_TOKEN"  # Use the GitHub token from the environment
+              "Accept" = "application/vnd.github+json"
+          }
 
-          # Make the GET request to the GitHub API
+          # Construct the API URL using environment variables in PowerShell
           $url = "https://api.github.com/repos/$env:GITHUB_REPOSITORY/actions/runs/$env:GITHUB_RUN_ID/jobs"
+
+          # Make the GET request to GitHub API
           $response = Invoke-RestMethod -Uri $url -Headers $headers -Method Get
 
           # Extract job statuses
-          $STATUSES = ($response.jobs | Where-Object { $_.name -ne "combined-status-report" } | 
-          ForEach-Object { "$($_.name) status: $($_.conclusion -or "in_progress")" }) -join ", "
+          $STATUSES = ($response.jobs | Where-Object { $_.name -ne "collect-control-status" } | 
+                      ForEach-Object { "$($_.name) status: $($_.conclusion -or 'in_progress')" }) -join ", "
 
+          # Output the collected statuses
           Write-Output "Collected statuses: $STATUSES"
 
           # Extract controller statuses (jobs with no slashes)
