@@ -199,7 +199,7 @@ jobs:
             #Write-Output "${varName}=${value}"  # Output the value for GitHub Actions
             #Write-Output "${varName}: ${value}"  # Print to console
              # Add to the final output string
-            $finalOutput += "$varName: $value, "
+            $finalOutput += "${varName}: ${value}, "
           }
           # Remove trailing comma and space from the final output
            $finalOutput = $finalOutput.TrimEnd(', ')
