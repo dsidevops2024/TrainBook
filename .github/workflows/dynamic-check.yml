@@ -192,11 +192,11 @@ jobs:
                     $phase, $status = $_.Trim() -split 'status: '
                     $phase = $phase.Trim()
                     $status = $status.Trim()
-                  
-              if (-not $compStatusDict.ContainsKey($mainPhase)) {
-                  $compStatusDict[$Phase] = @()
+    
+              if (-not $compStatusDict.ContainsKey($phase)) {
+                  $compStatusDict[$phase] = @()
                }
-               $compStatusDict[$Phase] += $status
+               $compStatusDict[$phase] += $status
           }
 
           # Output the results to GitHub Actions output and to console
@@ -210,7 +210,6 @@ jobs:
           } else {
                Write-Output "No component phase statuses found or $compStatus is empty."
           }
-         
 
            # Set GitHub Actions outputs
            Write-Output "controllerstatus=$controllerStatus" >> $env:GITHUB_OUTPUT
