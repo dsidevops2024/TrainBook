@@ -208,9 +208,11 @@ jobs:
           Write-Output $finalOutput
 
           # Store the result in GitHub Actions output for use in the next job
-          $env:GITHUB_OUTPUT = "final_output=$finalOutput"
-          Write-Output "final_output=$finalOutput" >> $env:GITHUB_OUTPUT
+          $GITHUB_OUTPUT_FILE = "${env:GITHUB_ENV}"
+          Out-File -FilePath $GITHUB_OUTPUT_FILE -Append -InputObject "final_output=$finalOutput"
 
+          # Also printing to GitHub Actions log for immediate visibility
+          Write-Output "final_output=$finalOutput"
           
           # Set GitHub Actions outputs
            Write-Output "controllerstatus=$controllerstatus" >> $env:GITHUB_OUTPUT
