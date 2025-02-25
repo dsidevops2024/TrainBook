@@ -192,11 +192,13 @@ jobs:
                     $phase, $status = $_.Trim() -split 'status: '
                     $phase = $phase.Trim()
                     $status = $status.Trim()
-    
-              if (-not $compStatusDict.ContainsKey($phase)) {
-                  $compStatusDict[$phase] = @()
+          # Extract the main phase (before the first slash)
+          $mainPhase = ($phase -split '/')[0]
+        
+              if (-not $compStatusDict.ContainsKey($mainPhase)) {
+                  $compStatusDict[$mainPhase] = @()
                }
-               $compStatusDict[$phase] += $status
+               $compStatusDict[$mainPhase] += "$phase status: $status"
           }
 
           # Output the results to GitHub Actions output and to console
