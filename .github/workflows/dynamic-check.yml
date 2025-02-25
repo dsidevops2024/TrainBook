@@ -173,7 +173,7 @@ jobs:
           
           # Split the compStatus string into individual items, further cleaning and organizing them by component phase
           $compStatusDict = @{}
-          $compStatusFormatted -split ", " | ForEach-Object {
+          $compStatus -split ", " | ForEach-Object {
                 $phase, $status = $_.Trim() -split 'status: '
                 $phase = $phase.Trim()
                 $status = $status.Trim()
