@@ -171,49 +171,62 @@ jobs:
           #$compstatus = ($STATUSES -split ',') | Where-Object { $_ -match '/[^/]+ /' } | Join-String -Separator ','
 
           # Extract controller statuses (jobs with no slashes)
-          $controllerstatus = $STATUSES -split ", " | Where-Object { $_ -notmatch "/" } -join ", "
+          $controllerstatus = ($STATUSES -split ", " | Where-Object { $_ -notmatch "/" }) -join ", "
 
           # Extract phase statuses (jobs with one slash)
-          $phasejobs = $STATUSES -split ", " | Where-Object { $_ -match '^[^/]+/[^/]+ ' } | ForEach-Object { $_ -replace '^[^/]+/([^/]+).*status: ([^ ]+)', '$1status: $2' } | Select-Object -Unique | -join ", "
+          $phasejobs = ($STATUSES -split ", " | Where-Object { $_ -match '^[^/]+/[^/]+ ' }) |
+                        ForEach-Object { $_ -replace '^[^/]+/([^/]+).*status: ([^ ]+)', '$1status: $2' }
+
+          # Remove duplicates from phase jobs
+          $phasejobs = $phasejobs | Select-Object -Unique
+
+          # Join phase jobs
+          $phasejobs = $phasejobs -join ", "
 
           # Extract component phase statuses (jobs with two slashes)
-          $compstatus = $STATUSES -split ", " | Where-Object { $_ -match '^[^/]+ /[^/]+ /' } | ForEach-Object { $_ -replace '^[^/]+ /([^/]+ /[^/]+).*status: ([^ ]+)', '$1status: $2' } | -join ", "
+          $compstatus = ($STATUSES -split ", " | Where-Object { $_ -match '^[^/]+ /[^/]+ /' }) |
+                        ForEach-Object { $_ -replace '^[^/]+ /([^/]+ /[^/]+).*status: ([^ ]+)', '$1status: $2' }
+
+          # Join component statuses
+          $compstatus = $compstatus -join ", "
 
           # Debug output for verification
           Write-Output "Controller Statuses: $controllerstatus"
           Write-Output "Phase Statuses: $phasejobs"
           Write-Output "CompPhase Statuses: $compstatus"
-          
-           # Initialize dictionary to store component phase statuses
+
+          # Initialize a hashtable to store component statuses
           $compStatus = @{}
 
-          # Split component status and iterate over each line
-           $compstatus.Split(',') | ForEach-Object {
-               # Split the phase and status
-               $phase, $status = $_.Trim() -split ' /'
+          # Iterate through each line of the compstatus string
+          $compstatus -split ", " | ForEach-Object {
+            # Split phase and status by '/'
+               $parts = $_ -split '/'
+               $phase = $parts[0].Trim()   # Trim spaces
+               $status = $parts[1].Trim()  # Trim spaces
 
-               # Trim spaces
-               $phase = $phase.Trim()
-               $status = $status.Trim()
-
-             # Check if phase already exists, if not, create a new entry
-              if (-not $compStatus.ContainsKey($phase)) {
-                  $compStatus[$phase] = @()
-              }
-
-               # Add the status to the corresponding phase
-               $compStatus[$phase] += $status
+            # Add the status to the corresponding phase in the hashtable
+               if ($compStatus.ContainsKey($phase)) {
+                   $compStatus[$phase] += "$status, "
+               } else {
+                   $compStatus[$phase] = "$status, "
+               }
            }
 
-            # Output component phase statuses
-          $compStatus.GetEnumerator() | ForEach-Object {
-                $varname = "comstatus_$($_.Key -replace '-', '_')"  # Convert phase name to valid variable format
-                $value = ($_['Value'] -join ', ')   # Join statuses with a comma
-                Write-Output "$varname=$value"  # Print the value to console
-                echo "${varname}: ${value}" # Print the value to GitHub Actions output
+          # Iterate through the hashtable and write output to GitHub Actions
+          foreach ($key in $compStatus.Keys) {
+            # Convert phase name to a valid variable format (replace '-' with '_')
+              $varname = "comstatus_$($key -replace '-', '_')"
+
+            # Remove trailing comma and space
+              $value = $compStatus[$key].TrimEnd(', ')
+
+            # Output the variable to GitHub Actions (using the Write-Host to simulate 'echo' behavior)
+            Write-Host "$varname=$value"  # Print the value to console
+            Write-Output "$varname=$value" >> $env:GITHUB_OUTPUT  # Save to GitHub Actions output
           }
 
-          # Save the controller and phase statuses as outputs for later steps
+           # Save the controller and phase statuses as outputs for later steps
            echo "controllerstatus=$controllerstatus" >> $GITHUB_OUTPUT
            echo "phasejobs=$phasejobs" >> $GITHUB_OUTPUT 
 
