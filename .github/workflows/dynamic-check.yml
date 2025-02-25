@@ -129,9 +129,9 @@ jobs:
     steps:
        # Step 1: Get Job Statuses from GitHub API (from collect-control-status)
       - name: Get Job Statuses from GitHub API
-        #id: get_status
-        #env:
-          #GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        id: get_status
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           $headers = @{
               "Authorization" = "Bearer $env:GITHUB_TOKEN"  # Use the GitHub token from the environment
