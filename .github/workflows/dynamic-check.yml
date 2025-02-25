@@ -130,6 +130,8 @@ jobs:
        # Step 1: Get Job Statuses from GitHub API (from collect-control-status)
       - name: Get Job Statuses from GitHub API
         id: get_status
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           Write-Output "GITHUB_TOKEN: $env:GITHUB_TOKEN"
           Write-Output "GITHUB_REPOSITORY: $env:GITHUB_REPOSITORY"
