@@ -179,8 +179,9 @@ jobs:
           # Split the compStatus string into individual items, further cleaning and organizing them by component phase
           $compStatusDict = @{}
           $compStatus -split ", " | ForEach-Object {
-                $phase, $status = $_.Trim() -split 'status: '
-                $phase = $phase.Trim()
+                #$phase, $status = $_.Trim() -split 'status: '
+                $phase, $status = $_.Trim() -split ' / ', 2
+                #$phase = $phase.Trim()
                 $status = $status.Trim()
 
           if (-not $compStatusDict.ContainsKey($phase)) {
@@ -189,22 +190,28 @@ jobs:
           $compStatusDict[$phase] += $status
           }
 
-          # Output the results to GitHub Actions output and to console
+          # Construct the final output in the desired format
+          $finalOutput = ""
           foreach ($key in $compStatusDict.Keys) {
             $varName = "comstatus_" + ($key -replace '-', '_')
             $value = ($compStatusDict[$key] -join ', ').TrimEnd(', ')
 
-            Write-Output "${varName}=${value}"  # Output the value for GitHub Actions
-            Write-Output "${varName}: ${value}"  # Print to console
+            #Write-Output "${varName}=${value}"  # Output the value for GitHub Actions
+            #Write-Output "${varName}: ${value}"  # Print to console
+             # Add to the final output string
+            $finalOutput += "$varName: $value, "
           }
+          # Remove trailing comma and space from the final output
+           $finalOutput = $finalOutput.TrimEnd(', ')
 
-           # Dynamically create the output for comstatus_deploy_single_component
-           #$comstatus_deploy_single_component = $compStatusDict.GetEnumerator() | Where-Object { $_.Key -match "deploy-single-component" } |
-                                         ForEach-Object { "$($_.Key): $($_.Value -join ', ')" } -join ", "
+          # Output the final result to the console
+          Write-Output $finalOutput
 
-           # Output the dynamically generated component status
-            #Write-Output "comstatus_deploy_single_component=$comstatus_deploy_single_component" >> $env:GITHUB_OUTPUT
+          # Store the result in GitHub Actions output for use in the next job
+          $env:GITHUB_OUTPUT = "final_output=$finalOutput"
+          Write-Output "final_output=$finalOutput" >> $env:GITHUB_OUTPUT
 
+          
           # Set GitHub Actions outputs
            Write-Output "controllerstatus=$controllerstatus" >> $env:GITHUB_OUTPUT
            Write-Output "phasejobs=$phasejobs" >> $env:GITHUB_OUTPUT
