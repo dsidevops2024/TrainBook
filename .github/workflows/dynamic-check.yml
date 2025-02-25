@@ -168,51 +168,45 @@ jobs:
           $phasejobs = $phasejobs -join ", "
 
           # Extract component phase statuses (jobs with two slashes)
-          $compstatus = ($STATUSES -split ", " | Where-Object { $_ -match '^[^/]+ /[^/]+ /' }) |
+          $compStatus = ($STATUSES -split ", " | Where-Object { $_ -match '^[^/]+ /[^/]+ /' }) |
                         ForEach-Object { $_ -replace '^[^/]+ /([^/]+ /[^/]+).*status: ([^ ]+)', '$1status: $2' }
 
           # Join component statuses
-          $compstatus = $compstatus -join ", "
+          $compStatus = $compStatus -join ", "
 
           # Debug output for verification
           Write-Output "Controller Statuses: $controllerstatus"
           Write-Output "Phase Statuses: $phasejobs"
-          Write-Output "CompPhase Statuses: $compstatus"
+          Write-Output "CompPhase Statuses: $compStatus"
 
-          # Initialize a hashtable to store component statuses
-          $compstatus = @{}
-
-          # Iterate through each line of the compstatus string
-          $compstatus -split ", " | ForEach-Object {
-            # Split phase and status by '/'
-               $parts = $_ -split '/'
-               $phase = $parts[0].Trim()   # Trim spaces
-               $status = $parts[1].Trim()  # Trim spaces
-
-            # Add the status to the corresponding phase in the hashtable
-               if ($compstatus.ContainsKey($phase)) {
-                   $compstatus[$phase] += "$status, "
-               } else {
-                   $compstatus[$phase] = "$status, "
+          # Populate the dictionary with phase statuses
+          $compStatus -split ',' | ForEach-Object {
+                    $phase, $status = $_.Trim() -split 'status: '
+                    $phase = $phase.Trim()
+                    $status = $status.Trim()
+    
+              if (-not $compStatusDict.ContainsKey($phase)) {
+                  $compStatusDict[$phase] = @()
                }
-           }
-
-          # Iterate through the hashtable and write output to GitHub Actions
-          foreach ($key in $compstatus.Keys) {
-            # Convert phase name to a valid variable format (replace '-' with '_')
-              $varname = "comstatus_$($key -replace '-', '_')"
-
-            # Remove trailing comma and space
-              $value = $compstatus[$key].TrimEnd(', ')
-
-            # Output the variable to GitHub Actions (using the Write-Host to simulate 'echo' behavior)
-            Write-Host "$varname=$value"  # Print the value to console
-            Write-Output "$varname=$value" >> $env:GITHUB_OUTPUT  # Save to GitHub Actions output
+               $compStatusDict[$phase] += $status
           }
 
+          # Output the results to GitHub Actions output and to console
+            foreach ($key in $compStatusDict.Keys) {
+                 $varName = "comstatus_" + ($key -replace '-', '_')
+                 $value = ($compStatusDict[$key] -join ', ').TrimEnd(', ')
+    
+                 Write-Output "$varName=$value"  # Output the value for GitHub Actions
+                 Write-Output "$varName: $value"  # Print to console
+           }
+
+           # Set GitHub Actions outputs
+           Write-Output "controllerstatus=$controllerStatus" >> $env:GITHUB_OUTPUT
+           Write-Output "phasejobs=$phaseJobs" >> $env:GITHUB_OUTPUT
+
            # Save the controller and phase statuses as outputs for later steps
-           echo "controllerstatus=$controllerstatus" >> $GITHUB_OUTPUT
-           echo "phasejobs=$phasejobs" >> $GITHUB_OUTPUT 
+           #echo "controllerstatus=$controllerstatus" >> $GITHUB_OUTPUT
+           #echo "phasejobs=$phasejobs" >> $GITHUB_OUTPUT 
 
          # Step 2: Debug Inputs Before Running Script (from report-job-status)
       - name: Debug Inputs Before Running Script
