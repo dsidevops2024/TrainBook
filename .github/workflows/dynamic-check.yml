@@ -196,8 +196,8 @@ jobs:
                  $varName = "comstatus_" + ($key -replace '-', '_')
                  $value = ($compStatusDict[$key] -join ', ').TrimEnd(', ')
     
-                 Write-Output "$varName=$value"  # Output the value for GitHub Actions
-                 Write-Output "$varName: $value"  # Print to console
+                 Write-Output "${varName}=${value}"  # Output the value for GitHub Actions
+                 Write-Output "${varName}: ${value}"  # Print to console
            }
 
            # Set GitHub Actions outputs
