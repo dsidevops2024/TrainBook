@@ -133,9 +133,6 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          Write-Output "GITHUB_TOKEN: $env:GITHUB_TOKEN"
-          Write-Output "GITHUB_REPOSITORY: $env:GITHUB_REPOSITORY"
-          Write-Output "GITHUB_RUN_ID: $env:GITHUB_RUN_ID"
           $headers = @{
               "Authorization" = "Bearer $env:GITHUB_TOKEN"  # Use the GitHub token from the environment
               "Accept" = "application/vnd.github+json"
@@ -174,46 +171,38 @@ jobs:
            # Join component statuses
           $compStatus = $compStatus -join ", "
           
-          # Check if $compStatus is valid and not empty
-          if (-not [string]::IsNullOrEmpty($compStatus)) {
-                 # Remove any leading/trailing whitespace
-               $compStatus = $compStatus.Trim()
+          # Split the compStatus string into individual items, further cleaning and organizing them by component phase
+          $compStatusDict = @{}
+          $compStatusFormatted -split ", " | ForEach-Object {
+                $phase, $status = $_.Trim() -split 'status: '
+                $phase = $phase.Trim()
+                $status = $status.Trim()
 
-         
-
-          # Debug output for verification
-          Write-Output "Controller Statuses: $controllerstatus"
-          Write-Output "Phase Statuses: $phasejobs"
-          Write-Output "CompPhase Statuses: $compStatus"
-
-          $compStatusDict=@{}
-          # Populate the dictionary with phase statuses
-          $compStatus -split ',' | ForEach-Object {
-                    $phase, $status = $_.Trim() -split 'status: '
-                    $phase = $phase.Trim()
-                    $status = $status.Trim()
-    
-              if (-not $compStatusDict.ContainsKey($phase)) {
-                  $compStatusDict[$phase] = @()
-               }
-               $compStatusDict[$phase] += $status
+          if (-not $compStatusDict.ContainsKey($phase)) {
+             $compStatusDict[$phase] = @()
+          }
+          $compStatusDict[$phase] += $status
           }
 
           # Output the results to GitHub Actions output and to console
-            foreach ($key in $compStatusDict.Keys) {
-                 $varName = "comstatus_" + ($key -replace '-', '_')
-                 $value = ($compStatusDict[$key] -join ', ').TrimEnd(', ')
-    
-                 Write-Output "${varName}=${value}"  # Output the value for GitHub Actions
-                 Write-Output "${varName}: ${value}"  # Print to console
-           }
-          } else {
-               Write-Output "No component phase statuses found or $compStatus is empty."
+          foreach ($key in $compStatusDict.Keys) {
+            $varName = "comstatus_" + ($key -replace '-', '_')
+            $value = ($compStatusDict[$key] -join ', ').TrimEnd(', ')
+
+            Write-Output "${varName}=${value}"  # Output the value for GitHub Actions
+            Write-Output "${varName}: ${value}"  # Print to console
           }
 
-           # Set GitHub Actions outputs
-           Write-Output "controllerstatus=$controllerStatus" >> $env:GITHUB_OUTPUT
-           Write-Output "phasejobs=$phaseJobs" >> $env:GITHUB_OUTPUT
+           # Dynamically create the output for comstatus_deploy_single_component
+           $comstatus_deploy_single_component = $compStatusDict.GetEnumerator() | Where-Object { $_.Key -match "deploy-single-component" } |
+                                         ForEach-Object { "$($_.Key): $($_.Value -join ', ')" } -join ", "
+
+           # Output the dynamically generated component status
+            Write-Output "comstatus_deploy_single_component=$comstatus_deploy_single_component" >> $env:GITHUB_OUTPUT
+
+          # Set GitHub Actions outputs
+           Write-Output "controllerstatus=$controllerstatus" >> $env:GITHUB_OUTPUT
+           Write-Output "phasejobs=$phasejobs" >> $env:GITHUB_OUTPUT
 
            # Save the controller and phase statuses as outputs for later steps
            #echo "controllerstatus=$controllerstatus" >> $GITHUB_OUTPUT
