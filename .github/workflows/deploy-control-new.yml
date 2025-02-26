@@ -181,6 +181,19 @@ jobs:
           echo "Phase Status: ${{ steps.get_status.outputs.phasejobs }}"
           echo "Component Statuses: ${{ steps.get_status.outputs.compstatuses }}"
 
+      - name: Install PowerShell
+        run: |
+          # Install prerequisites
+          sudo apt-get update -y
+          sudo apt-get install -y wget apt-transport-https software-properties-common
+
+          # Download and install PowerShell
+          wget -q "https://packages.microsoft.com/config/ubuntu/20.04/prod.list" -O /etc/apt/sources.list.d/microsoft-prod.list
+          sudo apt-get install -y curl
+          curl https://packages.microsoft.com/keys/microsoft.asc | sudo apt-key add -
+          sudo apt-get update -y
+          sudo apt-get install -y powershell
+
       - name: Run PowerShell script to report job statuses
         id: report-status
         shell: pwsh
