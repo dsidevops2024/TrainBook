@@ -207,7 +207,7 @@ jobs:
         shell: pwsh
         run: |
           # Get the dynamic component statuses list
-          $compStatuses = "${{ steps.get_status.outputs.compstatuses }}" -split ",\s*"
+          #$compStatuses = "${{ steps.get_status.outputs.compstatuses }}" -split ",\s*"
 
           # Call your script with dynamic parameters
           .\.github\scripts\latest-check.ps1 -controllerStatus "${{ steps.get_status.outputs.controllerstatus }}" `
