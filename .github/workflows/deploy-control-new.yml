@@ -194,10 +194,16 @@ jobs:
           sudo apt-get update -y
           sudo apt-get install -y wget apt-transport-https software-properties-common
 
-          # Download and install PowerShell
-          wget -q "https://packages.microsoft.com/config/ubuntu/20.04/prod.list" -O /etc/apt/sources.list.d/microsoft-prod.list
-          sudo apt-get install -y curl
+          # Download the Microsoft package list
+          wget -q "https://packages.microsoft.com/config/ubuntu/20.04/prod.list" -O /tmp/microsoft-prod.list
+
+          # Move the downloaded file to the correct directory with appropriate permissions
+          sudo mv /tmp/microsoft-prod.list /etc/apt/sources.list.d/microsoft-prod.list
+
+          # Import the Microsoft GPG key
           curl https://packages.microsoft.com/keys/microsoft.asc | sudo apt-key add -
+
+          # Update apt-get and install PowerShell
           sudo apt-get update -y
           sudo apt-get install -y powershell
 
