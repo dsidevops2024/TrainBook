@@ -191,28 +191,25 @@ jobs:
           }
 
           # Construct the final output in the desired format
-          $finalOutput = ""
+          # Store all dynamic outputs
+          $outputList = @()
+
           foreach ($key in $compStatusDict.Keys) {
-            $varName = "comstatus_" + ($key -replace '-', '_')
-            $value = ($compStatusDict[$key] -join ', ').TrimEnd(', ')
+              # Convert slashes to underscores for valid GitHub Actions output names
+              $varName = "comstatus_" + ($key -replace '[/\-]', '_')
+              $value = ($compStatusDict[$key] -join ', ').TrimEnd(', ')
 
-            #Write-Output "${varName}=${value}"  # Output the value for GitHub Actions
-            #Write-Output "${varName}: ${value}"  # Print to console
-             # Add to the final output string
-            $finalOutput += "${varName}: ${value}, "
+            # Output for GitHub Actions
+              Write-Output "$varName=$value"
+              Write-Output "$varName=$value" >> $env:GITHUB_OUTPUT
+
+            # Add to the output list for later use
+              $outputList += "$varName=$value"
           }
-          # Remove trailing comma and space from the final output
-           $finalOutput = $finalOutput.TrimEnd(', ')
 
-          # Output the final result to the console
-          Write-Output $finalOutput
+           # Store all component status outputs in a single variable
+            Write-Output "all_comstatus_outputs=$($outputList -join '|')" >> $env:GITHUB_OUTPUT
 
-          # Store the result in GitHub Actions output for use in the next job
-          $GITHUB_OUTPUT_FILE = "${env:GITHUB_ENV}"
-          Out-File -FilePath $GITHUB_OUTPUT_FILE -Append -InputObject "final_output=$finalOutput"
-
-          # Also printing to GitHub Actions log for immediate visibility
-          Write-Output "final_output=$finalOutput" >> $env:GITHUB_OUTPUT
           
           # Set GitHub Actions outputs
            Write-Output "controllerstatus=$controllerstatus" >> $env:GITHUB_OUTPUT
