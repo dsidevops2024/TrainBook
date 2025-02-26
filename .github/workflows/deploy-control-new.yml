@@ -167,7 +167,8 @@ jobs:
           }
           # Set the dynamic output for comp-statuses
           compStatuses=$(echo "${!compStatus[@]}" | tr ' ' ',')
-          echo "compstatuses=$compStatuses" >> $GITHUB_OUTPUT
+          echo "compstatuses=$compStatuses" 
+          #>> $GITHUB_OUTPUT
         
           echo "controllerstatus=$controllerstatus" >> $GITHUB_OUTPUT
           echo "phasejobs=$phasejobs" >> $GITHUB_OUTPUT
