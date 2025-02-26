@@ -224,7 +224,7 @@ jobs:
         shell: pwsh
         run: |
           $compStatuses = @(
-            "${{ steps.get_status.outputs.comstatus_deploy_single_component }}",
+            "${{ steps.get_status.outputs.compStatuses_values_only }}",
             )
           #$compStatuses = @(
             #"${{ steps.get_status.outputs.comstatus_deploy_single_component }}",
