@@ -151,24 +151,30 @@ jobs:
           echo "CompPhase Statuses: $compstatus"
 
           declare -A compStatus
+          detailedCompStatuses=""
+
           while IFS='/' read -r phase status; do
             phase=$(echo "$phase" | xargs)
             status=$(echo "$status" | xargs)
             compStatus["$phase"]+="${status}, "
           done <<< "$(echo "$compstatus" | tr ',' '\n')"
 
+          # Collecting detailed status for each component
           {
             for key in "${!compStatus[@]}"; do
               varname="comstatus_${key//-/_}"
               value="$(echo "${compStatus[$key]}" | sed 's/, $//')"
+              detailedCompStatuses+="${key}: ${value}, "
               echo "$varname=$value" >> "$GITHUB_OUTPUT"
               echo "$varname: $value"
             done
           }
-          # Set the dynamic output for comp-statuses
-          compStatuses=$(echo "${!compStatus[@]}" | tr ' ' ',')
-          echo "compstatuses=$compStatuses" 
-          #>> $GITHUB_OUTPUT
+
+          # Outputting detailed component statuses as a single string
+          detailedCompStatuses=$(echo "$detailedCompStatuses" | sed 's/, $//')
+          echo "compstatuses=$detailedCompStatuses" 
+          echo "compstatuses=$detailedCompStatuses" >> $GITHUB_OUTPUT
+          
         
           echo "controllerstatus=$controllerstatus" >> $GITHUB_OUTPUT
           echo "phasejobs=$phasejobs" >> $GITHUB_OUTPUT
