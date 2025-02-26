@@ -199,22 +199,22 @@ jobs:
         run: |
           echo "Controller Status: ${{ steps.get_status.outputs.controllerstatus }}"
           echo "Phase Status: ${{ steps.get_status.outputs.phasejobs }}"
-          echo "Component Statuses: ${{ steps.get_status.outputs.compStatuses_values_only }}"
-          #, ${{ steps.get_status.outputs.comstatus_deploy_phase_one }}, ${{ steps.get_status.outputs.comstatus_deploy_phase_two }}"
+          #echo "Component Statuses: ${{ steps.get_status.outputs.compStatuses_values_only }}"
+          echo "Component Statuses: ${{ steps.get_status.outputs.comstatus_deploy_single_component }}" , ${{ steps.get_status.outputs.comstatus_deploy_phase_one }}, ${{ steps.get_status.outputs.comstatus_deploy_phase_two }}"
 
        # Step 3: Run PowerShell script to report job statuses (from report-job-status)
       - name: Run PowerShell script to report job statuses
         id: report-status
         shell: pwsh
         run: |
-          $compStatuses = @(
-            "${{ steps.get_status.outputs.compStatuses_values_only }}",
-            )
           #$compStatuses = @(
-            #"${{ steps.get_status.outputs.comstatus_deploy_single_component }}",
-            #"${{ steps.get_status.outputs.comstatus_deploy_phase_one }}",
-            #"${{ steps.get_status.outputs.comstatus_deploy_phase_two }}"
-          #)
+            #"${{ steps.get_status.outputs.compStatuses_values_only }}",
+            #)
+          $compStatuses = @(
+            "${{ steps.get_status.outputs.comstatus_deploy_single_component }}",
+            "${{ steps.get_status.outputs.comstatus_deploy_phase_one }}",
+            "${{ steps.get_status.outputs.comstatus_deploy_phase_two }}"
+          )
           .\.github\scripts\checking.ps1 -controllerStatus "${{ steps.get_status.outputs.controllerstatus }}" `
             -phaseStatus "${{ steps.get_status.outputs.phasejobs }}" `
             #-compStatuses "${{ steps.get_status.outputs.compStatuses_values_only }}"
