@@ -230,7 +230,7 @@ jobs:
             #"${{ steps.get_status.outputs.comstatus_deploy_phase_one }}",
             #"${{ steps.get_status.outputs.comstatus_deploy_phase_two }}"
           #)
-          .\.github\scripts\checking.ps1 -controllerStatus "${{ steps.get_status.outputs.controllerstatus }}" `
+          ./.github/scripts/checking.ps1 -controllerStatus "${{ steps.get_status.outputs.controllerstatus }}" `
             -phaseStatus "${{ steps.get_status.outputs.phasejobs }}" `
             #-compStatuses "${{ steps.get_status.outputs.compStatuses_values_only }}"
             -compStatuses $compStatuses
