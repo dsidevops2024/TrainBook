@@ -230,7 +230,7 @@ jobs:
           #)
           .\.github\scripts\checking.ps1 -controllerStatus "${{ steps.get_status.outputs.controllerstatus }}" `
             -phaseStatus "${{ steps.get_status.outputs.phasejobs }}" `
-            -Component Statuses: ${{ steps.get_status.outputs.compStatuses_values_only }}
+            -compStatuses "${{ steps.get_status.outputs.compStatuses_values_only }}"
             #-compStatuses $compStatuses
 
       # Step 4: Use the outputs from report-job-status (final reporting)
