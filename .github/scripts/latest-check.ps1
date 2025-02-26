@@ -38,53 +38,57 @@ foreach ($match in $phaseJobs) {
     Add-Content -Path $env:GITHUB_OUTPUT -Value "${phaseName}_status=$phaseName status: $phaseStatusValue"
 }
 
-# Extract all deploy phases dynamically
+# Extract all deploy phases dynamically from phaseStatus
 $allPhaseJobs = [regex]::Matches($phaseStatus, "(deploy-[\w\-]+) status:") | ForEach-Object { $_.Groups[1].Value }
 
-# Dynamically extract component statuses from the array (compStatuses)
+# Process each component phase dynamically based on compStatuses
+for ($i = 0; $i -lt $compStatuses.Length; $i++) {
+    # Ensure index is within bounds of available deploy phases
+    if ($i -ge $allPhaseJobs.Count) { continue }
+
+    $phaseName = $allPhaseJobs[$i]  # Extract the corresponding phase name (e.g., deploy-phase-two)
+    $compStatus = $compStatuses[$i]  # Extract the component status string for this phase
+
+    if (-not $compStatus) {
+        # Handle missing component status (e.g., skipped jobs)
+        Add-Content -Path $env:GITHUB_OUTPUT -Value "$phaseName-status=skipped"
+    } else {
+        # Extract job names and their status from the component status
+        if ($compStatus -match "(deploy-[\w\-]+): ([\w\-]+) status: ([^,]+)") {
+            $componentPhase = $matches[1]   # e.g., deploy-phase-two
+            $jobName = $matches[2]          # e.g., create-component-matrix
+            $status = $matches[3]           # e.g., success
+
+            # Output the component job status to GitHub output
+            Add-Content -Path $env:GITHUB_OUTPUT -Value "$phaseName-$jobName-status=$jobName status: $status"
+        }
+    }
+}
+
+# Dynamically extract component statuses and handle missing/empty values
 $defaultJobs = @()
 foreach ($compStatus in $compStatuses) {
     if ($compStatus) {
+        # Extract the job names dynamically from the component status
         $jobs = [regex]::Matches($compStatus, "(?<jobName>[\w\-]+) status:") | ForEach-Object { $_.Groups["jobName"].Value }
         $defaultJobs += $jobs
     }
 }
 $defaultJobs = $defaultJobs | Select-Object -Unique  # Remove duplicates
 
-# **Key Change: Initialize a hashtable to group component statuses by phase**
-$compStatusGrouped = @{}
-
-# Process each component phase dynamically
+# Handle missing jobs for dynamically added jobs like "azure-checking"
 for ($i = 0; $i -lt $compStatuses.Length; $i++) {
-    if ($i -ge $allPhaseJobs.Count) { continue }  # Ensure index is within bounds
-
-    $phaseName = $allPhaseJobs[$i]
     $compStatus = $compStatuses[$i]
-
-    # **Key Change: Initialize phase in the grouped hashtable if not already**
-    if (-not $compStatusGrouped.ContainsKey($phaseName)) {
-        $compStatusGrouped[$phaseName] = @()
-    }
-
-    # **Key Change: If the component status is not empty, process and group it**
-    if ($compStatus) {
-        # Extract jobs from the component status string
-        $phaseJobs = [regex]::Matches($compStatus, "(?<jobName>[\w\-]+) status:") 
+    if (-not $compStatus) {
+        # Handle missing component status
+        Add-Content -Path $env:GITHUB_OUTPUT -Value "component-status-$i=skipped"
+    } else {
+        # Extract job statuses dynamically from the component status
+        $phaseJobs = [regex]::Matches($compStatus, "(?<jobName>[\w\-]+) status:")
         foreach ($match in $phaseJobs) {
             $jobName = $match.Groups["jobName"].Value
             $jobStatus = Get-JobStatus -statusString $compStatus -jobName $jobName
-            $compStatusGrouped[$phaseName] += "$jobName status: $jobStatus"
-        }
-    } else {
-        # **Key Change: If component status is empty, use default jobs**
-        foreach ($job in $defaultJobs) {
-            $compStatusGrouped[$phaseName] += "$job status: skipped"
+            Add-Content -Path $env:GITHUB_OUTPUT -Value "$jobName-status=$jobName status: $jobStatus"
         }
     }
-}
-
-# **Key Change: Output the grouped component statuses for each phase**
-foreach ($phase in $compStatusGrouped.Keys) {
-    $groupedStatus = ($compStatusGrouped[$phase] -join ", ")
-    Add-Content -Path $env:GITHUB_OUTPUT -Value "${phase}: $groupedStatus"
 }
