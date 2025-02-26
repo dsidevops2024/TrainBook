@@ -154,16 +154,30 @@ jobs:
             compStatus["$phase"]+="${status}, "
           done <<< "$(echo "$compstatus" | tr ',' '\n')"
 
-          # Collecting detailed status for each component
           {
-            for key in "${!compStatus[@]}"; do
-              varname="comstatus_${key//-/_}"
-              value="$(echo "${compStatus[$key]}" | sed 's/, $//')"
-              detailedCompStatuses+="${key}: ${value}, "
-              echo "$varname=$value" >> "$GITHUB_OUTPUT"
-              echo "$varname=$value"
-            done
-          }
+           detailedCompStatuses=""
+  
+           for key in "${!compStatus[@]}"; do
+               varname="comstatus_${key//-/_}"
+               value="$(echo "${compStatus[$key]}" | sed 's/, $//')"
+               detailedCompStatuses+="$varname=$value\n"  # Concatenating the phase statuses with a newline separator
+               echo "$varname=$value" >> "$GITHUB_OUTPUT"
+               echo "$varname=$value"
+           done
+  
+          echo "detailedCompStatuses=$detailedCompStatuses" >> $GITHUB_OUTPUT  # Pass the concatenated variable
+  
+           }  
+          # Collecting detailed status for each component
+          #{
+            #for key in "${!compStatus[@]}"; do
+              #varname="comstatus_${key//-/_}"
+              #value="$(echo "${compStatus[$key]}" | sed 's/, $//')"
+              #detailedCompStatuses+="${key}: ${value}, "
+              #echo "$varname=$value" >> "$GITHUB_OUTPUT"
+              #echo "$varname=$value"
+            #done
+          #}
 
           # Outputting detailed component statuses as a single string
           #detailedCompStatuses=$(echo "$detailedCompStatuses" | sed 's/, $//')
