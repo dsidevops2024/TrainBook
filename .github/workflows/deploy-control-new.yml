@@ -126,12 +126,7 @@ jobs:
   combined-job:
     needs: [check-component-input, create-environment-matrix, set-environment-runner, call-phase]
     runs-on: ubuntu-latest  # You can switch to windows-latest if you need Windows steps
-    outputs:
-      con-status: ${{ steps.get_status.outputs.controllerstatus }}
-      phase-status: ${{ steps.get_status.outputs.phasejobs }}
-      comstatus_deploy_single_component: ${{ steps.get_status.outputs.comstatus_deploy_single_component }}
-      comstatus_deploy_phase_one: ${{ steps.get_status.outputs.comstatus_deploy_phase_one }}
-      comstatus_deploy_phase_two: ${{ steps.get_status.outputs.comstatus_deploy_phase_two }}
+    
     steps:
       - name: Get Job Statuses from GitHub API
         id: get_status
@@ -241,13 +236,6 @@ jobs:
           echo "Overall_Job_Status_phase4:"
           echo "${{ steps.report-status.outputs.deploy-phase-two_status }}"
 
-          echo "ComponentJobStatus-for-Phase3check:"
-          echo "${{ steps.report-status.outputs.deploy-phase-one-status }}"
-          echo "ComponentJobStatus-for-Phase3-job1check:"
-          echo "${{ steps.report-status.outputs.create-component-matrix-status }}"
-          echo "ComponentJobStatus-for-Phase3-job2check:"
-          echo "${{ steps.report-status.outputs.deploy-to-AzService-status }}"
-          
           echo "ComponentJobStatus-for-Phase2check:"
           echo "${{ steps.report-status.outputs.deploy-single-component-status }}"
           echo "ComponentJobStatus-for-Phase2-job1-check:"
