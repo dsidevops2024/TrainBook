@@ -161,7 +161,7 @@ jobs:
               value="$(echo "${compStatus[$key]}" | sed 's/, $//')"
               detailedCompStatuses+="${key}: ${value}, "
               echo "$varname=$value" >> "$GITHUB_OUTPUT"
-              echo "$varname: $value"
+              echo "$varname = $value"
             done
           }
 
