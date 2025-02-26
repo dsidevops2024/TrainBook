@@ -224,7 +224,7 @@ jobs:
         run: |
           echo "Controller Status: ${{ steps.get_status.outputs.controllerstatus }}"
           echo "Phase Status: ${{ steps.get_status.outputs.phasejobs }}"
-          echo "Component Statuses: ${{ steps.get_status.outputs.final_output }}"
+          echo "Component Statuses: ${{ steps.get_status.outputs.all_comstatus_outputs }}"
           #, ${{ steps.get_status.outputs.comstatus_deploy_phase_one }}, ${{ steps.get_status.outputs.comstatus_deploy_phase_two }}"
 
        # Step 3: Run PowerShell script to report job statuses (from report-job-status)
