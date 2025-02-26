@@ -197,7 +197,7 @@ jobs:
           }
 
           # Debugging: Display the final extracted values
-          Write-Output "🔹 Final Component Status Values Only: $($valuesOnlyList -join ' | ')"
+          Write-Output "Final Component Status Values Only: $($valuesOnlyList -join ' | ')"
 
           # Store the values-only list in GitHub Actions output
           Write-Output "compStatuses_values_only=$($valuesOnlyList -join '|')" >> $env:GITHUB_OUTPUT
@@ -230,7 +230,7 @@ jobs:
           #)
           .\.github\scripts\checking.ps1 -controllerStatus "${{ steps.get_status.outputs.controllerstatus }}" `
             -phaseStatus "${{ steps.get_status.outputs.phasejobs }}" `
-            -compStatuses "${{ steps.get_status.outputs.final_output}}"
+            -Component Statuses: ${{ steps.get_status.outputs.compStatuses_values_only }}
             #-compStatuses $compStatuses
 
       # Step 4: Use the outputs from report-job-status (final reporting)
