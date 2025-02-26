@@ -195,7 +195,9 @@ jobs:
         run: |
           echo "Controller Status: ${{ steps.get_status.outputs.controllerstatus }}"
           echo "Phase Status: ${{ steps.get_status.outputs.phasejobs }}"
-          echo "Component Statuses: ${{ steps.get_status.outputs.compstatuses }}"
+          #echo "Component Statuses: ${{ steps.get_status.outputs.compstatuses }}"
+          echo "Component Statuses: ${{ steps.get_status.outputs.detailedCompStatuses }}"
+          
 
       - name: Install PowerShell
         run: |
@@ -226,7 +228,7 @@ jobs:
           # Call your script with dynamic parameters
           .\.github\scripts\checking.ps1 -controllerStatus "${{ steps.get_status.outputs.controllerstatus }}" `
            -phaseStatus "${{ steps.get_status.outputs.phasejobs }}" `
-           -compStatuses $compStatuses
+           -compStatuses $detailedCompStatuses
 
 
       - name: Use the outputs from report-job-status
