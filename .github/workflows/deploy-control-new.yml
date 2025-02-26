@@ -178,9 +178,9 @@ jobs:
           done
 
           # Outputting detailed component statuses as a single string
-          detailedCompStatuses=$(echo "$detailedCompStatuses" | sed 's/, $//')
-          echo "compstatuses=$detailedCompStatuses" 
-          echo "compstatuses=$detailedCompStatuses" >> $GITHUB_OUTPUT
+          #detailedCompStatuses=$(echo "$detailedCompStatuses" | sed 's/, $//')
+          #echo "compstatuses=$detailedCompStatuses" 
+          #echo "compstatuses=$detailedCompStatuses" >> $GITHUB_OUTPUT
           
         
           echo "controllerstatus=$controllerstatus" >> $GITHUB_OUTPUT
