@@ -223,6 +223,9 @@ jobs:
         id: report-status
         shell: pwsh
         run: |
+          $compStatuses = @(
+            "${{ steps.get_status.outputs.comstatus_deploy_single_component }}",
+            )
           #$compStatuses = @(
             #"${{ steps.get_status.outputs.comstatus_deploy_single_component }}",
             #"${{ steps.get_status.outputs.comstatus_deploy_phase_one }}",
@@ -230,8 +233,8 @@ jobs:
           #)
           .\.github\scripts\checking.ps1 -controllerStatus "${{ steps.get_status.outputs.controllerstatus }}" `
             -phaseStatus "${{ steps.get_status.outputs.phasejobs }}" `
-            -compStatuses "${{ steps.get_status.outputs.compStatuses_values_only }}"
-            #-compStatuses $compStatuses
+            #-compStatuses "${{ steps.get_status.outputs.compStatuses_values_only }}"
+            -compStatuses $compStatuses
 
       # Step 4: Use the outputs from report-job-status (final reporting)
       - name: Use the outputs from report-job-status
