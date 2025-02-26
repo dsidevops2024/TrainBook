@@ -86,5 +86,5 @@ for ($i = 0; $i -lt $compStatuses.Length; $i++) {
 # **Key Change: Output the grouped component statuses for each phase**
 foreach ($phase in $compStatusGrouped.Keys) {
     $groupedStatus = ($compStatusGrouped[$phase] -join ", ")
-    Add-Content -Path $env:GITHUB_OUTPUT -Value "$phase: $groupedStatus"
+    Add-Content -Path $env:GITHUB_OUTPUT -Value "${phase}: $groupedStatus"
 }
