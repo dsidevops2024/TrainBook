@@ -53,7 +53,7 @@ foreach ($compStatus in $compStatusesArray) {
         $defaultJobs += $jobs
     }
 }
-$defaultJobs = $defaultJobs | Select-Object -Unique  # Remove duplicates
+#$defaultJobs = $defaultJobs | Select-Object -Unique  # Remove duplicates
 
 # Process each component phase dynamically
 for ($i = 0; $i -lt $compStatusesArray.Length; $i++) {
