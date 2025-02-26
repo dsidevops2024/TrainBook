@@ -165,10 +165,17 @@ jobs:
               varname="comstatus_${key//-/_}"
               value="$(echo "${compStatus[$key]}" | sed 's/, $//')"
               detailedCompStatuses+="${key}: ${value}, "
+              #echo "$varname=$value" >> "$GITHUB_OUTPUT"
+              #echo "$varname: $value"
+            #done
+              statusArray+=("$varname: $value")
               echo "$varname=$value" >> "$GITHUB_OUTPUT"
-              echo "$varname: $value"
             done
           }
+
+          for entry in "${statusArray[@]}"; do
+             echo "$entry"
+          done
 
           # Outputting detailed component statuses as a single string
           detailedCompStatuses=$(echo "$detailedCompStatuses" | sed 's/, $//')
