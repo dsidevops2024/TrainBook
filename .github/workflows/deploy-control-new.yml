@@ -164,7 +164,7 @@ jobs:
                echo "$varname=$value" >> "$GITHUB_OUTPUT"
                echo "$varname=$value"
            done
-  
+          echo "detailedCompStatuses=$detailedCompStatuses"
           echo "detailedCompStatuses=$detailedCompStatuses" >> $GITHUB_OUTPUT  # Pass the concatenated variable
   
            }  
