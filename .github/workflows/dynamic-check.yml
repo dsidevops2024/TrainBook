@@ -176,45 +176,36 @@ jobs:
           Write-Output "Phase Statuses: $phasejobs"
           Write-Output "CompPhase Statuses: $compStatus"
           
-          # Split the compStatus string into individual items, further cleaning and organizing them by component phase
+          # Step 5: Process Component Statuses and Store Values Only
           $compStatusDict = @{}
+          $valuesOnlyList = @()
+
           $compStatus -split ", " | ForEach-Object {
-                #$phase, $status = $_.Trim() -split 'status: '
-                $phase, $status = $_.Trim() -split ' / ', 2
-                #$phase = $phase.Trim()
-                $status = $status.Trim()
+                     $phase, $status = $_.Trim() -split ' / ', 2
+                     $status = $status.Trim()
 
-          if (-not $compStatusDict.ContainsKey($phase)) {
-             $compStatusDict[$phase] = @()
-          }
-          $compStatusDict[$phase] += $status
+              if (-not $compStatusDict.ContainsKey($phase)) {
+                  $compStatusDict[$phase] = @()
+              }
+              $compStatusDict[$phase] += $status
           }
 
-          # Construct the final output in the desired format
-          # Store all dynamic outputs
-          $outputList = @()
-
+          # Store values-only list for component statuses
           foreach ($key in $compStatusDict.Keys) {
-              # Convert slashes to underscores for valid GitHub Actions output names
-              $varName = "comstatus_" + ($key -replace '[/\-]', '_')
               $value = ($compStatusDict[$key] -join ', ').TrimEnd(', ')
-
-            # Output for GitHub Actions
-              Write-Output "$varName=$value"
-              Write-Output "$varName=$value" >> $env:GITHUB_OUTPUT
-
-            # Add to the output list for later use
-              $outputList += "$varName=$value"
+              $valuesOnlyList += "$value"
           }
 
-           # Store all component status outputs in a single variable
-            Write-Output "all_comstatus_outputs=$($outputList -join '|')" >> $env:GITHUB_OUTPUT
+          # Debugging: Display the final extracted values
+          Write-Output "🔹 Final Component Status Values Only: $($valuesOnlyList -join ' | ')"
 
-          
-          # Set GitHub Actions outputs
+          # Store the values-only list in GitHub Actions output
+          Write-Output "compStatuses_values_only=$($valuesOnlyList -join '|')" >> $env:GITHUB_OUTPUT
+
+          # Set other outputs
            Write-Output "controllerstatus=$controllerstatus" >> $env:GITHUB_OUTPUT
            Write-Output "phasejobs=$phasejobs" >> $env:GITHUB_OUTPUT
-
+          
            # Save the controller and phase statuses as outputs for later steps
            #echo "controllerstatus=$controllerstatus" >> $GITHUB_OUTPUT
            #echo "phasejobs=$phasejobs" >> $GITHUB_OUTPUT 
@@ -224,7 +215,7 @@ jobs:
         run: |
           echo "Controller Status: ${{ steps.get_status.outputs.controllerstatus }}"
           echo "Phase Status: ${{ steps.get_status.outputs.phasejobs }}"
-          echo "Component Statuses: ${{ steps.get_status.outputs.all_comstatus_outputs }}"
+          echo "Component Statuses: ${{ steps.get_status.outputs.compStatuses_values_only }}"
           #, ${{ steps.get_status.outputs.comstatus_deploy_phase_one }}, ${{ steps.get_status.outputs.comstatus_deploy_phase_two }}"
 
        # Step 3: Run PowerShell script to report job statuses (from report-job-status)
