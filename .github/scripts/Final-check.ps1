@@ -1,6 +1,7 @@
 param (
     [string]$controllerStatus,
-    [string]$phaseStatus
+    [string]$phaseStatus,
+    [string]$compStatuses
 )
 
 # Function to return appropriate emoji based on status
@@ -8,13 +9,15 @@ function Get-Icon($status) {
     switch ($status.ToLower()) {
         "success" { return "✅" }  # Green Checkmark
         "failed"  { return "❌" }  # Red Cross
-        "skipped" { return "⚠️" }  # Skipped Icon
+        "skipped" { return "⏭️" }  # Skipped Icon
+        default   { return "⚪" }  # Default Neutral Circle
     }
 }
 
 # Initialize arrays to collect statuses
 $controllerJobStatuses = @()
 $phaseJobStatuses = @()
+$compJobStatuses = @()
 
 # Extract all controller job statuses dynamically
 $controllerJobs = [regex]::Matches($controllerStatus, "(?<jobName>[\w\-]+) status: (?<status>\w+)")
@@ -38,9 +41,23 @@ foreach ($match in $phaseJobs) {
     $phaseJobStatuses += "$phaseName status: $phaseStatusValue $icon"
 }
 
+# Process component phase statuses
+$compPhaseJobStatuses = @()
+$compStatusesArray = $compStatuses -split ', '
+foreach ($compStatus in $compStatusesArray) {
+    $compParts = $compStatus -split ': '
+    $compName = $compParts[0]
+    $status = $compParts[1].Trim()
+
+    # Add emoji based on status
+    $icon = Get-Icon $status
+    $compPhaseJobStatuses += "$compName status: $status $icon"
+}
+
 # Convert collected statuses into multi-line outputs for logging (WITH emojis)
 $finalControllerStatus = $controllerJobStatuses -join "`n"
 $finalPhaseStatus = $phaseJobStatuses -join "`n"
+$finalCompPhaseStatus = $compPhaseJobStatuses -join "`n"
 
 # ✅ Store output in GitHub Actions properly (multi-line format)
 Write-Output "controller_jobs_status<<EOF" >> $env:GITHUB_OUTPUT
@@ -51,6 +68,11 @@ Write-Output "phase_jobs_status<<EOF" >> $env:GITHUB_OUTPUT
 Write-Output "$finalPhaseStatus" >> $env:GITHUB_OUTPUT
 Write-Output "EOF" >> $env:GITHUB_OUTPUT
 
+Write-Output "comp_phase_jobs_status<<EOF" >> $env:GITHUB_OUTPUT
+Write-Output "$finalCompPhaseStatus" >> $env:GITHUB_OUTPUT
+Write-Output "EOF" >> $env:GITHUB_OUTPUT
+
 # ✅ Print statuses with emojis in logs for better visibility
 Write-Output "Controller Job Statuses:`n$finalControllerStatus"
 Write-Output "Phase Job Statuses:`n$finalPhaseStatus"
+Write-Output "Component Phase Job Statuses:`n$finalCompPhaseStatus"
