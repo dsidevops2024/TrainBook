@@ -218,27 +218,30 @@ jobs:
           echo "Component Statuses: ${{ steps.get_status.outputs.compstatuses }}"
           #echo "${{ steps.get_status.outputs.compstatuses }}"
      
-      - name: Install PowerShell
-        run: |
+      #- name: Install PowerShell
+        #run: |
           # Install prerequisites
-          sudo apt-get update -y
-          sudo apt-get install -y wget apt-transport-https software-properties-common
+          #sudo apt-get update -y
+          #sudo apt-get install -y wget apt-transport-https software-properties-common
           # Download the Microsoft package list
-          wget -q "https://packages.microsoft.com/config/ubuntu/20.04/prod.list" -O /tmp/microsoft-prod.list
+          #wget -q "https://packages.microsoft.com/config/ubuntu/20.04/prod.list" -O /tmp/microsoft-prod.list
           # Move the downloaded file to the correct directory with appropriate permissions
-          sudo mv /tmp/microsoft-prod.list /etc/apt/sources.list.d/microsoft-prod.list
+          #sudo mv /tmp/microsoft-prod.list /etc/apt/sources.list.d/microsoft-prod.list
           # Import the Microsoft GPG key
-          curl https://packages.microsoft.com/keys/microsoft.asc | sudo apt-key add -
+          #curl https://packages.microsoft.com/keys/microsoft.asc | sudo apt-key add -
           # Update apt-get and install PowerShell
-          sudo apt-get update -y
-          sudo apt-get install -y powershell
+          #sudo apt-get update -y
+          #sudo apt-get install -y powershell
+
+      - name: Set up PowerShell
+        uses: PowerShell/PowerShell@v7.1.3
 
       - name: Run PowerShell script to report job statuses
         id: report-status
         shell: pwsh
         run: |
           # Call your script with dynamic parameters
-          .\.github\scripts\Final-check.ps1 -controllerStatus "${{ steps.get_status.outputs.controllerstatus }}" `
+          ./.github/scripts/Final-check.ps1 -controllerStatus "${{ steps.get_status.outputs.controllerstatus }}" `
            -phaseStatus "${{ steps.get_status.outputs.phasejobs }}" `
            -compStatuses "${{ steps.get_status.outputs.compstatuses }}"
 
