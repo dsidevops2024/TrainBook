@@ -167,7 +167,7 @@ jobs:
              formatted_status=$(echo "$formatted_status" | sed 's/, $//')
 
              # Append the formatted status to the detailed output string
-             detailedCompStatuses+="$key: $formatted_status, "
+             detailedCompStatuses+="$key: $formatted_status "
         
              # Save to GitHub output
              varname="comstatus_${key//-/_}"
@@ -177,7 +177,7 @@ jobs:
           }
 
           # Outputting detailed component statuses as a single string, remove the trailing comma
-          detailedCompStatuses=$(echo "$detailedCompStatuses" | sed 's/, $//')
+          detailedCompStatuses=$(echo "$detailedCompStatuses" | sed 's/ $//')
           echo "compstatuses=$detailedCompStatuses" >> $GITHUB_OUTPUT
           echo "$detailedCompStatuses"
 
