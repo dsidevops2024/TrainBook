@@ -42,22 +42,41 @@ foreach ($match in $phaseJobs) {
 }
 
 # Process component phase statuses
-$compPhaseJobStatuses = @()
-$compStatusesArray = $compStatuses -split ', '
-foreach ($compStatus in $compStatusesArray) {
-    $compParts = $compStatus -split ': '
-    $compName = $compParts[0]
-    $status = $compParts[1].Trim()
+$compPhaseJobStatuses = @{}
+$compStatusesArray = $compStatuses -split ',\s*'
 
-    # Add emoji based on status
-    $icon = Get-Icon $status
-    $compPhaseJobStatuses += "$compName status: $status $icon"
+foreach ($compStatus in $compStatusesArray) {
+    # Split the component status into phase and job name
+    $compParts = $compStatus -split ': '
+    
+    if ($compParts.Length -eq 2) {
+        # Only process if there are exactly two parts (phase and job status)
+        $compPhase = $compParts[0].Trim()
+        $compJobStatus = $compParts[1].Trim()
+
+        # Add the status to the corresponding phase
+        if (-not $compPhaseJobStatuses.ContainsKey($compPhase)) {
+            $compPhaseJobStatuses[$compPhase] = @()
+        }
+
+        # Add the status to the specific phase in the dictionary
+        $compPhaseJobStatuses[$compPhase] += "$compJobStatus $([Get-Icon]::new($compJobStatus.Split()[-1]))"
+    }
+    else {
+        Write-Warning "Skipping invalid component status: $compStatus"
+    }
 }
 
 # Convert collected statuses into multi-line outputs for logging (WITH emojis)
 $finalControllerStatus = $controllerJobStatuses -join "`n"
 $finalPhaseStatus = $phaseJobStatuses -join "`n"
-$finalCompPhaseStatus = $compPhaseJobStatuses -join "`n"
+
+# Output formatted component phase statuses
+$finalCompPhaseStatus = ""
+foreach ($phase in $compPhaseJobStatuses.Keys) {
+    $finalCompPhaseStatus += "$phase:`n"
+    $finalCompPhaseStatus += ($compPhaseJobStatuses[$phase] -join "`n") + "`n"
+}
 
 # ✅ Store output in GitHub Actions properly (multi-line format)
 Write-Output "controller_jobs_status<<EOF" >> $env:GITHUB_OUTPUT
