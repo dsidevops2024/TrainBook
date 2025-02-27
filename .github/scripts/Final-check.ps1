@@ -1,4 +1,4 @@
-param (
+param ( 
     [string]$controllerStatus,
     [string]$phaseStatus,
     [string]$compStatuses
@@ -17,7 +17,7 @@ function Get-Icon($status) {
 # Initialize arrays to collect statuses
 $controllerJobStatuses = @()
 $phaseJobStatuses = @()
-$compJobStatuses = @()
+$compPhaseJobStatuses = @{}
 
 # Extract all controller job statuses dynamically
 $controllerJobs = [regex]::Matches($controllerStatus, "(?<jobName>[\w\-]+) status: (?<status>\w+)")
@@ -41,40 +41,55 @@ foreach ($match in $phaseJobs) {
     $phaseJobStatuses += "$phaseName status: $phaseStatusValue $icon"
 }
 
-# Process component phase statuses and filter 'deploy_' phase jobs
-$compPhaseJobStatuses = @{}
+# Extract all deploy phases dynamically from $phaseStatus
+$deployPhases = [regex]::Matches($phaseStatus, "(deploy-[\w\-]+) status:") | ForEach-Object { $_.Groups[1].Value }
+
+# Split the component statuses from $compStatuses into an array
 $compStatusesArray = $compStatuses -split ',\s*'
 
-# Flag for checking "deploy-single-component"
-$deploySingleComponentSkipped = $false
+# Iterate over each deploy phase extracted from $phaseStatus
+foreach ($deployPhase in $deployPhases) {
+    # Initially assume the phase is not in $compStatuses
+    $foundInCompStatuses = $false
 
+    # Check if the current deploy phase exists in $compStatuses
+    foreach ($compStatus in $compStatusesArray) {
+        if ($compStatus -like "$deployPhase:*") {
+            $foundInCompStatuses = $true
+            break
+        }
+    }
+
+    # If the deploy phase is not found in $compStatuses, dynamically mark the phase and its jobs as skipped
+    if (-not $foundInCompStatuses) {
+        $compPhaseJobStatuses[$deployPhase] = @()
+
+        # Dynamically generate job names for the phase, marking each job as skipped
+        $jobsInPhase = [regex]::Matches($phaseStatus, "$deployPhase:([\w\-]+) status:")
+        foreach ($job in $jobsInPhase) {
+            $jobName = $job.Groups[1].Value
+            $compPhaseJobStatuses[$deployPhase] += "$jobName: skipped $(Get-Icon 'skipped')"
+        }
+    }
+}
+
+# Now process the actual component statuses for deploy phases
 foreach ($compStatus in $compStatusesArray) {
-    # Split the component status into phase and job name
+    # Split the component status into phase and job status
     $compParts = $compStatus -split ': '
-    
+
     if ($compParts.Length -eq 2) {
-        # Only process if there are exactly two parts (phase and job status)
         $compPhase = $compParts[0].Trim()
         $compJobStatus = $compParts[1].Trim()
 
-        # Check if phase starts with 'deploy_' to only include relevant jobs
-        if ($compPhase -like "deploy_*") {
-            # If 'deploy-single-component' is found, mark all related jobs as skipped
-            if ($compPhase -like "*deploy-single-component*") {
-                $deploySingleComponentSkipped = $true
-            }
-
-            # If deploy-single-component was found, mark all jobs in the phase as skipped
-            if ($deploySingleComponentSkipped) {
-                $compJobStatus = "skipped"
-            }
-
-            # Add the status to the corresponding phase
+        # Process only phases starting with 'deploy-'
+        if ($compPhase -like "deploy-*") {
+            # Add the status to the corresponding deploy phase in the dictionary
             if (-not $compPhaseJobStatuses.ContainsKey($compPhase)) {
                 $compPhaseJobStatuses[$compPhase] = @()
             }
 
-            # Add the status to the specific phase in the dictionary with emojis
+            # Add the status with the appropriate emoji for logging
             $compPhaseJobStatuses[$compPhase] += "$compJobStatus $(Get-Icon $compJobStatus.Split()[-1])"
         }
     }
