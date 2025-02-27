@@ -41,9 +41,12 @@ foreach ($match in $phaseJobs) {
     $phaseJobStatuses += "$phaseName status: $phaseStatusValue $icon"
 }
 
-# Process component phase statuses
+# Process component phase statuses and filter 'deploy_' phase jobs
 $compPhaseJobStatuses = @{}
 $compStatusesArray = $compStatuses -split ',\s*'
+
+# Flag for checking "deploy-single-component"
+$deploySingleComponentSkipped = $false
 
 foreach ($compStatus in $compStatusesArray) {
     # Split the component status into phase and job name
@@ -54,14 +57,26 @@ foreach ($compStatus in $compStatusesArray) {
         $compPhase = $compParts[0].Trim()
         $compJobStatus = $compParts[1].Trim()
 
-        # Add the status to the corresponding phase
-        if (-not $compPhaseJobStatuses.ContainsKey($compPhase)) {
-            $compPhaseJobStatuses[$compPhase] = @()
-        }
+        # Check if phase starts with 'deploy_' to only include relevant jobs
+        if ($compPhase -like "deploy_*") {
+            # If 'deploy-single-component' is found, mark all related jobs as skipped
+            if ($compPhase -like "*deploy-single-component*") {
+                $deploySingleComponentSkipped = $true
+            }
 
-        # Add the status to the specific phase in the dictionary
-        #$compPhaseJobStatuses[$compPhase] += "$compJobStatus $([Get-Icon]::new($compJobStatus.Split()[-1]))"
-        $compPhaseJobStatuses[$compPhase] += "$compJobStatus $(Get-Icon $compJobStatus.Split()[-1])"
+            # If deploy-single-component was found, mark all jobs in the phase as skipped
+            if ($deploySingleComponentSkipped) {
+                $compJobStatus = "skipped"
+            }
+
+            # Add the status to the corresponding phase
+            if (-not $compPhaseJobStatuses.ContainsKey($compPhase)) {
+                $compPhaseJobStatuses[$compPhase] = @()
+            }
+
+            # Add the status to the specific phase in the dictionary with emojis
+            $compPhaseJobStatuses[$compPhase] += "$compJobStatus $(Get-Icon $compJobStatus.Split()[-1])"
+        }
     }
     else {
         Write-Warning "Skipping invalid component status: $compStatus"
@@ -79,7 +94,7 @@ foreach ($phase in $compPhaseJobStatuses.Keys) {
     $finalCompPhaseStatus += ($compPhaseJobStatuses[$phase] -join "`n") + "`n"
 }
 
-# ✅ Store output in GitHub Actions properly (multi-line format)
+# Store output in GitHub Actions properly (multi-line format)
 Write-Output "controller_jobs_status<<EOF" >> $env:GITHUB_OUTPUT
 Write-Output "$finalControllerStatus" >> $env:GITHUB_OUTPUT
 Write-Output "EOF" >> $env:GITHUB_OUTPUT
@@ -92,7 +107,7 @@ Write-Output "comp_phase_jobs_status<<EOF" >> $env:GITHUB_OUTPUT
 Write-Output "$finalCompPhaseStatus" >> $env:GITHUB_OUTPUT
 Write-Output "EOF" >> $env:GITHUB_OUTPUT
 
-# ✅ Print statuses with emojis in logs for better visibility
+# Print statuses with emojis in logs for better visibility
 Write-Output "Controller Job Statuses:`n$finalControllerStatus"
 Write-Output "Phase Job Statuses:`n$finalPhaseStatus"
 Write-Output "Component Phase Job Statuses:`n$finalCompPhaseStatus"
