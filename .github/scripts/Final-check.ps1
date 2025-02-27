@@ -1,7 +1,7 @@
 param ( 
     [string]$controllerStatus,
     [string]$phaseStatus,
-    [string]$compStatuses
+    [string]$compStatuses    
 )
 Write-Output "Controller Status: $controllerStatus"
 Write-Output "Phase Status: $phaseStatus"
