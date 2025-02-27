@@ -225,7 +225,7 @@ jobs:
         run: |
           echo "ControllerJobStatus:"
           echo "${{ steps.report-status.outputs.controller_jobs_status }}"
-          
+          echo "PhaseJobStatus:"
           echo "${{ steps.report-status.outputs.phase_jobs_status }}"
           
           echo "ControllerJob1Status:"
