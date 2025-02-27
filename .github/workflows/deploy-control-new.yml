@@ -171,6 +171,7 @@ jobs:
           # Outputting detailed component statuses as a single string
           detailedCompStatuses=$(echo "$detailedCompStatuses" | sed 's/, $//')
           echo "compstatuses=$detailedCompStatuses" >> $GITHUB_OUTPUT
+          echo "compstatuses=$detailedCompStatuses"
           
           echo "controllerstatus=$controllerstatus" >> $GITHUB_OUTPUT
           echo "phasejobs=$phasejobs" >> $GITHUB_OUTPUT
