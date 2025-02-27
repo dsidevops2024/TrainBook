@@ -219,7 +219,7 @@ jobs:
           .\.github\scripts\Final-check.ps1 -controllerStatus "${{ steps.get_status.outputs.controllerstatus }}" `
            -phaseStatus "${{ steps.get_status.outputs.phasejobs }}" `
            #-compStatuses $detailedCompStatuses
-
+           -compStatuses "${{ steps.get_status.outputs.compstatuses }}"
 
       - name: Use the outputs from report-job-status
         run: |
@@ -227,6 +227,9 @@ jobs:
           echo "${{ steps.report-status.outputs.controller_jobs_status }}"
           echo "PhaseJobStatus:"
           echo "${{ steps.report-status.outputs.phase_jobs_status }}"
+          echo "ComponentJobStatus:"
+          echo "${{ steps.report-status.outputs.comp_phase_jobs_status }}"
+          
           
           echo "ControllerJob1Status:"
           echo "${{ steps.report-status.outputs.check-component-input-status }}"
