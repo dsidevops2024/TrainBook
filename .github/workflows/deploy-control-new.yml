@@ -186,7 +186,8 @@ jobs:
           echo "Controller Status: ${{ steps.get_status.outputs.controllerstatus }}"
           echo "Phase Status: ${{ steps.get_status.outputs.phasejobs }}"
           echo "Component Statuses: ${{ steps.get_status.outputs.compstatuses }}"
-          #echo "Component Statuses: ${{ steps.get_status.outputs.detailedCompStatuses }}"
+          echo "Component new Statuses: ${{ steps.get_status.outputs.detailedCompStatuses }}"
+          echo "Component new22 Statuses: ${{ steps.get_status.outputs.compstatuses }}"
           
 
       - name: Install PowerShell
@@ -194,16 +195,12 @@ jobs:
           # Install prerequisites
           sudo apt-get update -y
           sudo apt-get install -y wget apt-transport-https software-properties-common
-
           # Download the Microsoft package list
           wget -q "https://packages.microsoft.com/config/ubuntu/20.04/prod.list" -O /tmp/microsoft-prod.list
-
           # Move the downloaded file to the correct directory with appropriate permissions
           sudo mv /tmp/microsoft-prod.list /etc/apt/sources.list.d/microsoft-prod.list
-
           # Import the Microsoft GPG key
           curl https://packages.microsoft.com/keys/microsoft.asc | sudo apt-key add -
-
           # Update apt-get and install PowerShell
           sudo apt-get update -y
           sudo apt-get install -y powershell
@@ -226,40 +223,3 @@ jobs:
           echo "${{ steps.report-status.outputs.phase_jobs_status }}"
           echo "ComponentJobStatus:"
           echo "${{ steps.report-status.outputs.comp_phase_jobs_status }}"
-          
-          
-          echo "ControllerJob1Status:"
-          echo "${{ steps.report-status.outputs.check-component-input-status }}"
-          echo "ControllerJob2Status:"
-          echo "${{ steps.report-status.outputs.create-environment-matrix-status }}"
-          echo "ControllerJob3Status:"
-          echo "${{ steps.report-status.outputs.set-environment-runner-status }}"
-          echo "OverallPhaseJobStatus:"
-          echo "${{ steps.report-status.outputs.overall-phase-status }}"
-          echo "Overall_Job_Status_phase1:"
-          echo "${{ steps.report-status.outputs.Check-Approvals_status }}"
-          echo "Overall_Job_Status_phase2:"
-          echo "${{ steps.report-status.outputs.deploy-single-component_status }}"
-          echo "Overall_Job_Status_phase3:"
-          echo "${{ steps.report-status.outputs.deploy-phase-one_status }}"
-          echo "Overall_Job_Status_phase4:"
-          echo "${{ steps.report-status.outputs.deploy-phase-two_status }}"
-
-          echo "ComponentJobStatus-for-Phase2check:"
-          echo "${{ steps.report-status.outputs.deploy-single-component-status }}"
-          echo "ComponentJobStatus-for-Phase2-job1-check:"
-          echo "${{ steps.report-status.outputs.deploy-single-component-create-component-matrix-status }}"
-          echo "ComponentJobStatus-for-Phase2-job2-check:"
-          echo "${{ steps.report-status.outputs.deploy-single-component-deploy-to-AzService-status }}"
-          echo "ComponentJobStatus-for-Phase3check:"
-          echo "${{ steps.report-status.outputs.deploy-phase-one-status }}"
-          echo "ComponentJobStatus-for-Phase3-job1check:"
-          echo "${{ steps.report-status.outputs.deploy-phase-one-create-component-matrix-status }}"
-          echo "ComponentJobStatus-for-Phase3-job2check:"
-          echo "${{ steps.report-status.outputs.deploy-phase-one-deploy-to-AzService-status }}"
-          echo "ComponentJobStatus-for-Phase4check:"
-          echo "${{ steps.report-status.outputs.deploy-phase-two-status }}"
-          echo "ComponentJobStatus-for-Phase4-job1check:"
-          echo "${{ steps.report-status.outputs.deploy-phase-two-create-component-matrix-status }}"
-          echo "ComponentJobStatus-for-Phase4-job2check:"
-          echo "${{ steps.report-status.outputs.deploy-phase-two-deploy-to-AzService-status }}"
