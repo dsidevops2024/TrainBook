@@ -54,7 +54,7 @@ foreach ($deployPhase in $deployPhases) {
 
     # Check if the current deploy phase exists in $compStatuses
     foreach ($compStatus in $compStatusesArray) {
-        if ($compStatus -like "$deployPhase:*") {
+        if ($compStatus -like "${deployPhase:*}") {
             $foundInCompStatuses = $true
             break
         }
