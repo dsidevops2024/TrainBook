@@ -8,7 +8,7 @@ function Get-Icon($status) {
     switch ($status.ToLower()) {
         "success" { return "✅" }  # Green Checkmark
         "failed"  { return "❌" }  # Red Cross
-        "skipped" { return "⏭️" }  # Fast-Forward/Skipped Icon
+        "skipped" { return "⏭️" }  # Skipped Icon
         default   { return "⚪" }  # Default Neutral Circle
     }
 }
@@ -23,11 +23,12 @@ foreach ($match in $controllerJobs) {
     $jobName = $match.Groups["jobName"].Value
     $jobStatus = $match.Groups["status"].Value
     $icon = Get-Icon $jobStatus  # Call Get-Icon function here
-    $statusEntry = "$jobName status: $jobStatus $icon"
-    $controllerJobStatuses += $statusEntry
-    
-    # Export each job's status separately with icon
-    "$jobName-status=$jobStatus $icon" | Out-File -FilePath $env:GITHUB_OUTPUT -Append -Encoding utf8
+
+    # Store for logging purposes with emoji
+    $controllerJobStatuses += "$jobName status: $jobStatus $icon"
+
+    # Store GitHub output without emoji (to prevent errors)
+    Add-Content -Path $env:GITHUB_OUTPUT -Value "$jobName-status=$jobStatus"
 }
 
 # Extract all phase job statuses dynamically
@@ -36,19 +37,22 @@ foreach ($match in $phaseJobs) {
     $phaseName = $match.Groups["jobName"].Value
     $phaseStatusValue = $match.Groups["status"].Value
     $icon = Get-Icon $phaseStatusValue  # Call Get-Icon function here
-    $statusEntry = "$phaseName status: $phaseStatusValue $icon"
-    $phaseJobStatuses += $statusEntry
-    
-    # Export each phase's status separately with icon
-    "$phaseName-status=$phaseStatusValue $icon" | Out-File -FilePath $env:GITHUB_OUTPUT -Append -Encoding utf8
+
+    # Store for logging purposes with emoji
+    $phaseJobStatuses += "$phaseName status: $phaseStatusValue $icon"
+
+    # Store GitHub output without emoji (to prevent errors)
+    Add-Content -Path $env:GITHUB_OUTPUT -Value "$phaseName-status=$phaseStatusValue"
 }
 
-# Convert collected statuses into multi-line outputs
+# Convert collected statuses into multi-line outputs for logging
 $finalControllerStatus = $controllerJobStatuses -join "`n"
 $finalPhaseStatus = $phaseJobStatuses -join "`n"
 
-# Output multi-line controller statuses with emojis
-"controller_jobs_status=$finalControllerStatus" | Out-File -FilePath $env:GITHUB_OUTPUT -Append -Encoding utf8
+# Store GitHub output without emojis
+Add-Content -Path $env:GITHUB_OUTPUT -Value "controller_jobs_status=$finalControllerStatus"
+Add-Content -Path $env:GITHUB_OUTPUT -Value "phase_jobs_status=$finalPhaseStatus"
 
-# Output multi-line phase statuses with emojis
-"phase_jobs_status=$finalPhaseStatus" | Out-File -FilePath $env:GITHUB_OUTPUT -Append -Encoding utf8
+# Print the statuses with emojis for visibility in logs
+Write-Output "Controller Job Statuses:`n$finalControllerStatus"
+Write-Output "Phase Job Statuses:`n$finalPhaseStatus"
