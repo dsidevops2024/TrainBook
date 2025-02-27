@@ -59,7 +59,7 @@ foreach ($deployPhase in $deployPhases) {
             break
         }
     }
-
+    
     # If the deploy phase is not found in $compStatuses, dynamically mark the phase and its jobs as skipped
     if (-not $foundInCompStatuses) {
         $compPhaseJobStatuses[$deployPhase] = @()
@@ -68,7 +68,7 @@ foreach ($deployPhase in $deployPhases) {
         $jobsInPhase = [regex]::Matches($phaseStatus, "${deployPhase}:([\w\-]+) status:")
         foreach ($job in $jobsInPhase) {
             $jobName = $job.Groups[1].Value
-            $compPhaseJobStatuses[$deployPhase] += "$jobName: skipped $(Get-Icon 'skipped')"
+            $compPhaseJobStatuses[$deployPhase] += "${jobName}: skipped $(Get-Icon 'skipped')"
         }
     }
 }
