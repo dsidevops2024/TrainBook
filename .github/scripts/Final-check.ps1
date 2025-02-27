@@ -23,6 +23,7 @@ $controllerJobStatuses = @()
 $phaseJobStatuses = @()
 $compPhaseJobStatuses = @{}
 
+
 # Extract all controller job statuses dynamically
 $controllerJobs = [regex]::Matches($controllerStatus, "(?<jobName>[\w\-]+) status: (?<status>\w+)")
 foreach ($match in $controllerJobs) {
@@ -45,44 +46,22 @@ foreach ($match in $phaseJobs) {
     $phaseJobStatuses += "$phaseName status: $phaseStatusValue $icon"
 }
 
-# Extract all deploy jobs dynamically from phaseStatus, including deploy-single-component, deploy-phase-one, deploy-phase-two, etc.
-$deployPhases = [regex]::Matches($phaseStatus, "(deploy-[\w\-]+) status:") | ForEach-Object { $_.Groups[1].Value }
-
-# Debugging: Check what deploy phases we found
-Write-Output "Deploy Phases: $deployPhases"
-
-# Split the component statuses from $compStatuses into an array
+# Split the component statuses from $compStatuses into phases and jobs
 $compStatusesArray = $compStatuses -split ',\s*'
 
-# Debugging: Output component statuses array
-Write-Output "Component Statuses Array: $compStatusesArray"
-
 # Initialize a dictionary to hold component job statuses per phase
-foreach ($deployPhase in $deployPhases) {
-    $compPhaseJobStatuses[$deployPhase] = @()
-}
-
-# Process the component statuses correctly
 foreach ($compStatus in $compStatusesArray) {
-    # Extract phase and job statuses from component status
-    $compParts = $compStatus -split ": " 
-    
-    if ($compParts.Length -eq 2) {
-        $compPhase = $compParts[0].Trim()
-        $compJobStatus = $compParts[1].Trim()
+    # If the status is enclosed within braces '{}', we want to split accordingly
+    if ($compStatus -match "(?<phaseName>deploy-[\w\-]+):\s*{(?<jobStatuses>.*)}") {
+        $phaseName = $matches["phaseName"]
+        $jobStatuses = $matches["jobStatuses"]
+        
+        # Split job statuses into individual jobs
+        $jobStatusArray = $jobStatuses -split ",\s*"
 
-        # Debugging: Output each component phase and job status
-        Write-Output "Processing: $compPhase -> $compJobStatus"
-
-        # Process only phases starting with 'deploy-'
-        if ($compPhase -like "deploy-*") {
-            # Add the job status to the corresponding phase
-            if (-not $compPhaseJobStatuses.ContainsKey($compPhase)) {
-                $compPhaseJobStatuses[$compPhase] = @()
-            }
-
-            # Add the job status with the appropriate emoji for logging
-            $compPhaseJobStatuses[$compPhase] += "$compJobStatus $(Get-Icon $compJobStatus)"
+        # Add each job status to the corresponding phase
+        foreach ($jobStatus in $jobStatusArray) {
+            $compPhaseJobStatuses[$phaseName] += $jobStatus.Trim()
         }
     }
     else {
@@ -90,42 +69,20 @@ foreach ($compStatus in $compStatusesArray) {
     }
 }
 
-# Now, iterate through each deploy phase and check if all its jobs are present in compStatuses
+# Build the final component phase status with the new format
 $finalCompPhaseStatus = ""
 
-foreach ($deployPhase in $deployPhases) {
-    $finalCompPhaseStatus += "${deployPhase}:`n"
-
-    # Extract job names for the phase dynamically from the phaseStatus (jobs are those under 'deploy-' phases)
-    $jobsInPhase = [regex]::Matches($phaseStatus, "${deployPhase}:(.*?)status:") | ForEach-Object { $_.Groups[1].Value.Trim() }
-
-    # Debugging: Output jobs in phase
-    Write-Output "Jobs in ${deployPhase}: $jobsInPhase"
-
-    # Check each job dynamically for the phase
-    foreach ($job in $jobsInPhase) {
-        $jobStatusFound = $false
-
-        # Check if the current job is in the component status for the phase
-        foreach ($compStatus in $compPhaseJobStatuses[$deployPhase]) {
-            if ($compStatus -like "*$job*") {
-                $jobStatusFound = $true
-                $finalCompPhaseStatus += "$compStatus`n"
-                break
-            }
-        }
-
-        # If job is not found in component status, mark it as skipped
-        if (-not $jobStatusFound) {
-            $finalCompPhaseStatus += "$job status: skipped ⏭️`n"
-        }
-    }
-
-    $finalCompPhaseStatus += "`n"  # Add a newline after each phase
+foreach ($deployPhase in $compPhaseJobStatuses.Keys) {
+    $finalCompPhaseStatus += "$deployPhase:`n"  # Add phase name
+    
+    # Join the component job statuses for this phase, each on a new line
+    $finalCompPhaseStatus += ($compPhaseJobStatuses[$deployPhase] -join "`n") + "`n"  # Each status on a new line
 }
 
-# Convert collected statuses into multi-line outputs for logging (WITH emojis)
+# Format final controller job statuses
 $finalControllerStatus = $controllerJobStatuses -join "`n"
+
+# Format final phase job statuses
 $finalPhaseStatus = $phaseJobStatuses -join "`n"
 
 # Output formatted component phase statuses
