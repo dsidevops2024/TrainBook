@@ -16,7 +16,7 @@ foreach ($match in $controllerJobs) {
     $controllerJobStatuses += $statusEntry
     
     # Export each job's status separately
-    Add-Content -Path $env:GITHUB_OUTPUT -Value "$jobName-status=$jobStatus"
+    "$jobName-status=$jobStatus" | Out-File -FilePath $env:GITHUB_OUTPUT -Append -Encoding utf8
 }
 
 # Extract all phase job statuses dynamically
@@ -28,7 +28,7 @@ foreach ($match in $phaseJobs) {
     $phaseJobStatuses += $statusEntry
     
     # Export each phase's status separately
-    Add-Content -Path $env:GITHUB_OUTPUT -Value "$phaseName-status=$phaseStatusValue"
+    "$phaseName-status=$phaseStatusValue" | Out-File -FilePath $env:GITHUB_OUTPUT -Append -Encoding utf8
 }
 
 # Convert collected statuses into multi-line outputs
@@ -36,7 +36,7 @@ $finalControllerStatus = $controllerJobStatuses -join "`n"
 $finalPhaseStatus = $phaseJobStatuses -join "`n"
 
 # Output multi-line controller statuses
-"[controller_jobs_status]<<EOF`n$finalControllerStatus`nEOF" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+"controller_jobs_status=$finalControllerStatus" | Out-File -FilePath $env:GITHUB_OUTPUT -Append -Encoding utf8
 
 # Output multi-line phase statuses
-"[phase_jobs_status]<<EOF`n$finalPhaseStatus`nEOF" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+"phase_jobs_status=$finalPhaseStatus" | Out-File -FilePath $env:GITHUB_OUTPUT -Append -Encoding utf8
