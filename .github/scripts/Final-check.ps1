@@ -26,9 +26,6 @@ foreach ($match in $controllerJobs) {
 
     # Store for logging purposes (WITH emojis)
     $controllerJobStatuses += "$jobName status: $jobStatus $icon"
-
-    # Store plain text in GitHub output (WITHOUT emoji)
-    Add-Content -Path $env:GITHUB_OUTPUT -Value "$jobName-status=$jobStatus"
 }
 
 # Extract all phase job statuses dynamically
@@ -40,19 +37,21 @@ foreach ($match in $phaseJobs) {
 
     # Store for logging purposes (WITH emojis)
     $phaseJobStatuses += "$phaseName status: $phaseStatusValue $icon"
-
-    # Store plain text in GitHub output (WITHOUT emoji)
-    Add-Content -Path $env:GITHUB_OUTPUT -Value "$phaseName-status=$phaseStatusValue"
 }
 
 # Convert collected statuses into multi-line outputs for logging (WITH emojis)
 $finalControllerStatus = $controllerJobStatuses -join "`n"
 $finalPhaseStatus = $phaseJobStatuses -join "`n"
 
-# Store GitHub output without emojis
-"controller_jobs_status=$($controllerJobStatuses -join '\n')" | Out-File -FilePath $env:GITHUB_OUTPUT -Append -Encoding utf8
-"phase_jobs_status=$($phaseJobStatuses -join '\n')" | Out-File -FilePath $env:GITHUB_OUTPUT -Append -Encoding utf8
+# ✅ Store output in GitHub Actions properly (multi-line format)
+Write-Output "controller_jobs_status<<EOF" >> $env:GITHUB_OUTPUT
+Write-Output "$finalControllerStatus" >> $env:GITHUB_OUTPUT
+Write-Output "EOF" >> $env:GITHUB_OUTPUT
 
-# Print statuses with emojis in logs for better visibility
+Write-Output "phase_jobs_status<<EOF" >> $env:GITHUB_OUTPUT
+Write-Output "$finalPhaseStatus" >> $env:GITHUB_OUTPUT
+Write-Output "EOF" >> $env:GITHUB_OUTPUT
+
+# ✅ Print statuses with emojis in logs for better visibility
 Write-Output "Controller Job Statuses:`n$finalControllerStatus"
 Write-Output "Phase Job Statuses:`n$finalPhaseStatus"
