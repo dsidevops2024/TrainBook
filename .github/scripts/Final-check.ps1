@@ -90,7 +90,7 @@ $finalPhaseStatus = $phaseJobStatuses -join "`n"
 # Output formatted component phase statuses
 $finalCompPhaseStatus = ""
 foreach ($phase in $compPhaseJobStatuses.Keys) {
-    $finalCompPhaseStatus += "$phase:`n"
+    $finalCompPhaseStatus += "${phase}:`n"
     $finalCompPhaseStatus += ($compPhaseJobStatuses[$phase] -join "`n") + "`n"
 }
 
