@@ -21,7 +21,7 @@ function Get-Icon($status) {
 # Initialize arrays to collect statuses
 $controllerJobStatuses = @()
 $phaseJobStatuses = @()
-$compPhaseJobStatuses = @{ }
+$compPhaseJobStatuses = @{}
 
 # Extract all controller job statuses dynamically
 $controllerJobs = [regex]::Matches($controllerStatus, "(?<jobName>[\w\-]+) status: (?<status>\w+)")
@@ -45,25 +45,34 @@ foreach ($match in $phaseJobs) {
     $phaseJobStatuses += "$phaseName status: $phaseStatusValue $icon"
 }
 
-# Extract all deploy phases dynamically from $phaseStatus (we care only about deploy- phases)
+# Extract all deploy jobs dynamically from phaseStatus, including deploy-single-component, deploy-phase-one, deploy-phase-two, etc.
 $deployPhases = [regex]::Matches($phaseStatus, "(deploy-[\w\-]+) status:") | ForEach-Object { $_.Groups[1].Value }
+
+# Debugging: Check what deploy phases we found
+Write-Output "Deploy Phases: $deployPhases"
 
 # Split the component statuses from $compStatuses into an array
 $compStatusesArray = $compStatuses -split ',\s*'
+
+# Debugging: Output component statuses array
+Write-Output "Component Statuses Array: $compStatusesArray"
 
 # Initialize a dictionary to hold component job statuses per phase
 foreach ($deployPhase in $deployPhases) {
     $compPhaseJobStatuses[$deployPhase] = @()
 }
 
-# Now process the actual component statuses for deploy phases
+# Process the component statuses correctly
 foreach ($compStatus in $compStatusesArray) {
-    # Split the component status into phase and job status
-    $compParts = $compStatus -split ': '
+    # Extract phase and job statuses from component status
+    $compParts = $compStatus -split ": " 
     
     if ($compParts.Length -eq 2) {
         $compPhase = $compParts[0].Trim()
         $compJobStatus = $compParts[1].Trim()
+
+        # Debugging: Output each component phase and job status
+        Write-Output "Processing: $compPhase -> $compJobStatus"
 
         # Process only phases starting with 'deploy-'
         if ($compPhase -like "deploy-*") {
@@ -87,8 +96,11 @@ $finalCompPhaseStatus = ""
 foreach ($deployPhase in $deployPhases) {
     $finalCompPhaseStatus += "${deployPhase}:`n"
 
-    # Extract job names for the phase dynamically from the phaseStatus
-    $jobsInPhase = [regex]::Matches($phaseStatus, "${deployPhase}:([\w\-]+) status:") | ForEach-Object { $_.Groups[1].Value }
+    # Extract job names for the phase dynamically from the phaseStatus (jobs are those under 'deploy-' phases)
+    $jobsInPhase = [regex]::Matches($phaseStatus, "$deployPhase:(.*?)status:") | ForEach-Object { $_.Groups[1].Value.Trim() }
+
+    # Debugging: Output jobs in phase
+    Write-Output "Jobs in $deployPhase: $jobsInPhase"
 
     # Check each job dynamically for the phase
     foreach ($job in $jobsInPhase) {
