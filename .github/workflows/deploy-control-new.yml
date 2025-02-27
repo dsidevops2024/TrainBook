@@ -204,14 +204,12 @@ jobs:
       - name: Run PowerShell script to report job statuses
         id: report-status
         shell: pwsh
-        env:
-         COMPSTATUSES: ${{ steps.get_status.outputs.compstatuses }}
         run: |
           # Call your script with dynamic parameters
           .\.github\scripts\Final-check.ps1 -controllerStatus "${{ steps.get_status.outputs.controllerstatus }}" `
            -phaseStatus "${{ steps.get_status.outputs.phasejobs }}" `
            #-compStatuses $detailedCompStatuses
-           -compStatuses "$env:COMPSTATUSES"
+           -compStatuses "${{ steps.get_status.outputs.compstatuses }}"
 
       - name: Use the outputs from report-job-status
         run: |
