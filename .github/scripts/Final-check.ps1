@@ -65,7 +65,7 @@ foreach ($deployPhase in $deployPhases) {
         $compPhaseJobStatuses[$deployPhase] = @()
 
         # Dynamically generate job names for the phase, marking each job as skipped
-        $jobsInPhase = [regex]::Matches($phaseStatus, "$deployPhase:([\w\-]+) status:")
+        $jobsInPhase = [regex]::Matches($phaseStatus, "${deployPhase}:([\w\-]+) status:")
         foreach ($job in $jobsInPhase) {
             $jobName = $job.Groups[1].Value
             $compPhaseJobStatuses[$deployPhase] += "$jobName: skipped $(Get-Icon 'skipped')"
