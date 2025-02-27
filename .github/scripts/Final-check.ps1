@@ -60,7 +60,8 @@ foreach ($compStatus in $compStatusesArray) {
         }
 
         # Add the status to the specific phase in the dictionary
-        $compPhaseJobStatuses[$compPhase] += "$compJobStatus $([Get-Icon]::new($compJobStatus.Split()[-1]))"
+        #$compPhaseJobStatuses[$compPhase] += "$compJobStatus $([Get-Icon]::new($compJobStatus.Split()[-1]))"
+        $compPhaseJobStatuses[$compPhase] += "$compJobStatus $(Get-Icon $compJobStatus.Split()[-1])"
     }
     else {
         Write-Warning "Skipping invalid component status: $compStatus"
