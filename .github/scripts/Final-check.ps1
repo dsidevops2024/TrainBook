@@ -3,6 +3,9 @@ param (
     [string]$phaseStatus,
     [string]$compStatuses
 )
+Write-Output "Controller Status: $controllerStatus"
+Write-Output "Phase Status: $phaseStatus"
+Write-Output "Component Statuses: $compStatuses"
 
 # Function to return appropriate emoji based on status
 function Get-Icon($status) {
