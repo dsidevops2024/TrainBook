@@ -157,35 +157,22 @@ jobs:
             compStatus["$phase"]+="${status}, "
           done <<< "$(echo "$compstatus" | tr ',' '\n')"
 
-          {
-           detailedCompStatuses=""
-  
-           for key in "${!compStatus[@]}"; do
-               varname="comstatus_${key//-/_}"
-               value="$(echo "${compStatus[$key]}" | sed 's/, $//')"
-               detailedCompStatuses+="$varname=$value\n"  # Concatenating the phase statuses with a newline separator
-               echo "$varname=$value" >> "$GITHUB_OUTPUT"
-               echo "$varname=$value"
-           done
-          echo "detailedCompStatuses=$detailedCompStatuses"
-          echo "detailedCompStatuses=$detailedCompStatuses" >> $GITHUB_OUTPUT  # Pass the concatenated variable
-  
-           }  
+          
           # Collecting detailed status for each component
-          #{
-            #for key in "${!compStatus[@]}"; do
-              #varname="comstatus_${key//-/_}"
-              #value="$(echo "${compStatus[$key]}" | sed 's/, $//')"
-              #detailedCompStatuses+="${key}: ${value}, "
-              #echo "$varname=$value" >> "$GITHUB_OUTPUT"
-              #echo "$varname=$value"
-            #done
-          #}
+          {
+            for key in "${!compStatus[@]}"; do
+              varname="comstatus_${key//-/_}"
+              value="$(echo "${compStatus[$key]}" | sed 's/, $//')"
+              detailedCompStatuses+="${key}: ${value}, "
+              echo "$varname=$value" >> "$GITHUB_OUTPUT"
+              echo "$varname=$value"
+            done
+          }
 
           # Outputting detailed component statuses as a single string
-          #detailedCompStatuses=$(echo "$detailedCompStatuses" | sed 's/, $//')
-          #echo "compstatuses=$detailedCompStatuses" 
-          #echo "compstatuses=$detailedCompStatuses" >> $GITHUB_OUTPUT
+          detailedCompStatuses=$(echo "$detailedCompStatuses" | sed 's/, $//')
+          echo "compstatuses=$detailedCompStatuses" 
+          echo "compstatuses=$detailedCompStatuses" >> $GITHUB_OUTPUT
           
         
           echo "controllerstatus=$controllerstatus" >> $GITHUB_OUTPUT
@@ -229,15 +216,18 @@ jobs:
           #$compStatuses = "${{ steps.get_status.outputs.compstatuses }}" -split ",\s*"
 
           # Call your script with dynamic parameters
-          .\.github\scripts\checking.ps1 -controllerStatus "${{ steps.get_status.outputs.controllerstatus }}" `
+          .\.github\scripts\final-check.ps1 -controllerStatus "${{ steps.get_status.outputs.controllerstatus }}" `
            -phaseStatus "${{ steps.get_status.outputs.phasejobs }}" `
-           -compStatuses $detailedCompStatuses
+           #-compStatuses $detailedCompStatuses
 
 
       - name: Use the outputs from report-job-status
         run: |
           echo "ControllerJobStatus:"
-          echo "${{ steps.report-status.outputs.controller-status }}"
+          echo "${{ steps.report-status.outputs.controller_jobs_status }}"
+          
+          echo "${{ steps.report-status.outputs.phase_jobs_status }}"
+          
           echo "ControllerJob1Status:"
           echo "${{ steps.report-status.outputs.check-component-input-status }}"
           echo "ControllerJob2Status:"
