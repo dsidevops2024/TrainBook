@@ -100,7 +100,7 @@ foreach ($deployPhase in $deployPhases) {
     $jobsInPhase = [regex]::Matches($phaseStatus, "${deployPhase}:(.*?)status:") | ForEach-Object { $_.Groups[1].Value.Trim() }
 
     # Debugging: Output jobs in phase
-    Write-Output "Jobs in $deployPhase: $jobsInPhase"
+    Write-Output "Jobs in ${deployPhase}: $jobsInPhase"
 
     # Check each job dynamically for the phase
     foreach ($job in $jobsInPhase) {
