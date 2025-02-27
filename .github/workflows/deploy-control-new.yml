@@ -146,46 +146,70 @@ jobs:
           echo "Controller Statuses: $controllerstatus"
           echo "Phase Statuses: $phasejobs"
           echo "CompPhase Statuses: $compstatus"
-
+          #new code
           declare -A compStatus
           detailedCompStatuses=""
 
+          # Loop through each component status and categorize by phase
           while IFS='/' read -r phase status; do
-            phase=$(echo "$phase" | xargs)
-            status=$(echo "$status" | xargs)
-            compStatus["$phase"]+="${status}, "
+              phase=$(echo "$phase" | xargs)
+              status=$(echo "$status" | xargs)
+              compStatus["$phase"]+="${status}, "
           done <<< "$(echo "$compstatus" | tr ',' '\n')"
+
+          # Collecting detailed status for each phase and format the output
+          {
+           for key in "${!compStatus[@]}"; do
+             # Format component status
+             formatted_status="{${compStatus[$key]}}"
+        
+             # Remove trailing comma and space
+             formatted_status=$(echo "$formatted_status" | sed 's/, $//')
+
+             # Append the formatted status to the detailed output string
+             detailedCompStatuses+="$key: $formatted_status, "
+        
+             # Save to GitHub output
+             varname="comstatus_${key//-/_}"
+             echo "$varname=$formatted_status" >> "$GITHUB_OUTPUT"
+             echo "$varname=$formatted_status"
+           done
+          }
+
+          # Outputting detailed component statuses as a single string, remove the trailing comma
+          detailedCompStatuses=$(echo "$detailedCompStatuses" | sed 's/, $//')
+          echo "compstatuses=$detailedCompStatuses" >> $GITHUB_OUTPUT
+          echo "$detailedCompStatuses"
+
+          #old code
+          #declare -A compStatus
+          #detailedCompStatuses=""
+
+          #while IFS='/' read -r phase status; do
+            #phase=$(echo "$phase" | xargs)
+            #status=$(echo "$status" | xargs)
+            #compStatus["$phase"]+="${status}, "
+          #done <<< "$(echo "$compstatus" | tr ',' '\n')"
 
           
           # Collecting detailed status for each component
-          {
-            for key in "${!compStatus[@]}"; do
-              varname="comstatus_${key//-/_}"
-              value="$(echo "${compStatus[$key]}" | sed 's/, $//')"
-              detailedCompStatuses+="${key}: ${value}, "
-              echo "$varname=$value" >> "$GITHUB_OUTPUT"
-              echo "$varname=$value"
-            done
-          }
+          #{
+            #for key in "${!compStatus[@]}"; do
+              #varname="comstatus_${key//-/_}"
+              #value="$(echo "${compStatus[$key]}" | sed 's/, $//')"
+              #detailedCompStatuses+="${key}: ${value}, "
+              #echo "$varname=$value" >> "$GITHUB_OUTPUT"
+              #echo "$varname=$value"
+            #done
+          #}
 
           # Outputting detailed component statuses as a single string
-          detailedCompStatuses=$(echo "$detailedCompStatuses" | sed 's/, $//')
-          echo "compstatuses=$detailedCompStatuses" >> $GITHUB_OUTPUT
-          echo "compstatuses=$detailedCompStatuses"
+          #detailedCompStatuses=$(echo "$detailedCompStatuses" | sed 's/, $//')
+          #echo "compstatuses=$detailedCompStatuses" >> $GITHUB_OUTPUT
+          #echo "compstatuses=$detailedCompStatuses"
           
           echo "controllerstatus=$controllerstatus" >> $GITHUB_OUTPUT
           echo "phasejobs=$phasejobs" >> $GITHUB_OUTPUT
-
-      #- name: Clean compStatuses string
-        #id: clean
-        #run: |
-          # Clean the `compStatuses` string by removing newline characters
-          #cleaned_compstatuses=$(echo "${{ steps.get_status.outputs.compstatuses }}" | tr -d '\n')
-          #echo "cleaned_compstatuses=$cleaned_compstatuses"
-          #echo "cleaned_compstatuses=$cleaned_compstatuses" >> $GITHUB_OUTPUT
-          
-      - name: Checkout repository
-        uses: actions/checkout@v3
 
       - name: Debug Inputs Before Running Script
         run: |
