@@ -3,6 +3,7 @@ param (
     [string]$phaseStatus,
     [string]$compStatuses    
 )
+
 Write-Output "Controller Status: $controllerStatus"
 Write-Output "Phase Status: $phaseStatus"
 Write-Output "Component Statuses: $compStatuses"
@@ -20,7 +21,7 @@ function Get-Icon($status) {
 # Initialize arrays to collect statuses
 $controllerJobStatuses = @()
 $phaseJobStatuses = @()
-$compPhaseJobStatuses = @{}
+$compPhaseJobStatuses = @{ }
 
 # Extract all controller job statuses dynamically
 $controllerJobs = [regex]::Matches($controllerStatus, "(?<jobName>[\w\-]+) status: (?<status>\w+)")
@@ -44,56 +45,35 @@ foreach ($match in $phaseJobs) {
     $phaseJobStatuses += "$phaseName status: $phaseStatusValue $icon"
 }
 
-# Extract all deploy phases dynamically from $phaseStatus
+# Extract all deploy phases dynamically from $phaseStatus (we care only about deploy- phases)
 $deployPhases = [regex]::Matches($phaseStatus, "(deploy-[\w\-]+) status:") | ForEach-Object { $_.Groups[1].Value }
 
 # Split the component statuses from $compStatuses into an array
 $compStatusesArray = $compStatuses -split ',\s*'
 
-# Iterate over each deploy phase extracted from $phaseStatus
+# Initialize a dictionary to hold component job statuses per phase
 foreach ($deployPhase in $deployPhases) {
-    # Initially assume the phase is not in $compStatuses
-    $foundInCompStatuses = $false
-
-    # Check if the current deploy phase exists in $compStatuses
-    foreach ($compStatus in $compStatusesArray) {
-        if ($compStatus -like "${deployPhase:*}") {
-            $foundInCompStatuses = $true
-            break
-        }
-    }
-    
-    # If the deploy phase is not found in $compStatuses, dynamically mark the phase and its jobs as skipped
-    if (-not $foundInCompStatuses) {
-        $compPhaseJobStatuses[$deployPhase] = @()
-
-        # Dynamically generate job names for the phase, marking each job as skipped
-        $jobsInPhase = [regex]::Matches($phaseStatus, "${deployPhase}:([\w\-]+) status:")
-        foreach ($job in $jobsInPhase) {
-            $jobName = $job.Groups[1].Value
-            $compPhaseJobStatuses[$deployPhase] += "${jobName}: skipped $(Get-Icon 'skipped')"
-        }
-    }
+    $compPhaseJobStatuses[$deployPhase] = @()
 }
 
 # Now process the actual component statuses for deploy phases
 foreach ($compStatus in $compStatusesArray) {
     # Split the component status into phase and job status
     $compParts = $compStatus -split ': '
-
+    
     if ($compParts.Length -eq 2) {
         $compPhase = $compParts[0].Trim()
         $compJobStatus = $compParts[1].Trim()
 
         # Process only phases starting with 'deploy-'
         if ($compPhase -like "deploy-*") {
-            # Add the status to the corresponding deploy phase in the dictionary
+            # Add the job status to the corresponding phase
             if (-not $compPhaseJobStatuses.ContainsKey($compPhase)) {
                 $compPhaseJobStatuses[$compPhase] = @()
             }
 
-            # Add the status with the appropriate emoji for logging
-            $compPhaseJobStatuses[$compPhase] += "$compJobStatus $(Get-Icon $compJobStatus.Split()[-1])"
+            # Add the job status with the appropriate emoji for logging
+            $compPhaseJobStatuses[$compPhase] += "$compJobStatus $(Get-Icon $compJobStatus)"
         }
     }
     else {
@@ -101,16 +81,45 @@ foreach ($compStatus in $compStatusesArray) {
     }
 }
 
+# Now, iterate through each deploy phase and check if all its jobs are present in compStatuses
+$finalCompPhaseStatus = ""
+
+foreach ($deployPhase in $deployPhases) {
+    $finalCompPhaseStatus += "${deployPhase}:`n"
+
+    # Extract job names for the phase dynamically from the phaseStatus
+    $jobsInPhase = [regex]::Matches($phaseStatus, "${deployPhase}:([\w\-]+) status:") | ForEach-Object { $_.Groups[1].Value }
+
+    # Check each job dynamically for the phase
+    foreach ($job in $jobsInPhase) {
+        $jobStatusFound = $false
+
+        # Check if the current job is in the component status for the phase
+        foreach ($compStatus in $compPhaseJobStatuses[$deployPhase]) {
+            if ($compStatus -like "*$job*") {
+                $jobStatusFound = $true
+                $finalCompPhaseStatus += "$compStatus`n"
+                break
+            }
+        }
+
+        # If job is not found in component status, mark it as skipped
+        if (-not $jobStatusFound) {
+            $finalCompPhaseStatus += "$job status: skipped ⏭️`n"
+        }
+    }
+
+    $finalCompPhaseStatus += "`n"  # Add a newline after each phase
+}
+
 # Convert collected statuses into multi-line outputs for logging (WITH emojis)
 $finalControllerStatus = $controllerJobStatuses -join "`n"
 $finalPhaseStatus = $phaseJobStatuses -join "`n"
 
 # Output formatted component phase statuses
-$finalCompPhaseStatus = ""
-foreach ($phase in $compPhaseJobStatuses.Keys) {
-    $finalCompPhaseStatus += "${phase}:`n"
-    $finalCompPhaseStatus += ($compPhaseJobStatuses[$phase] -join "`n") + "`n"
-}
+Write-Output "Controller Job Statuses:`n$finalControllerStatus"
+Write-Output "Phase Job Statuses:`n$finalPhaseStatus"
+Write-Output "Component Job Statuses:`n$finalCompPhaseStatus"
 
 # Store output in GitHub Actions properly (multi-line format)
 Write-Output "controller_jobs_status<<EOF" >> $env:GITHUB_OUTPUT
@@ -124,8 +133,3 @@ Write-Output "EOF" >> $env:GITHUB_OUTPUT
 Write-Output "comp_phase_jobs_status<<EOF" >> $env:GITHUB_OUTPUT
 Write-Output "$finalCompPhaseStatus" >> $env:GITHUB_OUTPUT
 Write-Output "EOF" >> $env:GITHUB_OUTPUT
-
-# Print statuses with emojis in logs for better visibility
-Write-Output "Controller Job Statuses:`n$finalControllerStatus"
-Write-Output "Phase Job Statuses:`n$finalPhaseStatus"
-Write-Output "Component Phase Job Statuses:`n$finalCompPhaseStatus"
