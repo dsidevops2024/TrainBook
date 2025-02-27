@@ -97,7 +97,7 @@ foreach ($deployPhase in $deployPhases) {
     $finalCompPhaseStatus += "${deployPhase}:`n"
 
     # Extract job names for the phase dynamically from the phaseStatus (jobs are those under 'deploy-' phases)
-    $jobsInPhase = [regex]::Matches($phaseStatus, "$deployPhase:(.*?)status:") | ForEach-Object { $_.Groups[1].Value.Trim() }
+    $jobsInPhase = [regex]::Matches($phaseStatus, "${deployPhase}:(.*?)status:") | ForEach-Object { $_.Groups[1].Value.Trim() }
 
     # Debugging: Output jobs in phase
     Write-Output "Jobs in $deployPhase: $jobsInPhase"
