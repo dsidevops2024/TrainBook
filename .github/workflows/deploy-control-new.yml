@@ -216,7 +216,7 @@ jobs:
           #$compStatuses = "${{ steps.get_status.outputs.compstatuses }}" -split ",\s*"
 
           # Call your script with dynamic parameters
-          .\.github\scripts\final-check.ps1 -controllerStatus "${{ steps.get_status.outputs.controllerstatus }}" `
+          .\.github\scripts\Final-check.ps1 -controllerStatus "${{ steps.get_status.outputs.controllerstatus }}" `
            -phaseStatus "${{ steps.get_status.outputs.phasejobs }}" `
            #-compStatuses $detailedCompStatuses
 
