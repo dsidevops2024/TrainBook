@@ -241,9 +241,7 @@ jobs:
         shell: pwsh
         run: |
           # Call your script with dynamic parameters
-          .\.github\scripts\Final-check.ps1 -controllerStatus "${{ steps.get_status.outputs.controllerstatus }}" `
-          -phaseStatus "${{ steps.get_status.outputs.phasejobs }}" `
-          -compStatuses "${{ steps.get_status.outputs.compstatuses }}"
+          .\.github\scripts\Final-check.ps1 -controllerStatus "${{ steps.get_status.outputs.controllerstatus }}" -phaseStatus "${{ steps.get_status.outputs.phasejobs }}" -compStatuses "${{ steps.get_status.outputs.compstatuses }}"
 
       - name: Use the outputs from report-job-status
         run: |
