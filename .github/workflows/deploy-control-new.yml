@@ -145,8 +145,8 @@ jobs:
 
           echo "Controller Statuses: $controllerstatus"
           echo "Phase Statuses: $phasejobs"
-          #echo "CompPhase Statuses: $compstatus"
-          echo -e "CompPhase Statuses:\n$compstatus"
+          echo "CompPhase Statuses: $compstatus"
+          #echo -e "CompPhase Statuses:\n$compstatus"
 
           declare -A compStatus
           detailedCompStatuses=""
