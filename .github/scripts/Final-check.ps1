@@ -8,8 +8,7 @@ function Get-Icon($status) {
     switch ($status.ToLower()) {
         "success" { return "✅" }  # Green Checkmark
         "failed"  { return "❌" }  # Red Cross
-        "skipped" { return "⏭️" }  # Skipped Icon
-        default   { return "⚪" }  # Default Neutral Circle
+        "skipped" { return "⚠️" }  # Skipped Icon
     }
 }
 
