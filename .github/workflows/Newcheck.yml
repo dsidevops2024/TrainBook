@@ -169,6 +169,15 @@ jobs:
           # Update apt-get and install PowerShell
           sudo apt-get update -y
           sudo apt-get install -y powershell
+      - name: Print current directory
+        shell: pwsh
+        run: |
+          Get-Location
+
+      - name: List files to debug path
+        shell: pwsh
+        run: |
+          Get-ChildItem -Recurse .github/scripts
 
       - name: Run PowerShell script to report job statuses
         id: report-status
