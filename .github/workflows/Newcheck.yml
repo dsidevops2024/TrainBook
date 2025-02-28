@@ -178,9 +178,20 @@ jobs:
           $controllerStatus = "${{ steps.get_status.outputs.controllerstatus }}"
           $phaseStatus = "${{ steps.get_status.outputs.phasestatus }}"
           $componentStatus = "${{ steps.get_status.outputs.componentstatus }}"
-          .\.github\scripts\Newcheck.ps1 -controllerStatus $controllerStatus `
-                                   -phaseStatus $phaseStatus `
-                                   -componentStatus $componentStatus
+          # Use the full path for the script, relative to the current directory
+          $scriptPath = ".github/scripts/Newcheck.ps1"
+
+          # Check if the file exists before calling it
+          if (Test-Path $scriptPath) {
+           . $scriptPath -controllerStatus $controllerStatus `
+                      -phaseStatus $phaseStatus `
+                      -componentStatus $componentStatus
+          } else {
+             Write-Error "Script not found at path: $scriptPath"
+          }
+          #.\.github\scripts\Newcheck.ps1 -controllerStatus $controllerStatus `
+                                   #-phaseStatus $phaseStatus `
+                                   #-componentStatus $componentStatus
           # Call your script with dynamic parameters
           #.\.github\scripts\Newcheck.ps1 -controllerStatus "${{ steps.get_status.outputs.controllerstatus }}" `
            #-phaseStatus "${{ steps.get_status.outputs.phasestatus }}" 
