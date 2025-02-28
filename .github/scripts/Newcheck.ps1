@@ -1,56 +1,35 @@
-param (
-    [string]$controllerStatus,
-    [string]$phaseStatus
-)
+# Input string
+$inputString = "deploy-phase-one / create-component-matrix status: success, deploy-phase-one / deploy-to-AzService status: success, deploy-phase-two / create-component-matrix status: success, deploy-phase-two / deploy-to-AzService status: success"
 
-# Function to return appropriate emoji based on status
-function Get-Icon($status) {
-    switch ($status.ToLower()) {
-        "success" { return "✅" }  # Green Checkmark
-        "failed"  { return "❌" }  # Red Cross
-        "skipped" { return "⚠️" }  # Skipped Icon
+# Regular expression pattern to extract main job, sub-job, and status
+$pattern = '([a-zA-Z0-9-]+)\s*/\s*([a-zA-Z0-9-]+)\s*status:\s*(\w+)'
+
+# Match the pattern
+$matches = [regex]::Matches($inputString, $pattern)
+
+# Initialize a hashtable to store jobs and their corresponding sub-jobs with status
+$jobDict = @{}
+
+# Loop through the matches and organize them into the hash table
+foreach ($match in $matches) {
+    $mainJob = $match.Groups[1].Value
+    $subJob = $match.Groups[2].Value
+    $status = $match.Groups[3].Value
+
+    # Check if the main job is already in the dictionary
+    if (-not $jobDict.ContainsKey($mainJob)) {
+        $jobDict[$mainJob] = @()  # Initialize an empty array for sub-jobs and status
+    }
+
+    # Create a unique entry for the sub-job and status
+    $jobDict[$mainJob] += "$subJob status: $status"
+}
+
+# Output the grouped results
+foreach ($mainJob in $jobDict.Keys) {
+    Write-Host $mainJob
+    # Output each sub-job and its status under the main job
+    foreach ($entry in $jobDict[$mainJob]) {
+        Write-Host $entry
     }
 }
-
-# Initialize arrays to collect statuses
-$controllerJobStatuses = @()
-$phaseJobStatuses = @()
-
-# Extract all controller job statuses dynamically
-$controllerJobs = [regex]::Matches($controllerStatus, "(?<jobName>[\w\-]+) status: (?<status>\w+)")
-foreach ($match in $controllerJobs) {
-    $jobName = $match.Groups["jobName"].Value
-    $jobStatus = $match.Groups["status"].Value
-    $icon = Get-Icon $jobStatus  # Get emoji for logs
-
-    # Store for logging purposes (WITH emojis)
-    $controllerJobStatuses += "$jobName status: $jobStatus $icon"
-}
-
-# Extract all phase job statuses dynamically
-$phaseJobs = [regex]::Matches($phaseStatus, "(?<jobName>[\w\-]+) status: (?<status>\w+)")
-foreach ($match in $phaseJobs) {
-    $phaseName = $match.Groups["jobName"].Value
-    $phaseStatusValue = $match.Groups["status"].Value
-    $icon = Get-Icon $phaseStatusValue  # Get emoji for logs
-
-    # Store for logging purposes (WITH emojis)
-    $phaseJobStatuses += "$phaseName status: $phaseStatusValue $icon"
-}
-
-# Convert collected statuses into multi-line outputs for logging (WITH emojis)
-$finalControllerStatus = $controllerJobStatuses -join "`n"
-$finalPhaseStatus = $phaseJobStatuses -join "`n"
-
-# ✅ Store output in GitHub Actions properly (multi-line format)
-Write-Output "controller_jobs_status<<EOF" >> $env:GITHUB_OUTPUT
-Write-Output "$finalControllerStatus" >> $env:GITHUB_OUTPUT
-Write-Output "EOF" >> $env:GITHUB_OUTPUT
-
-Write-Output "phase_jobs_status<<EOF" >> $env:GITHUB_OUTPUT
-Write-Output "$finalPhaseStatus" >> $env:GITHUB_OUTPUT
-Write-Output "EOF" >> $env:GITHUB_OUTPUT
-
-# ✅ Print statuses with emojis in logs for better visibility
-Write-Output "Controller Job Statuses:`n$finalControllerStatus"
-Write-Output "Phase Job Statuses:`n$finalPhaseStatus"
