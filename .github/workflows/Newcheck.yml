@@ -125,29 +125,82 @@ jobs:
 
   combined-job:
     needs: [check-component-input, create-environment-matrix, set-environment-runner, call-phase]
-    runs-on: ubuntu-latest  # You can switch to windows-latest if you need Windows steps
+    runs-on: windows-latest  # You can switch to windows-latest if you need Windows steps
     
     steps:
       - name: Get Job Statuses from GitHub API
         id: get_status
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          STATUSES=$(curl -s -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
-            -H "Accept: application/vnd.github+json" \
-            "https://api.github.com/repos/${{ github.repository }}/actions/runs/${{ github.run_id }}/jobs" | \
-            jq -r '[.jobs[] | select(.name != "combined-job") | "\(.name) status: \(.conclusion // "in_progress")"] | join(", ")')
-          echo "Collected statuses: $STATUSES"
+          $headers = @{
+              "Authorization" = "Bearer $env:GITHUB_TOKEN"  # Use the GitHub token from the environment
+              "Accept" = "application/vnd.github+json"
+          }
 
-          controllerstatus=$(echo $STATUSES | tr ',' '\n' | grep -v '/' | tr '\n' ',' | sed 's/,$//')
-          phasejobs=$(echo "$STATUSES" | tr ',' '\n' | grep -E '^[^/]+/[^/]+ ' | sed -E 's/^[^/]+\/([^/]+).*status: ([^ ]+)/\1status: \2/g' | awk '!seen[$0]++' | tr '\n' ',' | sed 's/,$//')
-          compstatus=$(echo "$STATUSES" | tr ',' '\n' | grep -E '^[^/]+ /[^/]+ /' | sed -E 's/^[^/]+ \/([^/]+ \/[^/]+).*status: ([^ ]+)/\1status: \2/g' | tr '\n' ',' | sed 's/,$//')
+          # Construct the API URL using environment variables in PowerShell
+          $url = "https://api.github.com/repos/$env:GITHUB_REPOSITORY/actions/runs/$env:GITHUB_RUN_ID/jobs"
           
-          echo "Controller Statuses: $controllerstatus"
-          echo "Phase Statuses: $phasejobs"
-          echo "CompPhase Statuses: $compstatus"
+          # Make the GET request to GitHub API
+          $response = Invoke-RestMethod -Uri $url -Headers $headers -Method Get
+
+          # Extract job statuses, excluding 'combined-status-report' and jobs with 'in_progress' status
+          $STATUSES = ($response.jobs | Where-Object { $_.name -ne "combined-job" -and $_.name -ne "combined-job" -and $_.conclusion -ne "in_progress" } | 
+                      ForEach-Object { "$($_.name) status: $($_.conclusion)" }) -join ", "
+          
+          # Output the collected statuses
+          Write-Output "Collected statuses: $STATUSES"
+
+          # Extract controller statuses (jobs with no slashes)
+          $controllerstatus = ($STATUSES -split ", " | Where-Object { $_ -notmatch "/" }) -join ", "
+
+          # Extract phase statuses (jobs with one slash)
+          $phasejobs = ($STATUSES -split ", " | Where-Object { $_ -match '^[^/]+/[^/]+ ' }) |
+                        ForEach-Object { $_ -replace '^[^/]+/([^/]+).*status: ([^ ]+)', '$1status: $2' }
+
+          # Remove duplicates from phase jobs
+          $phasejobs = $phasejobs | Select-Object -Unique
+
+          # Join phase jobs
+          $phasejobs = $phasejobs -join ", "
+
+          # Extract component phase statuses (jobs with two slashes)
+          $compStatus = ($STATUSES -split ", " | Where-Object { $_ -match '^[^/]+ /[^/]+ /' }) |
+                        ForEach-Object { $_ -replace '^[^/]+ /([^/]+ /[^/]+).*status: ([^ ]+)', '$1status: $2' }
+
+           # Join component statuses
+          $compStatus = $compStatus -join ", "
+
+          # Debug output for verification
+          Write-Output "Controller Statuses: $controllerstatus"
+          Write-Output "Phase Statuses: $phasejobs"
+          Write-Output "CompPhase Statuses: $compStatus"
+
+          Write-Output "controllerstatus=$controllerstatus" >> $env:GITHUB_OUTPUT
+          Write-Output "phasestatus=$phasejobs" >> $env:GITHUB_OUTPUT
+          Write-Output "componentstatus=$compStatus" >> $env:GITHUB_OUTPUT
+         
+          
+      #- name: Get Job Statuses from GitHub API
+        #id: get_status
+        #run: |
+          #STATUSES=$(curl -s -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+            #-H "Accept: application/vnd.github+json" \
+            #"https://api.github.com/repos/${{ github.repository }}/actions/runs/${{ github.run_id }}/jobs" | \
+            #jq -r '[.jobs[] | select(.name != "combined-job") | "\(.name) status: \(.conclusion // "in_progress")"] | join(", ")')
+          #echo "Collected statuses: $STATUSES"
+
+          #controllerstatus=$(echo $STATUSES | tr ',' '\n' | grep -v '/' | tr '\n' ',' | sed 's/,$//')
+          #phasejobs=$(echo "$STATUSES" | tr ',' '\n' | grep -E '^[^/]+/[^/]+ ' | sed -E 's/^[^/]+\/([^/]+).*status: ([^ ]+)/\1status: \2/g' | awk '!seen[$0]++' | tr '\n' ',' | sed 's/,$//')
+          #compstatus=$(echo "$STATUSES" | tr ',' '\n' | grep -E '^[^/]+ /[^/]+ /' | sed -E 's/^[^/]+ \/([^/]+ \/[^/]+).*status: ([^ ]+)/\1status: \2/g' | tr '\n' ',' | sed 's/,$//')
+          
+          #echo "Controller Statuses: $controllerstatus"
+          #echo "Phase Statuses: $phasejobs"
+          #echo "CompPhase Statuses: $compstatus"
                     
-          echo "controllerstatus=$controllerstatus" >> $GITHUB_OUTPUT
-          echo "phasestatus=$phasejobs" >> $GITHUB_OUTPUT
-          echo "componentstatus=$compstatus" >> $GITHUB_OUTPUT
+          #echo "controllerstatus=$controllerstatus" >> $GITHUB_OUTPUT
+          #echo "phasestatus=$phasejobs" >> $GITHUB_OUTPUT
+          #echo "componentstatus=$compstatus" >> $GITHUB_OUTPUT
 
       - name: Checkout repository
         uses: actions/checkout@v3
@@ -158,20 +211,20 @@ jobs:
           echo "Phase Status: ${{ steps.get_status.outputs.phasestatus }}"
           echo "Component Statuses: ${{ steps.get_status.outputs.componentstatus }}"
      
-      - name: Install PowerShell
-        run: |
+      #- name: Install PowerShell
+        #run: |
           # Install prerequisites
-          sudo apt-get update -y
-          sudo apt-get install -y wget apt-transport-https software-properties-common
+          #sudo apt-get update -y
+          #sudo apt-get install -y wget apt-transport-https software-properties-common
           # Download the Microsoft package list
-          wget -q "https://packages.microsoft.com/config/ubuntu/20.04/prod.list" -O /tmp/microsoft-prod.list
+          #wget -q "https://packages.microsoft.com/config/ubuntu/20.04/prod.list" -O /tmp/microsoft-prod.list
           # Move the downloaded file to the correct directory with appropriate permissions
-          sudo mv /tmp/microsoft-prod.list /etc/apt/sources.list.d/microsoft-prod.list
+          #sudo mv /tmp/microsoft-prod.list /etc/apt/sources.list.d/microsoft-prod.list
           # Import the Microsoft GPG key
-          curl https://packages.microsoft.com/keys/microsoft.asc | sudo apt-key add -
+          #curl https://packages.microsoft.com/keys/microsoft.asc | sudo apt-key add -
           # Update apt-get and install PowerShell
-          sudo apt-get update -y
-          sudo apt-get install -y powershell
+          #sudo apt-get update -y
+          #sudo apt-get install -y powershell
 
       - name: Run PowerShell script to report job statuses
         id: report-status
