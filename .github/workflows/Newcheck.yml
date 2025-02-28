@@ -203,8 +203,8 @@ jobs:
       - name: Use the outputs from report-job-status
         run: |
           echo "ControllerJobStatus:"
-          echo "${{ steps.report-status.outputs.controller_status }}"
+          echo "${{ steps.report-status.outputs.controller_jobs_status }}"
           echo "PhaseJobStatus:"
-          echo "${{ steps.report-status.outputs.phase_status }}"
+          echo "${{ steps.report-status.outputs.phase_jobs_status }}"
           echo "ComponentJobStatus:"
-          echo "${{ steps.report-status.outputs.component_status }}"
+          echo "${{ steps.report-status.outputs.comp_phase_jobs_status }}"
