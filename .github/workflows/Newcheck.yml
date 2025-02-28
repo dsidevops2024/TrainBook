@@ -1,0 +1,216 @@
+name: deploy control new
+run-name: Deploy ${{ inputs.component }} to ${{ inputs.environment }}
+
+on:
+  workflow_dispatch:
+    inputs:
+      component:
+        description: Input the component you wish to deploy. Use "fullstack" to deploy the entire app stack.
+        required: true
+        type: string
+      environment:
+        description: Select a deployment environment.
+        type: choice
+        options:
+          - dev
+          - qa
+          - uat
+          - prod
+          - id
+          - standalone
+        required: true
+      target_environment:
+        description: "Input target environment(s) for Prod. For multiple environments input them with comma separated i.e. (env1, env2)"
+        type: string
+        default: 'All'
+        required: false
+      keep:
+        description: Check to Overwrite the current AppConfig.
+        type:  boolean
+        required: false
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:    
+  check-component-input:
+    environment: ${{ inputs.environment }}
+    runs-on: ubuntu-latest
+    outputs:
+      component: ${{ steps.component-input.outputs.component }}
+    steps:
+      - name: checkout code
+        uses: actions/checkout@v4 
+      - name: check component input 
+        id: component-input
+        shell: bash
+        run: |
+          temp="${{ inputs.component }}"
+          lower=${temp,,}
+          if [[ "$lower" == "fullstack" ]]; then
+            echo "component=fullstack" >> $GITHUB_OUTPUT
+            echo "Deploying fullstack"
+          else 
+            comp=`jq '.[] | .componentName' component.json | grep -i "\<${{ inputs.component }}\>" -m1`
+            lowercomp=${comp,,}
+            if [[ $lowercomp == "\"${lower}\"" ]]; then
+              echo "Deploying `cat ./component.json | grep -iF -o "${{ inputs.component }}" -m1`"
+              echo "component=`cat ./component.json | grep -iF -o "${{ inputs.component }}" -m1`" >> $GITHUB_OUTPUT
+            else
+              echo "Error: Component '${{ inputs.component }}' not found in component.json"
+              exit 1
+            fi
+          fi
+  create-environment-matrix:
+    needs: check-component-input
+    runs-on: ubuntu-latest
+    outputs:
+        env: ${{ steps.env-matrix.outputs.env }}
+    steps:
+      - name: checkout code
+        uses: actions/checkout@v4  
+      - name: get environment input and created matrix
+        id: env-matrix
+        shell: bash
+        run: |
+          input_envs=$(echo "${{ inputs.target_environment }}" | tr -d '[:blank:]')
+          if [[ "${{ inputs.environment }}" == "prod" ]]; then
+            if [[ "$input_envs" == "All" ]]; then
+              echo "env=`cat ./client-manifests/${{ inputs.environment }}-clients.json | jq -c`" >> $GITHUB_OUTPUT
+            else
+              deploy_envs="["
+              IFS=',' read -ra ENV_ARRAY <<< "$input_envs"
+              for env in "${ENV_ARRAY[@]}"; do
+                matching_env=$(jq -c ".[] | select(.env == \"$env\")" ./client-manifests/${{ inputs.environment }}-clients.json)
+                 
+                if [[ -z "$matching_env" ]]; then
+                  echo "Error: No matching environment found for '$env' in ${{ inputs.environment }}-clients.json"
+                  exit 1
+                else
+                  if [[ -z "$deploy_envs" || "$deploy_envs" == "[" ]]; then
+                    deploy_envs="$deploy_envs$matching_env"
+                  else
+                    deploy_envs="$deploy_envs, $matching_env"
+                  fi
+                fi
+              done
+              deploy_envs="$deploy_envs]"
+              echo "env=$deploy_envs" >> $GITHUB_OUTPUT
+            fi
+          else
+            echo "env=`cat ./client-manifests/${{ inputs.environment }}-clients.json | jq -c`" >> $GITHUB_OUTPUT
+          fi
+  
+  set-environment-runner:
+    runs-on: ubuntu-latest
+    outputs:
+      runner: ${{ steps.env-runner.outputs.runner }}
+    steps:
+      - name: set runner group
+        id: env-runner
+        run: |
+          if [[ ${{ inputs.environment }} == "prod" ]]; then
+            echo "runner=Prod" >> $GITHUB_OUTPUT
+          else
+            echo "runner=NonProd" >> $GITHUB_OUTPUT
+          fi
+  call-phase:
+    needs: [check-component-input, create-environment-matrix]
+    uses: ./.github/workflows/deploy-phas1.yml
+    with: 
+      component: ${{ inputs.component }}
+      environment: ${{ inputs.environment }}
+      runner: ${{ inputs.runner }}
+
+  combined-job:
+    needs: [check-component-input, create-environment-matrix, set-environment-runner, call-phase]
+    runs-on: ubuntu-latest  # You can switch to windows-latest if you need Windows steps
+    
+    steps:
+      - name: Get Job Statuses from GitHub API
+        id: get_status
+        run: |
+          STATUSES=$(curl -s -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+            -H "Accept: application/vnd.github+json" \
+            "https://api.github.com/repos/${{ github.repository }}/actions/runs/${{ github.run_id }}/jobs" | \
+            jq -r '[.jobs[] | select(.name != "combined-job") | "\(.name) status: \(.conclusion // "in_progress")"] | join(", ")')
+          echo "Collected statuses: $STATUSES"
+
+          controllerstatus=$(echo $STATUSES | tr ',' '\n' | grep -v '/' | tr '\n' ',' | sed 's/,$//')
+          phasejobs=$(echo "$STATUSES" | tr ',' '\n' | grep -E '^[^/]+/[^/]+ ' | sed -E 's/^[^/]+\/([^/]+).*status: ([^ ]+)/\1status: \2/g' | awk '!seen[$0]++' | tr '\n' ',' | sed 's/,$//')
+          compstatus=$(echo "$STATUSES" | tr ',' '\n' | grep -E '^[^/]+ /[^/]+ /' | sed -E 's/^[^/]+ \/([^/]+ \/[^/]+).*status: ([^ ]+)/\1status: \2/g' | tr '\n' ',' | sed 's/,$//')
+          
+          echo "Controller Statuses: $controllerstatus"
+          echo "Phase Statuses: $phasejobs"
+          echo "CompPhase Statuses: $compstatus"
+          
+          #old code
+          declare -A compStatus
+          detailedCompStatuses=""
+
+          while IFS='/' read -r phase status; do
+            phase=$(echo "$phase" | xargs)
+            status=$(echo "$status" | xargs)
+            compStatus["$phase"]+="${status}, "
+          done <<< "$(echo "$compstatus" | tr ',' '\n')"
+
+          
+          # Collecting detailed status for each component
+          {
+            for key in "${!compStatus[@]}"; do
+              varname="comstatus_${key//-/_}"
+              value="$(echo "${compStatus[$key]}" | sed 's/, $//')"
+              detailedCompStatuses+="${key}: ${value}, "
+              echo "$varname=$value" >> "$GITHUB_OUTPUT"
+              echo "$varname=$value"
+            done
+          }
+
+          # Outputting detailed component statuses as a single string
+          detailedCompStatuses=$(echo "$detailedCompStatuses" | sed 's/, $//')
+          echo "compstatuses=$detailedCompStatuses" >> $GITHUB_OUTPUT
+          echo "compstatuses=$detailedCompStatuses"
+          
+          echo "controllerstatus=$controllerstatus" >> $GITHUB_OUTPUT
+          echo "phasejobs=$phasejobs" >> $GITHUB_OUTPUT
+
+      - name: Debug Inputs Before Running Script
+        run: |
+          echo "Controller Status: ${{ steps.get_status.outputs.controllerstatus }}"
+          echo "Phase Status: ${{ steps.get_status.outputs.phasejobs }}"
+          echo "Component Statuses: ${{ steps.get_status.outputs.compstatuses }}"
+          #echo "${{ steps.get_status.outputs.compstatuses }}"
+     
+      - name: Install PowerShell
+        run: |
+          # Install prerequisites
+          sudo apt-get update -y
+          sudo apt-get install -y wget apt-transport-https software-properties-common
+          # Download the Microsoft package list
+          wget -q "https://packages.microsoft.com/config/ubuntu/20.04/prod.list" -O /tmp/microsoft-prod.list
+          # Move the downloaded file to the correct directory with appropriate permissions
+          sudo mv /tmp/microsoft-prod.list /etc/apt/sources.list.d/microsoft-prod.list
+          # Import the Microsoft GPG key
+          curl https://packages.microsoft.com/keys/microsoft.asc | sudo apt-key add -
+          # Update apt-get and install PowerShell
+          sudo apt-get update -y
+          sudo apt-get install -y powershell
+
+      - name: Run PowerShell script to report job statuses
+        id: report-status
+        shell: pwsh
+        run: |
+          # Call your script with dynamic parameters
+          .\.github\scripts\Final-check.ps1 -controllerStatus "${{ steps.get_status.outputs.controllerstatus }}" `
+           -phaseStatus "${{ steps.get_status.outputs.phasejobs }}" `
+           -compStatuses "${{ steps.get_status.outputs.compstatuses }}"
+           
+      - name: Use the outputs from report-job-status
+        run: |
+          echo "ControllerJobStatus:"
+          echo "${{ steps.report-status.outputs.controller_jobs_status }}"
+          echo "PhaseJobStatus:"
+          echo "${{ steps.report-status.outputs.phase_jobs_status }}"
+          echo "ComponentJobStatus:"
+          echo "${{ steps.report-status.outputs.comp_phase_jobs_status }}"
