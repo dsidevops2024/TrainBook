@@ -185,14 +185,14 @@ jobs:
           $scriptPath = ".github/scripts/Newcheck.ps1"
 
           # Check if the file exists before calling it
-          #if (Test-Path $scriptPath) {
-           #. $scriptPath -controllerStatus $controllerStatus `
-                      #-phaseStatus $phaseStatus `
-                      #-componentStatus $componentStatus
-          #} else {
-             #Write-Error "Script not found at path: $scriptPath"
-          #}
-          .\.github\scripts\Newcheck.ps1 -controllerStatus $controllerStatus `
+          if (Test-Path $scriptPath) {
+           . $scriptPath -controllerStatus $controllerStatus `
+                      -phaseStatus $phaseStatus `
+                      -componentStatus $componentStatus
+          } else {
+             Write-Error "Script not found at path: $scriptPath"
+          }
+          #.\.github\scripts\Newcheck.ps1 -controllerStatus $controllerStatus `
                                    #-phaseStatus $phaseStatus `
                                    #-componentStatus $componentStatus
           # Call your script with dynamic parameters
