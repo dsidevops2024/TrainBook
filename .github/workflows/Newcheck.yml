@@ -1,4 +1,4 @@
-name: deploy control new
+name: newcheck
 run-name: Deploy ${{ inputs.component }} to ${{ inputs.environment }}
 
 on:
@@ -202,7 +202,7 @@ jobs:
         shell: pwsh
         run: |
           # Call your script with dynamic parameters
-          .\.github\scripts\Final-check.ps1 -controllerStatus "${{ steps.get_status.outputs.controllerstatus }}" `
+          .\.github\scripts\Newcheck.ps1 -controllerStatus "${{ steps.get_status.outputs.controllerstatus }}" `
            -phaseStatus "${{ steps.get_status.outputs.phasejobs }}" `
            -compStatuses "${{ steps.get_status.outputs.compstatuses }}"
            
