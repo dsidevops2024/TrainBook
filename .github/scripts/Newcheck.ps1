@@ -1,7 +1,9 @@
-$controllerStatus = "check-component-input status: success, set-environment-runner status: success, create-environment-matrix status: success"
-$phaseStatus = "check-approvals status: success, deploy-single-component status: skipped, deploy-phase-one status: success, deploy-phase-two status: success, Reset-Approvals status: success"
-$componentStatus = "deploy-phase-one / create-component-matrix status: success, deploy-phase-one / deploy-to-AzService status: success, deploy-phase-two / create-component-matrix status: success, deploy-phase-two / deploy-to-AzService status: success"
+#$controllerStatus = "check-component-input status: success, set-environment-runner status: success, create-environment-matrix status: success"
+#$phaseStatus = "check-approvals status: success, deploy-single-component status: skipped, deploy-phase-one status: success, deploy-phase-two status: success, Reset-Approvals status: success"
+#$componentStatus = "deploy-phase-one / create-component-matrix status: success, deploy-phase-one / deploy-to-AzService status: success, deploy-phase-two / create-component-matrix status: success, deploy-phase-two / deploy-to-AzService status: success"
+(
 
+)
 Write-Output "Controller Status: $controllerStatus"
 Write-Output "Phase Status: $phaseStatus"
 Write-Output "Component Statuses: $componentStatus"
@@ -19,7 +21,7 @@ function Get-Icon($status) {
 # Initialize arrays to collect statuses
 $controllerJobStatuses = @()
 $phaseJobStatuses = @()
-$compPhaseJobStatuses = @{}
+$compPhaseJobStatuses = @()
 
 # Extract all controller job statuses dynamically
 $controllerJobs = [regex]::Matches($controllerStatus, "(?<jobName>[\w\-]+) status: (?<status>\w+)")
@@ -48,8 +50,8 @@ $pattern = '([a-zA-Z0-9-]+)\s*/\s*([a-zA-Z0-9-]+)\s*status:\s*(\w+)'
 $matches = [regex]::Matches($componentStatus, $pattern)
 
 # Initialize a hashtable to store jobs and their corresponding sub-jobs with status
-$jobDict = @{}
-$subJobSet = @{}
+$jobDict = @{ }
+$subJobSet = @{ }
 
 # Loop through the matches in the input string and organize them into the hash table
 foreach ($match in $matches) {
@@ -72,7 +74,37 @@ foreach ($match in $matches) {
 # Extract just the phase names (without status) for easier checking later
 $deployPhasesNames = [regex]::Matches($phaseStatus, '\bdeploy-[a-zA-Z0-9-]+\b') | ForEach-Object { $_.Value }
 
-# Output the results for controller, phase, and component statuses
+# Collect and store the statuses as a single string to output to GitHub
+$controllerOutput = $controllerJobStatuses -join "`n"
+$phaseOutput = $phaseJobStatuses -join "`n"
+$componentOutput = ""
+
+# Collect component and sub-job statuses with icons
+foreach ($mainJob in $deployPhasesNames) {
+    $componentOutput += "$mainJob`n"
+
+    if ($jobDict.ContainsKey($mainJob)) {
+        foreach ($entry in $jobDict[$mainJob]) {
+            # Extract the job name and status
+            $jobParts = $entry -split " status:"
+            $status = $jobParts[1].Trim()
+            $icon = Get-Icon $status  # Get emoji for logs
+
+            $componentOutput += "$entry $icon`n"
+        }
+    }
+    else {
+        foreach ($subJob in $subJobSet.Keys) {
+            $componentOutput += "$subJob status: skipped ⏭️`n"
+        }
+    }
+}
+
+# Set the outputs to GitHub Actions using $env:GITHUB_OUTPUT
+$env:GITHUB_OUTPUT = "controller_status=$controllerOutput"
+$env:GITHUB_OUTPUT += "`nphase_status=$phaseOutput"
+$env:GITHUB_OUTPUT += "`ncomponent_status=$componentOutput"
+
 Write-Host "Controller Statuses:"
 $controllerJobStatuses | ForEach-Object { Write-Host $_ }
 
@@ -80,19 +112,4 @@ Write-Host "Phase Statuses:"
 $phaseJobStatuses | ForEach-Object { Write-Host $_ }
 
 Write-Host "Component and Sub-Job Statuses:"
-foreach ($mainJob in $deployPhasesNames) {
-    Write-Host $mainJob
-
-    # If the phase exists in the $jobDict, print sub-jobs with their status
-    if ($jobDict.ContainsKey($mainJob)) {
-        foreach ($entry in $jobDict[$mainJob]) {
-            Write-Host $entry
-        }
-    }
-    # If the phase does not exist in the $jobDict, print all dynamically extracted sub-jobs with skipped status
-    else {
-        foreach ($subJob in $subJobSet.Keys) {
-            Write-Host "$subJob status: skipped ⏭️"
-        }
-    }
-}
+Write-Host $componentOutput
