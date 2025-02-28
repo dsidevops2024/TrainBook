@@ -196,17 +196,10 @@ jobs:
           # Update apt-get and install PowerShell
           sudo apt-get update -y
           sudo apt-get install -y powershell
-      - name: Check if PowerShell is installed (Windows)
+      - name: Check if PowerShell is installed
         run: |
-           if (Get-Command pwsh -ErrorAction SilentlyContinue) {
-                Write-Host "PowerShell Core is installed."
-           }
-           elseif (Get-Command powershell -ErrorAction SilentlyContinue) {
-                Write-Host "Windows PowerShell is installed."
-           }
-           else {
-                Write-Host "No PowerShell is installed."
-           }
+          # Check if PowerShell Core (pwsh) is available
+           pwsh -Command "Write-Host 'PowerShell is installed'"
 
       - name: Run PowerShell script to report job statuses
         id: report-status
