@@ -1,10 +1,10 @@
 $controllerStatus = "check-component-input status: success, set-environment-runner status: success, create-environment-matrix status: success"
-$inputString = "deploy-phase-one / create-component-matrix status: success, deploy-phase-one / deploy-to-AzService status: success, deploy-phase-two / create-component-matrix status: success, deploy-phase-two / deploy-to-AzService status: success"
 $phaseStatus = "check-approvals status: success, deploy-single-component status: skipped, deploy-phase-one status: success, deploy-phase-two status: success, Reset-Approvals status: success"
+$componentStatus = "deploy-phase-one / create-component-matrix status: success, deploy-phase-one / deploy-to-AzService status: success, deploy-phase-two / create-component-matrix status: success, deploy-phase-two / deploy-to-AzService status: success"
 
 Write-Output "Controller Status: $controllerStatus"
 Write-Output "Phase Status: $phaseStatus"
-Write-Output "Component Statuses: $inputString"
+Write-Output "Component Statuses: $componentStatus"
 
 # Function to return appropriate emoji based on status
 function Get-Icon($status) {
@@ -45,7 +45,7 @@ foreach ($match in $phaseJobs) {
 
 # Extract deploy phases and sub-jobs from the input string
 $pattern = '([a-zA-Z0-9-]+)\s*/\s*([a-zA-Z0-9-]+)\s*status:\s*(\w+)'
-$matches = [regex]::Matches($inputString, $pattern)
+$matches = [regex]::Matches($componentStatus, $pattern)
 
 # Initialize a hashtable to store jobs and their corresponding sub-jobs with status
 $jobDict = @{}
