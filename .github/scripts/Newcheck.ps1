@@ -1,6 +1,4 @@
-#$controllerStatus = "check-component-input status: success, set-environment-runner status: success, create-environment-matrix status: success"
-#$phaseStatus = "check-approvals status: success, deploy-single-component status: skipped, deploy-phase-one status: success, deploy-phase-two status: success, Reset-Approvals status: success"
-#$componentStatus = "deploy-phase-one / create-component-matrix status: success, deploy-phase-one / deploy-to-AzService status: success, deploy-phase-two / create-component-matrix status: success, deploy-phase-two / deploy-to-AzService status: success"
+
 param (
     [string]$controllerStatus,
     [string]$phaseStatus,
@@ -77,13 +75,13 @@ foreach ($match in $matches) {
 $deployPhasesNames = [regex]::Matches($phaseStatus, '\bdeploy-[a-zA-Z0-9-]+\b') | ForEach-Object { $_.Value }
 
 # Collect and store the statuses as a single string to output to GitHub
-$controllerOutput = $controllerJobStatuses -join "`n"
-$phaseOutput = $phaseJobStatuses -join "`n"
-$componentOutput = ""
+$finalControllerStatus = $controllerJobStatuses -join "`n"
+$finalPhaseStatus = $phaseJobStatuses -join "`n"
+$finalCompPhaseStatus = ""
 
 # Collect component and sub-job statuses with icons
 foreach ($mainJob in $deployPhasesNames) {
-    $componentOutput += "$mainJob`n"
+    $finalCompPhaseStatus += "$mainJob`n"
 
     if ($jobDict.ContainsKey($mainJob)) {
         foreach ($entry in $jobDict[$mainJob]) {
@@ -92,26 +90,30 @@ foreach ($mainJob in $deployPhasesNames) {
             $status = $jobParts[1].Trim()
             $icon = Get-Icon $status  # Get emoji for logs
 
-            $componentOutput += "$entry $icon`n"
+            $finalCompPhaseStatus += "$entry $icon`n"
         }
     }
     else {
         foreach ($subJob in $subJobSet.Keys) {
-            $componentOutput += "$subJob status: skipped ⏭️`n"
+            $finalCompPhaseStatus += "$subJob status: skipped ⏭️`n"
         }
     }
 }
 
-# Set the outputs to GitHub Actions using $env:GITHUB_OUTPUT
-$env:GITHUB_OUTPUT = "controller_status=$controllerOutput"
-$env:GITHUB_OUTPUT += "`nphase_status=$phaseOutput"
-$env:GITHUB_OUTPUT += "`ncomponent_status=$componentOutput"
+# Output formatted component phase statuses
+Write-Output "Controller Job Statuses:`n$finalControllerStatus"
+Write-Output "Phase Job Statuses:`n$finalPhaseStatus"
+Write-Output "Component Job Statuses:`n$finalCompPhaseStatus"
 
-Write-Host "Controller Statuses:"
-$controllerJobStatuses | ForEach-Object { Write-Host $_ }
+# Store output in GitHub Actions properly (multi-line format)
+Write-Output "controller_jobs_status<<EOF" >> $env:GITHUB_OUTPUT
+Write-Output "$finalControllerStatus" >> $env:GITHUB_OUTPUT
+Write-Output "EOF" >> $env:GITHUB_OUTPUT
 
-Write-Host "Phase Statuses:"
-$phaseJobStatuses | ForEach-Object { Write-Host $_ }
+Write-Output "phase_jobs_status<<EOF" >> $env:GITHUB_OUTPUT
+Write-Output "$finalPhaseStatus" >> $env:GITHUB_OUTPUT
+Write-Output "EOF" >> $env:GITHUB_OUTPUT
 
-Write-Host "Component and Sub-Job Statuses:"
-Write-Host $componentOutput
+Write-Output "comp_phase_jobs_status<<EOF" >> $env:GITHUB_OUTPUT
+Write-Output "$finalCompPhaseStatus" >> $env:GITHUB_OUTPUT
+Write-Output "EOF" >> $env:GITHUB_OUTPUT
