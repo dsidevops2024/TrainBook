@@ -1,7 +1,7 @@
 param ( 
     [string]$controllerStatus,
     [string]$phaseStatus,
-    [string]$compStatuses
+    [string]$compstatuses
 )
 
 Write-Output "Controller Status: $controllerStatus"
@@ -46,6 +46,7 @@ foreach ($match in $phaseJobs) {
     $phaseJobStatuses += "$phaseName status: $phaseStatusValue $icon"
 }
 
+$compStatuses = $compStatuses.Trim()
 # Split the component statuses from $compStatuses into phases and jobs
 $compStatusesArray = $compStatuses -split ',\s*'
 
