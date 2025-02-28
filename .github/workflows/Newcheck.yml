@@ -144,43 +144,16 @@ jobs:
           echo "Controller Statuses: $controllerstatus"
           echo "Phase Statuses: $phasejobs"
           echo "CompPhase Statuses: $compstatus"
-          
-          #old code
-          declare -A compStatus
-          detailedCompStatuses=""
-
-          while IFS='/' read -r phase status; do
-            phase=$(echo "$phase" | xargs)
-            status=$(echo "$status" | xargs)
-            compStatus["$phase"]+="${status}, "
-          done <<< "$(echo "$compstatus" | tr ',' '\n')"
-
-          
-          # Collecting detailed status for each component
-          {
-            for key in "${!compStatus[@]}"; do
-              varname="comstatus_${key//-/_}"
-              value="$(echo "${compStatus[$key]}" | sed 's/, $//')"
-              detailedCompStatuses+="${key}: ${value}, "
-              echo "$varname=$value" >> "$GITHUB_OUTPUT"
-              echo "$varname=$value"
-            done
-          }
-
-          # Outputting detailed component statuses as a single string
-          detailedCompStatuses=$(echo "$detailedCompStatuses" | sed 's/, $//')
-          echo "compstatuses=$detailedCompStatuses" >> $GITHUB_OUTPUT
-          echo "compstatuses=$detailedCompStatuses"
-          
+                    
           echo "controllerstatus=$controllerstatus" >> $GITHUB_OUTPUT
-          echo "phasejobs=$phasejobs" >> $GITHUB_OUTPUT
+          echo "phasestatus=$phasejobs" >> $GITHUB_OUTPUT
+          echo "componentstatus=$compstatus" >> $GITHUB_OUTPUT
 
       - name: Debug Inputs Before Running Script
         run: |
           echo "Controller Status: ${{ steps.get_status.outputs.controllerstatus }}"
-          echo "Phase Status: ${{ steps.get_status.outputs.phasejobs }}"
-          echo "Component Statuses: ${{ steps.get_status.outputs.compstatuses }}"
-          #echo "${{ steps.get_status.outputs.compstatuses }}"
+          echo "Phase Status: ${{ steps.get_status.outputs.phasestatus }}"
+          echo "Component Statuses: ${{ steps.get_status.outputs.componentstatus }}"
      
       - name: Install PowerShell
         run: |
@@ -203,14 +176,14 @@ jobs:
         run: |
           # Call your script with dynamic parameters
           .\.github\scripts\Newcheck.ps1 -controllerStatus "${{ steps.get_status.outputs.controllerstatus }}" `
-           -phaseStatus "${{ steps.get_status.outputs.phasejobs }}" 
-           #-compStatuses "${{ steps.get_status.outputs.compstatuses }}"
+           -phaseStatus "${{ steps.get_status.outputs.phasestatus }}" 
+           -componentStatus "${{ steps.get_status.outputs.componentstatus }}"
            
       - name: Use the outputs from report-job-status
         run: |
           echo "ControllerJobStatus:"
-          echo "${{ steps.report-status.outputs.controller_jobs_status }}"
+          echo "${{ steps.report-status.outputs.controller_status }}"
           echo "PhaseJobStatus:"
-          echo "${{ steps.report-status.outputs.phase_jobs_status }}"
+          echo "${{ steps.report-status.outputs.phase_status }}"
           echo "ComponentJobStatus:"
-          echo "${{ steps.report-status.outputs.comp_phase_jobs_status }}"
+          echo "${{ steps.report-status.outputs.component_status }}"
