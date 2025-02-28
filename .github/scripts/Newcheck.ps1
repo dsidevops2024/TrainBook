@@ -1,8 +1,10 @@
 #$controllerStatus = "check-component-input status: success, set-environment-runner status: success, create-environment-matrix status: success"
 #$phaseStatus = "check-approvals status: success, deploy-single-component status: skipped, deploy-phase-one status: success, deploy-phase-two status: success, Reset-Approvals status: success"
 #$componentStatus = "deploy-phase-one / create-component-matrix status: success, deploy-phase-one / deploy-to-AzService status: success, deploy-phase-two / create-component-matrix status: success, deploy-phase-two / deploy-to-AzService status: success"
-(
-
+param (
+    [string]$controllerStatus,
+    [string]$phaseStatus,
+    [string[]]$componentStatus  # Receives component statuses as an array
 )
 Write-Output "Controller Status: $controllerStatus"
 Write-Output "Phase Status: $phaseStatus"
