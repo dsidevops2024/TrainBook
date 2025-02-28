@@ -206,12 +206,12 @@ jobs:
         shell: pwsh
         run: |
           # Call your script with dynamic parameters
-          #.\.github\scripts\Final-check.ps1 -controllerStatus "${{ steps.get_status.outputs.controllerstatus }}" `
-           #-phaseStatus "${{ steps.get_status.outputs.phasejobs }}" `
-           #-compStatuses "${{ steps.get_status.outputs.compstatuses }}"
-          .\.github\scripts\Final-check.ps1 -controllerStatus "set-environment-runner status: success, check-component-input status: success, create-environment-matrix status: success" `
-           -phaseStatus "check-approvals status: success, deploy-single-component status: skipped, deploy-phase-one status: success, deploy-phase-two status: success, Reset-Approvals status: success" `
-           -compStatuses "deploy-phase-two: create-component-matrix status: success, deploy-to-AzService status: success, deploy-phase-one: create-component-matrix status: success, deploy-to-AzService status: success"
+          .\.github\scripts\Final-check.ps1 -controllerStatus "${{ steps.get_status.outputs.controllerstatus }}" `
+           -phaseStatus "${{ steps.get_status.outputs.phasejobs }}" `
+           -compStatuses "${{ steps.get_status.outputs.compstatuses }}"
+          #.\.github\scripts\Final-check.ps1 -controllerStatus "set-environment-runner status: success, check-component-input status: success, create-environment-matrix status: success" `
+           #-phaseStatus "check-approvals status: success, deploy-single-component status: skipped, deploy-phase-one status: success, deploy-phase-two status: success, Reset-Approvals status: success" `
+           #-compStatuses "deploy-phase-two: create-component-matrix status: success, deploy-to-AzService status: success, deploy-phase-one: create-component-matrix status: success, deploy-to-AzService status: success"
 
       - name: Use the outputs from report-job-status
         run: |
