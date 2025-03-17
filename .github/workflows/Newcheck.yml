@@ -225,26 +225,32 @@ jobs:
           # Update apt-get and install PowerShell
           #sudo apt-get update -y
           #sudo apt-get install -y powershell
-
-      - name: Run PowerShell script to report job statuses
-        id: report-status
+      - name: Run Script
+        id: run_script
         shell: pwsh
         run: |
+          .\.github\scripts\Newchecknew.ps1
+        
+       # Run the PowerShell script here
+      #- name: Run PowerShell script to report job statuses
+        #id: report-status
+        #shell: pwsh
+        #run: |
           # Directly pass the status strings as variables
-          $controllerStatus = "${{ steps.get_status.outputs.controllerstatus }}"
-          $phaseStatus = "${{ steps.get_status.outputs.phasestatus }}"
-          $componentStatus = "${{ steps.get_status.outputs.componentstatus }}"
+          #$controllerStatus = "${{ steps.get_status.outputs.controllerstatus }}"
+          #$phaseStatus = "${{ steps.get_status.outputs.phasestatus }}"
+          #$componentStatus = "${{ steps.get_status.outputs.componentstatus }}"
           # Use the full path for the script, relative to the current directory
-          $scriptPath = ".github/scripts/Newcheck.ps1"
+          #$scriptPath = ".github/scripts/Newcheck.ps1"
 
           # Check if the file exists before calling it
-          if (Test-Path $scriptPath) {
-           . $scriptPath -controllerStatus $controllerStatus `
-                      -phaseStatus $phaseStatus `
-                      -componentStatus $componentStatus
-          } else {
-             Write-Error "Script not found at path: $scriptPath"
-          }
+          #if (Test-Path $scriptPath) {
+           #. $scriptPath -controllerStatus $controllerStatus `
+                      #-phaseStatus $phaseStatus `
+                      #-componentStatus $componentStatus
+          #} else {
+             #Write-Error "Script not found at path: $scriptPath"
+          #}
           #.\.github\scripts\Newcheck.ps1 -controllerStatus $controllerStatus `
                                    #-phaseStatus $phaseStatus `
                                    #-componentStatus $componentStatus
@@ -252,6 +258,13 @@ jobs:
           #.\.github\scripts\Newcheck.ps1 -controllerStatus "${{ steps.get_status.outputs.controllerstatus }}" `
            #-phaseStatus "${{ steps.get_status.outputs.phasestatus }}" 
            #-componentStatus "${{ steps.get_status.outputs.componentstatus }}"
+
+ 
+ 
+      - name: Output Controller Jobs Status
+        run: echo "Controller Jobs Status: ${{ steps.run_script.outputs.controllerJobsStatus }}"
+      - name: Output Controller Overall Status
+        run: echo "Controller Overall Status: ${{ steps.run_script.outputs.controllerOverallStatus }}"
            
       - name: Use the outputs from report-job-status
         run: |
