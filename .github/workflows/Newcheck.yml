@@ -229,7 +229,7 @@ jobs:
         id: run_script
         shell: pwsh
         run: |
-          .\.github\scripts\Newchecknew.ps1
+          .\.github\scripts\NewcheckNew.ps1
         
        # Run the PowerShell script here
       #- name: Run PowerShell script to report job statuses
