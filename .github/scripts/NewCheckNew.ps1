@@ -74,16 +74,16 @@ Write-Output "controller_overall_status=$controllerOverallStatus" | Out-File -Ap
 Write-Output "Controller-Jobs Status Count: $controllerStatusCountString"
 Write-Output "Controller Failed Jobs: $controllerFailureJobsStatusString"
 Write-Output "Controller Overall Status: $controllerOverallStatus"
- 
+
 # Regex pattern to match environment inside parentheses and status
 $pattern = '\(([^)]+)\) /?([^:]+) status: (\w+)'
  
 # Initialize a hashtable to collect job statuses for each environment
 $environmentJobs = @{}  # Initialize as hashtable
-$environmentStatusCounts = @{}  # Initialize the environment status counts hashtable
  
 # Extract all jobs and group them by environment (ds-dev, it-dev, etc.)
 $jobs = [regex]::Matches($finalStatus, $pattern)
+ 
 foreach ($match in $jobs) {
     $environment = $match.Groups[1].Value   # e.g., ds-dev, it-dev, etc.
     $jobName = $match.Groups[2].Value       # Job Name
@@ -97,15 +97,15 @@ foreach ($match in $jobs) {
     if (-not $environmentStatusCounts.ContainsKey($environment)) {
         $environmentStatusCounts[$environment] = @{ "success" = 0; "failure" = 0; "cancelled" = 0; "skipped" = 0 }
     }
- 
+
     # If the environment doesn't exist in the environmentJobs hashtable, create a new list (array)
     if (-not $environmentJobs.ContainsKey($environment)) {
         $environmentJobs[$environment] = @()  # Initialize as an array
     }
- 
+
     # Add the job status to the environment's list (array)
     $environmentJobs[$environment] += $jobStatus
- 
+
     # Increment the respective status count for the specific environment
     if ($environmentStatusCounts[$environment].ContainsKey($status.ToLower())) {
         $environmentStatusCounts[$environment][$status.ToLower()]++
@@ -114,8 +114,9 @@ foreach ($match in $jobs) {
  
 # Output environment status counts for each environment
 Write-Output "Phase-Jobs Status Count:"
-
 foreach ($env in $environmentStatusCounts.Keys) {
+    #Write-Output ("$env :")  # Outputs the environment name followed by a colon
+    #$environmentStatusCounts[$env].GetEnumerator() | ForEach-Object { Write-Output "  $($_.Key): $($_.Value)" } -join ", "
     $envStatusCountArray = $environmentStatusCounts[$env].GetEnumerator() | ForEach-Object { "$($_.Key): $($_.Value)" }
     Write-Output "${env}: $($envStatusCountArray -join ', ')"
 }
@@ -125,10 +126,11 @@ foreach ($environment in $environmentJobs.Keys) {
 
     # Clean up the job statuses for the environment
     $statusForEnvironment = $environmentJobs[$environment] -join "`n" # Join all job statuses
-    $statusForEnvironment = $statusForEnvironment.TrimEnd("`n")
-
+    $statusForEnvironment = $statusForEnvironment.TrimEnd("`n") 
+     # Output the final status for this environment
     # Clean the environment job names in parentheses to keep only the first value
-    $cleanedStatuses = $statusForEnvironment -replace '\(([^,]+).*?status:', '($1) status:'
+    $cleanedStatuses = $statusForEnvironment -replace '\(([^,]+).*?status:', '($1) status:' 
+     #Write-Output "$environment Jobs Status: $cleanedStatuses"
  
     # Filter for only failure status jobs
     $failureStatuses = $cleanedStatuses -split "`n" | Where-Object { $_ -match 'status: failure' }
@@ -144,18 +146,10 @@ foreach ($environment in $environmentJobs.Keys) {
     if ($failureStatuses.Count -gt 0) {
         Write-Output "$environment Failed Jobs:"
         $failureStatuses | ForEach-Object { Write-Output $_ }
-    } else {
+    }else {
         Write-Output "$environment Failed Jobs: none"
     }
- 
+
     # Output the overall environment status (success or failure)
     Write-Output "$environment Overall Status: $environmentOverallStatus"
- 
-    # Set output for GitHub Actions for this environment's overall status
-    $env:GITHUB_OUTPUT = "$env:GITHUB_OUTPUT`n$environment Overall Status: $environmentOverallStatus"
-
-    # Optionally, set outputs for individual failure jobs
-    foreach ($failureJob in $failureStatuses) {
-        $env:GITHUB_OUTPUT = "$env:GITHUB_OUTPUT`n$failureJob"
-    }
-} 
+}
