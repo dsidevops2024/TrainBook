@@ -41,7 +41,10 @@ $controllerStatusCountArray = $controllerStatusCount.GetEnumerator() | ForEach-O
 $controllerStatusCountString = ($controllerStatusCountArray -join ", ")
  
 # Set the GitHub output for Controller Jobs Status Count
-$env:GITHUB_OUTPUT = "controller_jobs_status_count=$controllerStatusCountString"
+#$env:GITHUB_OUTPUT = "controller_jobs_status_count=$controllerStatusCountString"
+
+# Set the GitHub output for Controller Jobs Status Count (write to $GITHUB_OUTPUT file)
+Write-Output "controller_jobs_status_count=$controllerStatusCountString" | Out-File -Append -FilePath $env:GITHUB_OUTPUT
  
   # Filter for only failure status jobs
 $controllerfailureStatuses = $controllerJobStatuses -split "`n" | Where-Object { $_ -match 'status: failure' }
@@ -54,13 +57,18 @@ if ($controllerfailureStatuses.Count -gt 0) {
 }
  
 # Set the GitHub output for Controller Failure Jobs Status
-$env:GITHUB_OUTPUT = "controller_failure_jobs_status=$controllerFailureJobsStatusString"
+#$env:GITHUB_OUTPUT = "controller_failure_jobs_status=$controllerFailureJobsStatusString"
+
+# Set the GitHub output for Controller Failure Jobs Status (write to $GITHUB_OUTPUT file)
+Write-Output "controller_failure_jobs_status=$controllerFailureJobsStatusString" | Out-File -Append -FilePath $env:GITHUB_OUTPUT
  
 # Determine the overall controller status based on job statuses
 $controllerOverallStatus = if ($controllerJobStatuses -match 'status: failure') { "failure" } else { "success" }
  
 # Set the GitHub output for Controller Overall Status
-$env:GITHUB_OUTPUT = "controller_overall_status=$controllerOverallStatus"
+#$env:GITHUB_OUTPUT = "controller_overall_status=$controllerOverallStatus"
+# Set the GitHub output for Controller Overall Status (write to $GITHUB_OUTPUT file)
+Write-Output "controller_overall_status=$controllerOverallStatus" | Out-File -Append -FilePath $env:GITHUB_OUTPUT
  
 # Optionally, output these to the console for debugging or confirmation
 Write-Output "Controller-Jobs Status Count: $controllerStatusCountString"
