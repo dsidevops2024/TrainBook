@@ -1,0 +1,31 @@
+name: Checking540
+run-name: Deploy ${{ inputs.component }} to ${{ inputs.environment }}
+
+on:
+  workflow_dispatch:
+  
+jobs:    
+  
+  combined-job:
+    runs-on: windows-latest  # You can switch to windows-latest if you need Windows steps
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Run Script
+        id: run_script
+        shell: pwsh
+        run: |
+          .\.github\scripts\NewcheckNew.ps1
+
+      - name: Output Controller Jobs Status
+        run: |
+          echo "Controller Jobs Status: ${{ steps.run_script.outputs.controllerJobsStatus }}"
+          echo "Controller Overall Status: ${{ steps.run_script.outputs.controllerOverallStatus }}"
+          echo "Controller Jobs Status: ${{ steps.run_script.outputs.controllerJobsStatus }}"
+          echo "Controller Overall Status: ${{ steps.run_script.outputs.controllerOverallStatus }}"
+          echo "Controller Jobs Status: ${{ steps.run_script.outputs.controllerJobsStatus }}"
+          echo "Controller Overall Status: ${{ steps.run_script.outputs.controllerOverallStatus }}"
+  
+           
