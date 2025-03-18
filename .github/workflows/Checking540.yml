@@ -23,7 +23,7 @@ jobs:
         run: |
           echo "Controller Jobs count: ${{ steps.run_script.outputs.controller_jobs_status_count }}"
           echo "Controller failed jobs: ${{ steps.run_script.outputs.controller_failure_jobs_status }}"
-          echo "Controller Overall Status: ${{ steps.run_script.outputs.controller_overall_status }
+          echo "Controller Overall Status: ${{ steps.run_script.outputs.controller_overall_status }}"
           echo "Phase jobs: ${{ steps.run_script.outputs.GITHUB_OUTPUT }}"
   
            
