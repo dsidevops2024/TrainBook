@@ -119,14 +119,13 @@ $output = $output.Trim()
 
 # Add controller jobs' status counts, failure statuses, and overall status to final output
 $output = "Controller Jobs Status Count:`n$controllerStatusCountString`n" + ` 
-          "Controller Failure Jobs:`n$controllerFailureJobsStatusString`n" + ` 
+          "Controller Failure Jobs:`n$controllerFailureJobsStatusString`n" + `
           "Controller Overall Status: $controllerOverallStatus`n`n" + $output
 
-# Replace newlines with \n for GitHub Actions format
-$output = $output -replace "`r`n", "\n"
-
-# Set the collected output as GitHub Actions output using $env:GITHUB_OUTPUT
-$env:GITHUB_OUTPUT = "job_status=$output"
+# Writing the multi-line output to GitHub Actions output using <<EOF syntax
+Write-Output "jobs_status<<EOF" >> $env:GITHUB_OUTPUT
+Write-Output "$output" >> $env:GITHUB_OUTPUT
+Write-Output "EOF" >> $env:GITHUB_OUTPUT
 
 Write-Host "Final Output for GitHub:"
 Write-Host $output
