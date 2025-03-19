@@ -19,7 +19,7 @@ jobs:
 
       # Set up PowerShell (in case not using default Windows runner)
       - name: Set up PowerShell
-        uses: actions/setup-powershell@v2
+        uses: actions/setup-powershell@v1
 
       # Run the PowerShell script
       - name: Run the PowerShell script
