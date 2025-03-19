@@ -122,8 +122,11 @@ $output = "Controller Jobs Status Count:`n$controllerStatusCountString`n" + `
           "Controller Failure Jobs:`n$controllerFailureJobsStatusString`n" + ` 
           "Controller Overall Status: $controllerOverallStatus`n`n" + $output
 
-# Set the collected output as GitHub Actions output using $env:GITHUB_OUTPUT
-Write-Output "job_status=$output" >> $env:GITHUB_OUTPUT
+# Replace newlines with \n for GitHub Actions format
+$output = $output -replace "`r`n", "\n"
 
-Write-Host "Final Output for GitHub:" 
+# Set the collected output as GitHub Actions output using $env:GITHUB_OUTPUT
+$env:GITHUB_OUTPUT = "job_status=$output"
+
+Write-Host "Final Output for GitHub:"
 Write-Host $output
