@@ -1,0 +1,52 @@
+name: PowerShell
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  run_job_status_script:
+    runs-on: windows-latest
+
+    steps:
+      # Checkout the repository to the runner
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      # Set up PowerShell (in case not using default Windows runner)
+      - name: Set up PowerShell
+        uses: actions/setup-powershell@v2
+
+      # Run the PowerShell script
+      - name: Run the PowerShell script
+        id: run_script
+        run: |
+          $output = @"
+             Phase-Jobs Status Count:
+             ds-dev: success: 3, failure: 1, skipped: 2
+             it-dev: success: 4, failure: 0, skipped: 1
+
+             Controller Jobs Status Count:
+             success: 3, failure: 2, cancelled: 1, skipped: 0
+
+             Controller Failure Jobs:
+             • job1 status: failure ❌
+             • job2 status: failure ❌
+             Controller Overall Status: failure
+          "@
+
+          # Debugging: Show the value of the $output to make sure it's not empty
+          Write-Host "Output: $output"
+
+          # Set the output in the GitHub Actions environment variable
+          echo "job_status=$output" >> $env:GITHUB_OUTPUT
+
+      # Display job status from the previous step
+      - name: Display the captured job status
+        run: |
+          echo "Job status captured from PowerShell script:"
+          echo "${{ steps.run_script.outputs.job_status }}"
