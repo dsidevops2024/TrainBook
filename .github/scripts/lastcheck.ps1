@@ -131,6 +131,7 @@ Controller Overall Status: $controllerOverallStatus
 "@ + $output
 
 # Set the collected output as GitHub Actions output using $env:GITHUB_OUTPUT
-$env:GITHUB_OUTPUT = "job_status=$output"
+#$env:GITHUB_OUTPUT = "job_status=$output"
+"job_status=$output" >> $env:GITHUB_OUTPUT
 Write-Host "Final Output for GitHub:"
 Write-Host $output
