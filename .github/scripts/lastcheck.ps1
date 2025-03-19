@@ -124,6 +124,7 @@ foreach ($match in $jobs) {
  
 # Set the collected output as GitHub Actions output using $env:GITHUB_OUTPUT
  #$env:GITHUB_OUTPUT = "job_status=$output"
- "job_status=$output" >> $env:GITHUB_OUTPUT
+ #"job_status=$output" >> $env:GITHUB_OUTPUT
+ "`njob_status<<EOF`n$output`nEOF" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
  Write-Host "Final Output for GitHub:"
  Write-Host $output
