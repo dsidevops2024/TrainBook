@@ -225,11 +225,11 @@ jobs:
           # Update apt-get and install PowerShell
           #sudo apt-get update -y
           #sudo apt-get install -y powershell
-      - name: Run Script
-        id: run_script
-        shell: pwsh
-        run: |
-          .\.github\scripts\NewcheckNew.ps1
+      #- name: Run Script
+        #id: run_script
+        #shell: pwsh
+        #run: |
+          #.\.github\scripts\NewcheckNew.ps1
         
        # Run the PowerShell script here
       #- name: Run PowerShell script to report job statuses
@@ -261,10 +261,10 @@ jobs:
 
  
  
-      - name: Output Controller Jobs Status
-        run: echo "Controller Jobs Status: ${{ steps.run_script.outputs.controllerJobsStatus }}"
-      - name: Output Controller Overall Status
-        run: echo "Controller Overall Status: ${{ steps.run_script.outputs.controllerOverallStatus }}"
+      #- name: Output Controller Jobs Status
+        #run: echo "Controller Jobs Status: ${{ steps.run_script.outputs.controllerJobsStatus }}"
+      #- name: Output Controller Overall Status
+        #run: echo "Controller Overall Status: ${{ steps.run_script.outputs.controllerOverallStatus }}"
            
       - name: Use the outputs from report-job-status
         run: |
