@@ -21,7 +21,8 @@ jobs:
 
       - name: Output the Job Statuses
         run: |
-          echo "Job Statuses from PowerShell Script: ${{ env.job_status }}"
+          #echo "Job Statuses from PowerShell Script: ${{ env.job_status }}"
+          echo "Job Statuses from PowerShell Script:${{ steps.run_script.outputs.job_status }}"
 
       #- name: Output Controller Jobs Status
         #run: |
