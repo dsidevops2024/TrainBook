@@ -1,4 +1,4 @@
-# Example final status (simulating the final status you provided)
+# Define the finalStatus as a multi-line string (if required)
 $finalStatus = "set-environment-runner status: success, kickoff-notification status: failure, check-component-input status: success, create-environment-matrix status: success, call-deploy-workflow (ds-dev) / Check-Approvals status: success, call-deploy-workflow (it-dev) / Check-Approvals status: success, call-deploy-workflow (ds-dev) / deploy-single-component status: skipped, call-deploy-workflow (ds-dev) / deploy-phase-one / create-component-matrix status: success, call-deploy-workflow (ds-dev) / deploy-phase-one / create-vm-json status: success, call-deploy-workflow (it-dev) / deploy-single-component status: skipped, call-deploy-workflow (it-dev) / deploy-phase-one / create-vm-json status: success, call-deploy-workflow (it-dev) / deploy-phase-one / create-component-matrix status: success, call-deploy-workflow (ds-dev) / deploy-phase-one / Deploy-to-VM status: failure, call-deploy-workflow (ds-dev) / deploy-phase-one / deploy-to-AzService (SphereEngine-Dacpac, sb-dev-generic-local, main, SphereEngine-Dacpac,  , Dep... status: success, call-deploy-workflow (ds-dev) / deploy-phase-one / deploy-to-AzService (Appconfig, appsettingsreferences.json,  , Deploy-Appconfig, latest, 1, main,... status: success, call-deploy-workflow (it-dev) / deploy-phase-one / deploy-to-AzService (SphereEngine-Dacpac, sb-dev-generic-local, main, SphereEngine-Dacpac,  , Dep... status: cancelled, call-deploy-workflow (it-dev) / deploy-phase-one / deploy-to-AzService (Appconfig, appsettingsreferences.json,  , Deploy-Appconfig, latest, 1, main,... status: failure, call-deploy-workflow (it-dev) / deploy-phase-one / Deploy-to-VM status: failure, call-deploy-workflow (ds-dev) / deploy-phase-one / SaaS-Config-Prepare-Upload status: skipped, call-deploy-workflow (ds-dev) / deploy-phase-two status: skipped, call-deploy-workflow (ds-dev) / deploy-phase-three status: skipped, call-deploy-workflow (ds-dev) / deploy-phase-four status: skipped, call-deploy-workflow (ds-dev) / deploy-phase-five status: skipped, call-deploy-workflow (ds-dev) / Reset-Approvals status: success, call-deploy-workflow (it-dev) / deploy-phase-one / SaaS-Config-Prepare-Upload status: skipped, call-deploy-workflow (it-dev) / deploy-phase-two status: skipped, call-deploy-workflow (it-dev) / deploy-phase-three status: skipped, call-deploy-workflow (it-dev) / deploy-phase-four status: skipped, call-deploy-workflow (it-dev) / deploy-phase-five status: skipped, call-deploy-workflow (it-dev) / Reset-Approvals status: success"
 
 # Function to return appropriate emoji based on status
@@ -83,8 +83,11 @@ foreach ($match in $jobs) {
     }
 }
 
-# Collect Phase-Jobs Status Count into output
-$output = "Phase-Jobs Status Count:`n"
+# Initialize output as a here-string
+$output = @"
+Phase-Jobs Status Count:
+"@
+
 foreach ($env in $environmentStatusCounts.Keys) {
     $envStatusCountArray = $environmentStatusCounts[$env].GetEnumerator() | ForEach-Object { "$($_.Key): $($_.Value)" }
     $output += "${env}: $($envStatusCountArray -join ', ')`n"
@@ -118,14 +121,16 @@ foreach ($environment in $environmentJobs.Keys) {
 $output = $output.Trim()
 
 # Add controller jobs' status counts, failure statuses, and overall status to final output
-$output = "Controller Jobs Status Count:`n$controllerStatusCountString`n" + ` 
-          "Controller Failure Jobs:`n$controllerFailureJobsStatusString`n" + `
-          "Controller Overall Status: $controllerOverallStatus`n`n" + $output
+$output = @"
+Controller Jobs Status Count:
+$controllerStatusCountString
+Controller Failure Jobs:
+$controllerFailureJobsStatusString
+Controller Overall Status: $controllerOverallStatus
 
-# Writing the multi-line output to GitHub Actions output using <<EOF syntax
-Write-Output "jobs_status<<EOF" >> $env:GITHUB_OUTPUT
-Write-Output "$output" >> $env:GITHUB_OUTPUT
-Write-Output "EOF" >> $env:GITHUB_OUTPUT
+"@ + $output
 
+# Set the collected output as GitHub Actions output using $env:GITHUB_OUTPUT
+$env:GITHUB_OUTPUT = "job_status=$output"
 Write-Host "Final Output for GitHub:"
 Write-Host $output
