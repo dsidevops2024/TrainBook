@@ -128,7 +128,8 @@ $output = "Controller Jobs Status Count:`n$controllerStatusCountString`n" + `
 #Write-Host $output
 
 # Write the output to the GITHUB_OUTPUT file
-echo "job_status=$output" >> $GITHUB_OUTPUT
+#echo "job_status=$output" >> $GITHUB_OUTPUT
+echo "job_status=$output" >> $env:GITHUB_OUTPUT
 
 Write-Host "Final Output for GitHub:"
 Write-Host $output
