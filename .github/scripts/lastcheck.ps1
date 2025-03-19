@@ -118,13 +118,12 @@ foreach ($environment in $environmentJobs.Keys) {
 $output = $output.Trim()
 
 # Add controller jobs' status counts, failure statuses, and overall status to final output
-$output = "Controller Jobs Status Count:`n$controllerStatusCountString`n" + `
-          "Controller Failure Jobs:`n$controllerFailureJobsStatusString`n" + `
+$output = "Controller Jobs Status Count:`n$controllerStatusCountString`n" + ` 
+          "Controller Failure Jobs:`n$controllerFailureJobsStatusString`n" + ` 
           "Controller Overall Status: $controllerOverallStatus`n`n" + $output
 
-# Set the collected output as GitHub Actions output by writing to $GITHUB_OUTPUT
-$github_output = "$env:GITHUB_OUTPUT"
-echo "job_status=$output" >> $github_output
+# Set the collected output as GitHub Actions output using $env:GITHUB_OUTPUT
+Write-Output "job_status=$output" >> $env:GITHUB_OUTPUT
 
 Write-Host "Final Output for GitHub:" 
 Write-Host $output
