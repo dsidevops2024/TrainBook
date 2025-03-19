@@ -123,13 +123,8 @@ $output = "Controller Jobs Status Count:`n$controllerStatusCountString`n" + `
           "Controller Overall Status: $controllerOverallStatus`n`n" + $output
 
 # Set the collected output as GitHub Actions output using $env:GITHUB_OUTPUT
-#$env:GITHUB_OUTPUT = "job_status=$output"
-#Write-Host "Final Output for GitHub:"
-#Write-Host $output
+# This syntax writes the value to the GITHUB_OUTPUT file as key-value
+$env:GITHUB_OUTPUT = "job_status=$output"
 
-# Write the output to the GITHUB_OUTPUT file
-#echo "job_status=$output" >> $GITHUB_OUTPUT
-echo "job_status=$output" >> $env:GITHUB_OUTPUT
-
-Write-Host "Final Output for GitHub:"
+Write-Host "Final Output for GitHub:" 
 Write-Host $output
