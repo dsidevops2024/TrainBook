@@ -17,13 +17,17 @@ jobs:
         id: run_script
         shell: pwsh
         run: |
-          .\.github\scripts\NewcheckNew.ps1
+          .\.github\scripts\lastcheck.ps1
 
-      - name: Output Controller Jobs Status
+      - name: Output the Job Statuses
         run: |
-          echo "Controller Jobs count: ${{ steps.run_script.outputs.controller_jobs_status_count }}"
-          echo "Controller failed jobs: ${{ steps.run_script.outputs.controller_failure_jobs_status }}"
-          echo "Controller Overall Status: ${{ steps.run_script.outputs.controller_overall_status }}"
-          echo "Phase jobs: ${{ steps.run_script.outputs.GITHUB_OUTPUT }}"
+          echo "Job Statuses from PowerShell Script: ${{ env.job_status }}"
+
+      #- name: Output Controller Jobs Status
+        #run: |
+          #echo "Controller Jobs count: ${{ steps.run_script.outputs.controller_jobs_status_count }}"
+          #echo "Controller failed jobs: ${{ steps.run_script.outputs.controller_failure_jobs_status }}"
+          #echo "Controller Overall Status: ${{ steps.run_script.outputs.controller_overall_status }}"
+          #echo "Phase jobs: ${{ steps.run_script.outputs.GITHUB_OUTPUT }}"
   
            
