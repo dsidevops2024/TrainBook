@@ -1,0 +1,20 @@
+name: RepoTest
+on:
+  workflow_dispatch:
+jobs:
+  job1:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repo
+        run: actions/checkout
+      - name: Checking Directory
+        run: |
+          # Extract repository name from the GitHub repository context
+          $repoName = "${{ github.repository }}" -split '/' | select -Last 1
+       
+          # Get the folder name from the input or use the default
+          $folderName = "${{ inputs.folder-name }}"
+ 
+          # Construct the folder path dynamically using the repository name and folder name
+          $folderpath = "$env:GITHUB_WORKSPACE\$repoName\$repoName\$folderName"
+        shell: pwsh
