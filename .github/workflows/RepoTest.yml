@@ -16,6 +16,8 @@ jobs:
       - name: Checking Directory
         run: |
           # Extract repository name from the GitHub repository context
+          $repoOwner = "${{ github.repository_owner }}"
+          Write-Host "Repository Owner: $repoOwner"
           $repoName = "${{ github.repository }}" -split '/' | select -First 1
           Write-Host "Repository Name: $repoName"
           # Get the folder name from the input or use the default
