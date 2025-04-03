@@ -25,4 +25,4 @@ jobs:
           #$folderpath = "$env:GITHUB_WORKSPACE\$repoName\$repoName\$folderName"
           $folderpath = "$env:GITHUB_WORKSPACE"
           Write-Host "Folder Path: $folderpath"
-        shell: pwsh
+        shell: powershell
