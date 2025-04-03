@@ -1,11 +1,11 @@
 name: RepoTest
 on:
   workflow_dispatch:
-   inputs:
-      folder-name:
-        description: Input the foldername
-        required: true
-        default: sb
+   #inputs:
+      #folder-name:
+        #description: Input the foldername
+        #required: true
+        #default: sb
 jobs:
   job1:
     runs-on: self-hosted
@@ -19,7 +19,9 @@ jobs:
           $repoName = "${{ github.repository }}" -split '/' | select -First 1
           Write-Host "Repository Name: $repoName"
           # Get the folder name from the input or use the default
-          $folderName = "${{ inputs.folder-name }}"
+          #$folderName = "${{ inputs.folder-name }}"
+          #$folderName = "${{ vars.FOLDER_NAME }}"
+          $folderName = $env:FOLDER_NAME
  
           # Construct the folder path dynamically using the repository name and folder name
           #$folderpath = "$env:GITHUB_WORKSPACE\$repoName\$repoName\$folderName"
