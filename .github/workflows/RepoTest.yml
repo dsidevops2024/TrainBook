@@ -23,6 +23,6 @@ jobs:
  
           # Construct the folder path dynamically using the repository name and folder name
           #$folderpath = "$env:GITHUB_WORKSPACE\$repoName\$repoName\$folderName"
-          $folderpath = "$env:GITHUB_WORKSPACE"
+          $folderpath = "$env:GITHUB_WORKSPACE\$folderName"
           Write-Host "Folder Path: $folderpath"
         shell: powershell
