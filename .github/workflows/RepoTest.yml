@@ -17,10 +17,12 @@ jobs:
         run: |
           # Extract repository name from the GitHub repository context
           $repoName = "${{ github.repository }}" -split '/' | select -Last 1
-       
+          Write-Host "Repository Name: $repoName"
           # Get the folder name from the input or use the default
           $folderName = "${{ inputs.folder-name }}"
  
           # Construct the folder path dynamically using the repository name and folder name
-          $folderpath = "$env:GITHUB_WORKSPACE\$repoName\$repoName\$folderName"
+          #$folderpath = "$env:GITHUB_WORKSPACE\$repoName\$repoName\$folderName"
+          $folderpath = "$env:GITHUB_WORKSPACE"
+          Write-Host "Folder Path: $folderpath"
         shell: pwsh
