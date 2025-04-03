@@ -1,12 +1,18 @@
 name: RepoTest
 on:
   workflow_dispatch:
+   inputs:
+      folder-name:
+        description: Input the foldername
+        required: true
+        default: sb
 jobs:
   job1:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Repo
-        run: actions/checkout
+        uses: actions/checkout@v3
+        
       - name: Checking Directory
         run: |
           # Extract repository name from the GitHub repository context
