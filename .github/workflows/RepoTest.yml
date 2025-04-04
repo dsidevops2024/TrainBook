@@ -41,25 +41,15 @@ jobs:
         shell: powershell
      
       - name: Extract branch name from JSON
-        id: extract-branch
-        shell: pwsh
+        env:
+          AZURE_CLI_PATH: ${{ vars.AZURE_CLI_PATH }}  # Use the environment variable for the Azure CLI path
         run: |
-          $env:Path += ";C:\ProgramData\chocolatey\lib\jq\tools"
-          $sb_branchname= jq -r '.[] | select(.binaryName == "SAAS-SPHEREboard.exe") | .sbrepobranch' component.json
-          $configjsonpath= jq -r '.[] | select(.binaryName == "SAAS-SPHEREboard.exe") | .configjsonpath' component.json
-          $jsonfilename= jq -r '.[] | select(.binaryName == "SAAS-SPHEREboard.exe") | .jsonfilename' component.json
-        
-          if (-not $sb_branchname -or -not $configjsonpath -or -not $jsonfilename) 
-          {       
-          Write-Output "One or more variables are empty"
-          exit 1
-          } 
-          else 
-          {
-          Write-Output "::set-output name=sb_branchname::$sb_branchname"
-          Write-Output "::set-output name=configjsonpath::$configjsonpath"
-          Write-Output "::set-output name=jsonfilename::$jsonfilename"
-          }   
+          $env:Path += ";$env:AZURE_CLI_PATH"  # Dynamically append the Azure CLI path
+          Write-Host "Updated PATH: $env:Path"
+          #$env:Path += ";C:\ProgramData\chocolatey\lib\jq\tools"
+        shell: pwsh
+         
+          
   check-component-input:
     environment: ${{ inputs.environment }}
     runs-on: ubuntu-latest
