@@ -83,6 +83,9 @@ jobs:
               exit 1
             fi
           fi
+      - name: Print component output
+        run: echo "${{ steps.component-input.outputs.component }}"
+
   deploy-to-AzService:
     runs-on: self-hosted
     needs: [ job1, check-component-input ]
