@@ -4,13 +4,15 @@
     "componentName": "Cyberworker",
     "Branch": "main",
     "code": "example",
-    "Repo": "sb"
+    "Repo": "sb",
+    "deployType": "Deploy-WebApp"
     },
   {
     "Phase": 2,
     "componentName": "worker",
     "Branch": "branch1",
     "code": "example1",
-    "Repo": "sb"
+    "Repo": "sb",
+    "deployType": "Deploy-WebApp"
     }
 ]
