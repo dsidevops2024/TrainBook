@@ -34,15 +34,32 @@ jobs:
         working-directory: ./job_dependencies
         run: |
           echo "backend-components=`perl -pe 's/\s+//g' job_dependencies.json`" >> $GITHUB_OUTPUT
+      #- name: Filtering JSON data
+        #id: filter-step
+        #run: |
+          #chosencomponents="${{ github.event.inputs.Filters }}"
+          #filteredData=$(jq -r --arg chosenCom "$chosencomponents" '.[] | select(.name == $chosenCom)' job_dependencies/job_dependencies.json)
+          #for item in $filteredData; do
+            #echo "Processing item: $item"
+            
+          #done
+
       - name: Filtering JSON data
         id: filter-step
         run: |
           chosencomponents="${{ github.event.inputs.Filters }}"
-          filteredData=$(jq -r --arg chosenCom "$chosencomponents" '.[] | select(.name == $chosenCom)' job_dependencies/job_dependencies.json)
-          for item in $filteredData; do
-            echo "Processing item: $item"
-            
+          # Use jq to filter and return the matching objects as JSON
+          filteredData=$(jq -r --arg chosenCom "$chosencomponents" '.[] | select(.env == $chosenCom)' job_dependencies/job_dependencies.json)
+
+          # Check if filteredData is empty
+          if [ -z "$filteredData" ]; then
+             echo "No matching items found."
+          else
+             # Iterate through the filtered JSON objects
+             echo "$filteredData" | while IFS= read -r item; do
+             echo "Processing item: $item"
           done
+          fi
     
   Comparison:
     runs-on: self-hosted
