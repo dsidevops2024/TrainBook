@@ -40,6 +40,27 @@ jobs:
           Write-Host "Folder Path: $folderpath"
         shell: powershell
 
+      - name: Extract branch name from JSON
+        id: extract-branch
+        shell: pwsh
+        run: |
+          $env:Path += ";C:\ProgramData\chocolatey\lib\jq\tools"
+          $sb_branchname= jq -r '.[] | select(.binaryName == "SAAS-SPHEREboard.exe") | .sbrepobranch' component.json
+          $configjsonpath= jq -r '.[] | select(.binaryName == "SAAS-SPHEREboard.exe") | .configjsonpath' component.json
+          $jsonfilename= jq -r '.[] | select(.binaryName == "SAAS-SPHEREboard.exe") | .jsonfilename' component.json
+        
+          if (-not $sb_branchname -or -not $configjsonpath -or -not $jsonfilename) 
+          {       
+          Write-Output "One or more variables are empty"
+          exit 1
+          } 
+          else 
+          {
+          Write-Output "::set-output name=sb_branchname::$sb_branchname"
+          Write-Output "::set-output name=configjsonpath::$configjsonpath"
+          Write-Output "::set-output name=jsonfilename::$jsonfilename"
+          }   
+
   Check-Approvals:
       runs-on: ubuntu-latest
       environment: ${{ inputs.environment }}
@@ -48,6 +69,6 @@ jobs:
           if: ${{ inputs.stage == 'dev'}}
           run: |
            curl -L -X PUT -H "Accept: application/vnd.github+json" \
-           -H "Authorization: Bearer ${{ secrets.GH_REVIEW_TOKEN }}" \
+           -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
            -H "X-GitHub-Api-Version: 2022-11-28" "https://api.github.com/repos/dsidevops2024/TrainBook/environments/${{ inputs.environment }}" \
            -d '{"reviewers":null, "wait_timer":0,"deployment_branch_policy":{"protected_branches":false,"custom_branch_policies":true}}'
