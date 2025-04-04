@@ -20,7 +20,7 @@ jobs:
     steps:
       - name: Checkout Repo
         uses: actions/checkout@v3
-        
+       
       - name: Checking and delete sb Directory
         run: |
           # Extract repository name from the GitHub repository context
@@ -39,7 +39,7 @@ jobs:
           $folderpath = "$env:GITHUB_WORKSPACE\$folderName"
           Write-Host "Folder Path: $folderpath"
         shell: powershell
-
+     
       - name: Extract branch name from JSON
         id: extract-branch
         shell: pwsh
@@ -60,7 +60,35 @@ jobs:
           Write-Output "::set-output name=configjsonpath::$configjsonpath"
           Write-Output "::set-output name=jsonfilename::$jsonfilename"
           }   
-
+  check-component-input:
+    environment: ${{ inputs.environment }}
+    runs-on: ubuntu-latest
+    outputs:
+      component: ${{ steps.component-input.outputs.component }}
+    steps:
+      - name: checkout code
+        uses: actions/checkout@v4 
+      - name: check component input 
+        id: component-input
+        shell: bash
+        run: |
+          temp="${{ inputs.component }}"
+          lower=${temp,,}
+          if [[ "$lower" == "fullstack" ]]; then
+            echo "component=fullstack" >> $GITHUB_OUTPUT
+            echo "Deploying fullstack"
+          else 
+            comp=`jq '.[] | .componentName' component.json | grep -i "\<${{ inputs.component }}\>" -m1`
+            lowercomp=${comp,,}
+            if [[ $lowercomp == "\"${lower}\"" ]]; then
+              echo "Deploying `cat ./component.json | grep -iF -o "${{ inputs.component }}" -m1`"
+              echo "component=`cat ./component.json | grep -iF -o "${{ inputs.component }}" -m1`" >> $GITHUB_OUTPUT
+            else
+              echo "Error: Component '${{ inputs.component }}' not found in component.json"
+              exit 1
+            fi
+          fi
+          
   Check-Approvals:
       runs-on: ubuntu-latest
       environment: ${{ inputs.environment }}
