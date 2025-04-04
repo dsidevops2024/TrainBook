@@ -51,6 +51,7 @@ jobs:
          
           
   check-component-input:
+    needs: job1
     environment: ${{ inputs.environment }}
     runs-on: ubuntu-latest
     outputs:
@@ -80,6 +81,7 @@ jobs:
           fi
           
   Check-Approvals:
+      needs: [ job1, check-component-input ]
       runs-on: ubuntu-latest
       environment: ${{ inputs.environment }}
       steps:
