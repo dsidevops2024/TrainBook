@@ -6,10 +6,14 @@ on:
         #description: Input the foldername
         #required: true
         #default: sb
-      folder-name:
-        #description: Input the foldername
-        #required: true
-        #default: sb
+      environment:
+        description: Input the env
+        required: true
+        default: dev
+      stage:
+        description: Input the stage
+        required: true
+        default: dev
 jobs:
   job1:
     runs-on: self-hosted
@@ -22,8 +26,10 @@ jobs:
           # Extract repository name from the GitHub repository context
           $repoOwner = "${{ github.repository_owner }}"
           Write-Host "Repository Owner: $repoOwner"
+          
           $repoName = "${{ github.repository }}" -split '/' | select -First 1
           Write-Host "Repository Name: $repoName"
+          
           # Get the folder name from the input or use the default
           #$folderName = "${{ inputs.folder-name }}"
           $folderName = "${{ vars.FOLDER_NAME }}"
@@ -39,9 +45,9 @@ jobs:
       environment: ${{ inputs.environment }}
       steps:
         - name: turn off review reqs on env
-          if: ${{ inputs.stage == 'prod'}}
+          if: ${{ inputs.stage == 'dev'}}
           run: |
            curl -L -X PUT -H "Accept: application/vnd.github+json" \
            -H "Authorization: Bearer ${{ secrets.GH_REVIEW_TOKEN }}" \
-           -H "X-GitHub-Api-Version: 2022-11-28" "https://api.github.com/repos/SphereTechSol/sb-saas-cd/environments/${{ inputs.environment }}" \
+           -H "X-GitHub-Api-Version: 2022-11-28" "https://api.github.com/repos/dsidevops2024/TrainBook/environments/${{ inputs.environment }}" \
            -d '{"reviewers":null, "wait_timer":0,"deployment_branch_policy":{"protected_branches":false,"custom_branch_policies":true}}'
