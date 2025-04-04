@@ -1,8 +1,12 @@
 name: RepoTest
 on:
   workflow_dispatch:
-   #inputs:
+    inputs:
       #folder-name:
+        #description: Input the foldername
+        #required: true
+        #default: sb
+      folder-name:
         #description: Input the foldername
         #required: true
         #default: sb
@@ -13,7 +17,7 @@ jobs:
       - name: Checkout Repo
         uses: actions/checkout@v3
         
-      - name: Checking Directory
+      - name: Checking and delete sb Directory
         run: |
           # Extract repository name from the GitHub repository context
           $repoOwner = "${{ github.repository_owner }}"
@@ -23,10 +27,21 @@ jobs:
           # Get the folder name from the input or use the default
           #$folderName = "${{ inputs.folder-name }}"
           $folderName = "${{ vars.FOLDER_NAME }}"
-          #$folderName = $env:FOLDER_NAME
  
           # Construct the folder path dynamically using the repository name and folder name
           #$folderpath = "$env:GITHUB_WORKSPACE\$repoName\$repoName\$folderName"
           $folderpath = "$env:GITHUB_WORKSPACE\$folderName"
           Write-Host "Folder Path: $folderpath"
         shell: powershell
+
+  Check-Approvals:
+      runs-on: ubuntu-latest
+      environment: ${{ inputs.environment }}
+      steps:
+        - name: turn off review reqs on env
+          if: ${{ inputs.stage == 'prod'}}
+          run: |
+           curl -L -X PUT -H "Accept: application/vnd.github+json" \
+           -H "Authorization: Bearer ${{ secrets.GH_REVIEW_TOKEN }}" \
+           -H "X-GitHub-Api-Version: 2022-11-28" "https://api.github.com/repos/SphereTechSol/sb-saas-cd/environments/${{ inputs.environment }}" \
+           -d '{"reviewers":null, "wait_timer":0,"deployment_branch_policy":{"protected_branches":false,"custom_branch_policies":true}}'
