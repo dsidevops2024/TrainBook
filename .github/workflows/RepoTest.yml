@@ -86,11 +86,11 @@ jobs:
   deploy-to-AzService:
     runs-on: self-hosted
     needs: [ job1, check-component-input ]
-    if: ${{ needs.create-component-matrix.outputs.component != '[]'}}
+    if: ${{ needs.check-component-input.outputs.component != '[]'}}
     environment: ${{ inputs.environment }}
     strategy:
       matrix:
-        component: ${{ fromJSON(needs.create-component-matrix.outputs.component) }}
+        component: ${{ fromJSON(needs.check-component-input.outputs.component) }}
     env:
       Code-Repository: ${{ github.repository_owner }}/${{ matrix.component.Repo }}
       baseRepo: ${{ matrix.component.Repo }}
