@@ -47,7 +47,7 @@ jobs:
           $env:Path += ";$env:AZURE_CLI_PATH"  # Dynamically append the Azure CLI path
           Write-Host "Updated PATH: $env:Path"
           #$env:Path += ";C:\ProgramData\chocolatey\lib\jq\tools"
-        shell: pwsh
+        shell: powershell
          
           
   check-component-input:
