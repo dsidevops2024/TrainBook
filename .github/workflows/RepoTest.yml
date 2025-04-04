@@ -83,7 +83,33 @@ jobs:
               exit 1
             fi
           fi
-          
+  deploy-to-AzService:
+    runs-on: self-hosted
+    needs: [ job1, check-component-input ]
+    if: ${{ needs.create-component-matrix.outputs.component != '[]'}}
+    environment: ${{ inputs.environment }}
+    strategy:
+      matrix:
+        component: ${{ fromJSON(needs.create-component-matrix.outputs.component) }}
+    env:
+      Code-Repository: ${{ github.repository_owner }}/${{ matrix.component.Repo }}
+      baseRepo: ${{ matrix.component.Repo }}
+    steps:
+      - name: checkout
+        uses: actions/checkout@v4
+        
+      - name: Print Code-Repository value
+        run: |
+          echo "Code-Repository value: ${{ github.repository_owner }}/${{ matrix.component.Repo }}"
+          echo "Base Repo value: ${{ matrix.component.Repo }}"
+      #- name: call deploy-webapp action
+        #if: ${{ matrix.component.deployType == 'Deploy-WebApp' }} 
+        #uses: ./.github/actions/Deploy-WebApp
+        #with:
+          #component: ${{ matrix.component.componentName }}
+          #baseRepo: ${{ env.Repo }}
+
+  
   Check-Approvals:
       needs: [ job1, check-component-input ]
       runs-on: ubuntu-latest
@@ -94,5 +120,5 @@ jobs:
           run: |
            curl -L -X PUT -H "Accept: application/vnd.github+json" \
            -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
-           -H "X-GitHub-Api-Version: 2022-11-28" "https://api.github.com/repos/dsidevops2024/TrainBook/environments/${{ inputs.environment }}" \
+           -H "X-GitHub-Api-Version: 2022-11-28" "https://api.github.com/repos/${{ github.repository }}/environments/${{ inputs.environment }}" \
            -d '{"reviewers":null, "wait_timer":0,"deployment_branch_policy":{"protected_branches":false,"custom_branch_policies":true}}'
