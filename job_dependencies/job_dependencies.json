@@ -1,6 +1,6 @@
 [
   {
-   "env": "${{ secrets.DOCKER_USERNAME }}",
+   "env": "stage",
    "version": "10"
   },
   {
