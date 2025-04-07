@@ -49,7 +49,20 @@ jobs:
         shell: powershell
         run: |
           # Ensure jq is in the path
-          $env:Path += "; C:\ProgramData\chocolatey\bin"
+          #$env:Path += "; C:\ProgramData\chocolatey\bin"
+          # Try to get the path of jq dynamically
+          $jqPath = (Get-Command jq -ErrorAction SilentlyContinue).Source
+          if (-not $jqPath) {
+               Write-Host "jq not found in the system PATH"
+          exit 1
+          }
+ 
+          # Add jq's path to the PATH variable (if not already in the environment path)
+          if (-not ($env:Path -contains [System.IO.Path]::GetDirectoryName($jqPath))) {
+             $env:Path += ";" + [System.IO.Path]::GetDirectoryName($jqPath)
+          }
+ 
+          Write-Host "Checking path: $env:Path"
     
           # Extract the branch name from component.json where Phase is "2"
           $sb_branchname = jq -r '.[] | select(.Phase == "2") | .Branch' component.json
