@@ -43,26 +43,29 @@ jobs:
           $folderpath = "$env:GITHUB_WORKSPACE\$folderName"
           Write-Host "Folder Path: $folderpath"
         shell: powershell
+        
       - name: Extract branch name from JSON
         id: extract-branch
         shell: powershell
         run: |
+          # Ensure jq is in the path
           $env:Path += "; C:\ProgramData\chocolatey\bin"
-          #Write-Host "Checking path: $env:Path"
-          $sb_branchname= jq -r '.[] | select(.binaryName == "SAAS-SPHEREboard.exe") | .sbrepobranch' component.json
-          $configjsonpath= jq -r '.[] | select(.binaryName == "SAAS-SPHEREboard.exe") | .configjsonpath' component.json
-          $jsonfilename= jq -r '.[] | select(.binaryName == "SAAS-SPHEREboard.exe") | .jsonfilename' component.json
-       
-          if (-not $sb_branchname)
-          {      
-          Write-Output "One variable is empty"
+    
+          # Extract the branch name from component.json where Phase is "2"
+          $sb_branchname = jq -r '.[] | select(.Phase == "2") | .Branch' component.json
+    
+          # Check if the branch name is empty
+          if (-not $sb_branchname) {
+             Write-Output "Branch name is empty or not found."
           exit 1
           }
-          else
-          {
-          Write-Output "::set-output name=sb_branchname::$sb_branchname"
-          }  
-       
+          else {
+             # Output the branch name (set-output is used for GitHub Actions)
+             Write-Output "::set-output name=sb_branchname::$sb_branchname"
+             Write-Host "Branch name: $sb_branchname"
+          }
+
+        
       #- name: Extract branch name from JSON
         #env:
           #AZURE_CLI_PATH: ${{ vars.AZURE_CLI_PATH }}  # Use the environment variable for the Azure CLI path
@@ -71,7 +74,6 @@ jobs:
           #Write-Host "Updated PATH: $env:Path"
           #$env:Path += ";C:\ProgramData\chocolatey\lib\jq\tools"
         #shell: powershell
-         
           
   check-component-input:
     needs: job1
@@ -105,25 +107,25 @@ jobs:
       - name: Print component output
         run: echo "${{ steps.component-input.outputs.component }}"
 
-  deploy-to-AzService:
-    runs-on: self-hosted
-    needs: [ job1, check-component-input ]
-    if: ${{ needs.check-component-input.outputs.component != '[]'}}
-    environment: ${{ inputs.environment }}
-    strategy:
-      matrix:
-        component: ${{ fromJSON(needs.check-component-input.outputs.component) }}
-    env:
-      Code-Repository: ${{ github.repository_owner }}/${{ matrix.component.Repo }}
-      baseRepo: ${{ matrix.component.Repo }}
-    steps:
-      - name: checkout
-        uses: actions/checkout@v4
+  #deploy-to-AzService:
+    #runs-on: self-hosted
+    #needs: [ job1, check-component-input ]
+    #if: ${{ needs.check-component-input.outputs.component != '[]'}}
+    #environment: ${{ inputs.environment }}
+    #strategy:
+      #matrix:
+        #component: ${{ fromJSON(needs.check-component-input.outputs.component) }}
+    #env:
+      #Code-Repository: ${{ github.repository_owner }}/${{ matrix.component.Repo }}
+      #baseRepo: ${{ matrix.component.Repo }}
+    #steps:
+      #- name: checkout
+        #uses: actions/checkout@v4
         
-      - name: Print Code-Repository value
-        run: |
-          echo "Code-Repository value: ${{ github.repository_owner }}/${{ matrix.component.Repo }}"
-          echo "Base Repo value: ${{ matrix.component.Repo }}"
+      #- name: Print Code-Repository value
+        #run: |
+          #echo "Code-Repository value: ${{ github.repository_owner }}/${{ matrix.component.Repo }}"
+          #echo "Base Repo value: ${{ matrix.component.Repo }}"
       #- name: call deploy-webapp action
         #if: ${{ matrix.component.deployType == 'Deploy-WebApp' }} 
         #uses: ./.github/actions/Deploy-WebApp
