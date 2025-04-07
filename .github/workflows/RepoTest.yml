@@ -2,10 +2,6 @@ name: RepoTest
 on:
   workflow_dispatch:
     inputs:
-      #folder-name:
-        #description: Input the foldername
-        #required: true
-        #default: sb
       environment:
         description: Input the env
         required: true
