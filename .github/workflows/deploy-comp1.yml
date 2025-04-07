@@ -35,3 +35,12 @@ jobs:
         id: step2  # We add an ID for job2
         run: |
           echo "secondword=job2 from deploy component" 
+
+      - name: Using workflow from another repo
+        uses: actions/checkout@v4
+        with:
+          #repository: SphereTechSol/sb
+          repository: ${{ github.repository_owner }}/sb
+          ref: ${{ steps.extract-branch.outputs.sb_branchname }}
+          token: ${{ secrets.SB_REPO_TOKEN }}
+          path: sb
