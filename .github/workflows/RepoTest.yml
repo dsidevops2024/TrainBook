@@ -59,7 +59,8 @@ jobs:
  
           # Add jq's path to the PATH variable (if not already in the environment path)
           if (-not ($env:Path -contains [System.IO.Path]::GetDirectoryName($jqPath))) {
-             $env:Path += ";" + [System.IO.Path]::GetDirectoryName($jqPath)
+             #$env:Path += ";" + [System.IO.Path]::GetDirectoryName($jqPath)
+             $env:Path += [System.IO.Path]::GetDirectoryName($jqPath)
           }
  
           Write-Host "Checking path: $env:Path"
