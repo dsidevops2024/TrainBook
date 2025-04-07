@@ -43,15 +43,34 @@ jobs:
           $folderpath = "$env:GITHUB_WORKSPACE\$folderName"
           Write-Host "Folder Path: $folderpath"
         shell: powershell
-     
       - name: Extract branch name from JSON
-        env:
-          AZURE_CLI_PATH: ${{ vars.AZURE_CLI_PATH }}  # Use the environment variable for the Azure CLI path
-        run: |
-          $env:Path += ";$env:AZURE_CLI_PATH"  # Dynamically append the Azure CLI path
-          Write-Host "Updated PATH: $env:Path"
-          #$env:Path += ";C:\ProgramData\chocolatey\lib\jq\tools"
+        id: extract-branch
         shell: powershell
+        run: |
+          $env:Path += "; C:\ProgramData\chocolatey\bin"
+          #Write-Host "Checking path: $env:Path"
+          $sb_branchname= jq -r '.[] | select(.binaryName == "SAAS-SPHEREboard.exe") | .sbrepobranch' component.json
+          $configjsonpath= jq -r '.[] | select(.binaryName == "SAAS-SPHEREboard.exe") | .configjsonpath' component.json
+          $jsonfilename= jq -r '.[] | select(.binaryName == "SAAS-SPHEREboard.exe") | .jsonfilename' component.json
+       
+          if (-not $sb_branchname)
+          {      
+          Write-Output "One variable is empty"
+          exit 1
+          }
+          else
+          {
+          Write-Output "::set-output name=sb_branchname::$sb_branchname"
+          }  
+       
+      #- name: Extract branch name from JSON
+        #env:
+          #AZURE_CLI_PATH: ${{ vars.AZURE_CLI_PATH }}  # Use the environment variable for the Azure CLI path
+        #run: |
+          #$env:Path += ";$env:AZURE_CLI_PATH"  # Dynamically append the Azure CLI path
+          #Write-Host "Updated PATH: $env:Path"
+          #$env:Path += ";C:\ProgramData\chocolatey\lib\jq\tools"
+        #shell: powershell
          
           
   check-component-input:
