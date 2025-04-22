@@ -16,7 +16,8 @@ on:
         default: worker
 jobs:
   job1:
-    runs-on: self-hosted
+    #runs-on: self-hosted
+    runs-on: [win-runner]
     steps:
       - name: Checkout Repo
         uses: actions/checkout@v3
