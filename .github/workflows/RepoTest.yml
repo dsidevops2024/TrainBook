@@ -40,7 +40,7 @@ jobs:
       - name: Checking and delete sb Directory
         run: |
           echo "GITHUB_WORKSPACE: $GITHUB_WORKSPACE"
-          folderName="sb"
+          folderName="${{ vars.FOLDER_NAME }}"
           folderpath="$GITHUB_WORKSPACE/$folderName"
           echo "Folder Path: $folderpath"
           shell: bash
