@@ -53,7 +53,7 @@ jobs:
           #$folderpath = "$env:GITHUB_WORKSPACE\$repoName\$repoName\$folderName"
           #$folderpath = "$env:GITHUB_WORKSPACE\$folderName"
           
-          folderName = "${{ vars.FOLDER_NAME }}"
+          folderName="${{ vars.FOLDER_NAME }}"
           folderpath="$GITHUB_WORKSPACE/${{ vars.FOLDER_NAME }}"
           echo "Folder Path: $folderpath"
         shell: bash
