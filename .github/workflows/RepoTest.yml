@@ -39,6 +39,14 @@ jobs:
           #Write-Host "Folder Path: $folderpath"
       - name: Checking and delete sb Directory
         run: |
+          echo "GITHUB_WORKSPACE: $GITHUB_WORKSPACE"
+          folderName="sb"
+          folderpath="$GITHUB_WORKSPACE/$folderName"
+          echo "Folder Path: $folderpath"
+          shell: bash
+
+      #- name: Checking and delete sb Directory
+        #run: |
           # Extract repository name from the GitHub repository context
           #$repoOwner = "${{ github.repository_owner }}"
           #Write-Host "Repository Owner: $repoOwner"  
@@ -53,10 +61,10 @@ jobs:
           #$folderpath = "$env:GITHUB_WORKSPACE\$repoName\$repoName\$folderName"
           #$folderpath = "$env:GITHUB_WORKSPACE\$folderName"
           
-          folderName="${{ vars.FOLDER_NAME }}"
-          folderpath="$GITHUB_WORKSPACE/${{ vars.FOLDER_NAME }}"
-          echo "Folder Path: $folderpath"
-        shell: bash
+          #folderName="${{ vars.FOLDER_NAME }}"
+          #folderpath="$GITHUB_WORKSPACE/${{ vars.FOLDER_NAME }}"
+          #echo "Folder Path: $folderpath"
+        #shell: bash
         #shell: pwsh
         
       - name: Extract branch name from JSON
