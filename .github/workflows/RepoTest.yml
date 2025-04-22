@@ -21,7 +21,22 @@ jobs:
     steps:
       - name: Checkout Repo
         uses: actions/checkout@v3
-       
+        
+      #- name: Checking and delete sb Directory on Windows
+        #if: runner.os == 'Windows'
+        #shell: powershell
+        #run: |
+         #$folderName = "${{ vars.FOLDER_NAME }}"
+         #$folderpath = Join-Path -Path $env:GITHUB_WORKSPACE -ChildPath "${{ vars.FOLDER_NAME }}"
+         #Write-Host "Folder Path: $folderpath"
+
+      #- name: Checking and delete sb Directory on Linux/macOS
+        #if: runner.os != 'Windows'
+        #shell: pwsh
+        #run: |
+          #$folderName = "${{ vars.FOLDER_NAME }}"
+          #$folderpath = Join-Path -Path $env:GITHUB_WORKSPACE -ChildPath "${{ vars.FOLDER_NAME }}"
+          #Write-Host "Folder Path: $folderpath"
       - name: Checking and delete sb Directory
         run: |
           # Extract repository name from the GitHub repository context
@@ -42,7 +57,7 @@ jobs:
           #$folderpath = "$env:GITHUB_WORKSPACE\$repoName\$repoName\$folderName"
           #$folderpath = "$env:GITHUB_WORKSPACE\$folderName"
           Write-Host "Folder Path: $folderpath"
-        shell: powershell
+        shell: bash
         #shell: pwsh
         
       - name: Extract branch name from JSON
