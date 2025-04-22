@@ -56,7 +56,7 @@ jobs:
           $folderName = "${{ vars.FOLDER_NAME }}"
           folderpath="$GITHUB_WORKSPACE/${{ vars.FOLDER_NAME }}"
           Write-Host "Folder Path: $folderpath"
-        shell: bash
+        #shell: bash
         #shell: pwsh
         
       - name: Extract branch name from JSON
