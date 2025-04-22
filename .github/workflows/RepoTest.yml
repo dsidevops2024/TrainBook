@@ -42,8 +42,8 @@ jobs:
           #$folderpath = "$env:GITHUB_WORKSPACE\$repoName\$repoName\$folderName"
           #$folderpath = "$env:GITHUB_WORKSPACE\$folderName"
           Write-Host "Folder Path: $folderpath"
-        #shell: powershell
-        shell: pwsh
+        shell: powershell
+        #shell: pwsh
         
       - name: Extract branch name from JSON
         id: extract-branch
