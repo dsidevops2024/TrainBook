@@ -1,0 +1,56 @@
+name: RepoTest
+on:
+  workflow_dispatch:
+    
+jobs:
+  job1:
+    #runs-on: self-hosted
+    runs-on: [win-runner]
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@v3
+        
+      - name: Checking and delete sb Directory on Windows
+        if: runner.os == 'Windows'
+        shell: powershell
+        run: |
+         $folderName = "${{ vars.FOLDER_NAME }}"
+         $folderpath = Join-Path -Path $env:GITHUB_WORKSPACE -ChildPath "${{ vars.FOLDER_NAME }}"
+         Write-Host "Folder Path: $folderpath"
+
+      - name: Checking and delete sb Directory on Linux/macOS
+        if: runner.os != 'Windows'
+        shell: pwsh
+        run: |
+          $folderName = "${{ vars.FOLDER_NAME }}"
+          $folderpath = Join-Path -Path $env:GITHUB_WORKSPACE -ChildPath "${{ vars.FOLDER_NAME }}"
+          Write-Host "Folder Path: $folderpath"
+          
+      #- name: Checking and delete sb Directory
+        #run: |
+          #echo "GITHUB_WORKSPACE: $GITHUB_WORKSPACE"
+          #folderName="${{ vars.FOLDER_NAME }}"
+          #folderpath="$GITHUB_WORKSPACE/$folderName"
+          #echo "Folder Path: $folderpath"
+          #shell: bash
+      #- name: Checking and delete sb Directory
+        #run: |
+          # Extract repository name from the GitHub repository context
+          #$repoOwner = "${{ github.repository_owner }}"
+          #Write-Host "Repository Owner: $repoOwner"  
+          #$repoName = "${{ github.repository }}" -split '/' | select -First 1
+          #Write-Host "Repository Name: $repoName"
+          # Get the folder name from the input or use the default
+          #$folderName = "${{ inputs.folder-name }}"
+          #$folderName = "${{ vars.FOLDER_NAME }}"
+          # Construct the folder path dynamically, using Join-Path for cross-platform compatibility
+          #$folderpath = Join-Path -Path $env:GITHUB_WORKSPACE -ChildPath "${{ vars.FOLDER_NAME }}"
+          # Construct the folder path dynamically using the repository name and folder name
+          #$folderpath = "$env:GITHUB_WORKSPACE\$repoName\$repoName\$folderName"
+          #$folderpath = "$env:GITHUB_WORKSPACE\$folderName"
+          
+          #folderName="${{ vars.FOLDER_NAME }}"
+          #folderpath="$GITHUB_WORKSPACE/${{ vars.FOLDER_NAME }}"
+          #echo "Folder Path: $folderpath"
+        #shell: bash
+        #shell: pwsh
