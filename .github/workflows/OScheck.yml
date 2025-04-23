@@ -24,7 +24,7 @@ jobs:
         #shell: bash
         #shell: pwsh
       - name: Checking and deleting sb Directory (Cross-platform)
-        shell: powershell
+        shell: pwsh
         run: |
            $folderName = "${{ vars.FOLDER_NAME }}"
     
