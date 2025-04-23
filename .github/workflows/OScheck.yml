@@ -10,34 +10,34 @@ jobs:
       - name: Checkout Repo
         uses: actions/checkout@v3
 
-      - name: Checking and delete sb Directory
-        run: |
+      #- name: Checking and delete sb Directory
+        #run: |
           # Extract repository name from the GitHub repository context
-          $folderName = "${{ vars.FOLDER_NAME }}"
+          #$folderName = "${{ vars.FOLDER_NAME }}"
           
           # Construct the folder path dynamically, using Join-Path for cross-platform compatibility
           #$folderpath = Join-Path -Path $env:GITHUB_WORKSPACE -ChildPath "${{ vars.FOLDER_NAME }}"
           
           # Construct the folder path dynamically using the repository name and folder name
-          $folderpath = "$env:GITHUB_WORKSPACE\$folderName"
-          echo "Folder Path: $folderpath"
+          #$folderpath = "$env:GITHUB_WORKSPACE\$folderName"
+          #echo "Folder Path: $folderpath"
         #shell: bash
-        shell: pwsh
-      #- name: Checking and delete sb Directory on Windows
-        #if: runner.os == 'Windows'
-        #shell: powershell
-        #run: |
-         #$folderName = "${{ vars.FOLDER_NAME }}"
-         #$folderpath = Join-Path -Path $env:GITHUB_WORKSPACE -ChildPath "${{ vars.FOLDER_NAME }}"
-         #Write-Host "Folder Path: $folderpath"
-
-      #- name: Checking and delete sb Directory on Linux/macOS
-        #if: runner.os != 'Windows'
         #shell: pwsh
-        #run: |
-          #$folderName = "${{ vars.FOLDER_NAME }}"
-          #$folderpath = Join-Path -Path $env:GITHUB_WORKSPACE -ChildPath "${{ vars.FOLDER_NAME }}"
-          #Write-Host "Folder Path: $folderpath"
+      - name: Checking and delete sb Directory on Windows
+        if: runner.os == 'Windows'
+        shell: powershell
+        run: |
+         $folderName = "${{ vars.FOLDER_NAME }}"
+         $folderpath = Join-Path -Path $env:GITHUB_WORKSPACE -ChildPath "${{ vars.FOLDER_NAME }}"
+         Write-Host "Folder Path: $folderpath"
+
+      - name: Checking and delete sb Directory on Linux/macOS
+        if: runner.os != 'Windows'
+        shell: pwsh
+        run: |
+          $folderName = "${{ vars.FOLDER_NAME }}"
+          $folderpath = Join-Path -Path $env:GITHUB_WORKSPACE -ChildPath "${{ vars.FOLDER_NAME }}"
+          Write-Host "Folder Path: $folderpath"
           
       #- name: Checking and delete sb Directory
         #run: |
