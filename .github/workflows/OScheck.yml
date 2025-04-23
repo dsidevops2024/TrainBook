@@ -28,7 +28,8 @@ jobs:
         shell: powershell
         run: |
          $folderName = "${{ vars.FOLDER_NAME }}"
-         $folderpath = Join-Path -Path $env:GITHUB_WORKSPACE -ChildPath "${{ vars.FOLDER_NAME }}"
+         #$folderpath = Join-Path -Path $env:GITHUB_WORKSPACE -ChildPath "${{ vars.FOLDER_NAME }}"
+         $folderpath = "$env:GITHUB_WORKSPACE\$folderName"
          Write-Host "Folder Path: $folderpath"
 
       - name: Checking and delete sb Directory on Linux/macOS
@@ -36,7 +37,8 @@ jobs:
         shell: pwsh
         run: |
           $folderName = "${{ vars.FOLDER_NAME }}"
-          $folderpath = Join-Path -Path $env:GITHUB_WORKSPACE -ChildPath "${{ vars.FOLDER_NAME }}"
+          $folderpath = "$env:GITHUB_WORKSPACE/$folderName"
+          #$folderpath = Join-Path -Path $env:GITHUB_WORKSPACE -ChildPath "${{ vars.FOLDER_NAME }}"
           Write-Host "Folder Path: $folderpath"
           
       #- name: Checking and delete sb Directory
