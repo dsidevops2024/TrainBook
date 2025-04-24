@@ -13,7 +13,7 @@ jobs:
 
       - name: Add dotnet to PATH
         run: echo "C:\Program Files\dotnet" | Out-File -Append -FilePath $env:GITHUB_PATH
-        shell: pwsh
+        shell: powershell
 
       - name: Generate coverage report
         run: |
