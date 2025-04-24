@@ -1,0 +1,33 @@
+name: pathcheck
+on:
+  push:
+    
+jobs:
+  job1:
+    #runs-on: self-hosted
+    #runs-on: [win-runner]
+    runs-on: [window-test]
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@v3
+      - name: delete the relase folder
+        run: |
+         Expand-Archive -Path './*.zip' -DestinationPath . -Force
+
+         if ($IsLinux) {
+         if (Test-Path ./release) {
+         Remove-Item ./release -Recurse -Force
+          Write-Output "folder './release' has been deleted."
+         } else {
+         Write-Output "folder './release' does not exist."
+         }
+         }
+
+         Get-ChildItem -Directory -Recurse
+         Get-ChildItem -File -Recurse
+
+         $artifact_name = (Get-ChildItem -Directory).Name.Trim()
+         Write-Output "Trimmed artifact name: |$artifact_name|"
+
+         Move-Item -Path "$artifact_name/*" -Destination .
+  
