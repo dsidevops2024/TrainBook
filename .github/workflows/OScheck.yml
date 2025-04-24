@@ -10,6 +10,11 @@ jobs:
     steps:
       - name: Checkout Repo
         uses: actions/checkout@v3
+
+      - name: Add dotnet to PATH
+        run: echo "C:\Program Files\dotnet" | Out-File -Append -FilePath $env:GITHUB_PATH
+        shell: pwsh
+
       - name: Generate coverage report
         run: |
           # Check if the report generator tool is already installed
