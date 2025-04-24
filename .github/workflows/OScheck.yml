@@ -4,11 +4,45 @@ on:
     
 jobs:
   job1:
-    runs-on: self-hosted
+    #runs-on: self-hosted
     #runs-on: [win-runner]
+    runs-on: [window-test]
     steps:
       - name: Checkout Repo
         uses: actions/checkout@v3
+      - name: Generate coverage report
+        run: |
+          # Check if the report generator tool is already installed
+          $toolList = dotnet tool list --global
+          $toolInstalled = $toolList -match "dotnet-reportgenerator-globaltool"
+
+          if (-not $toolInstalled) {
+            # Tool is not installed, install it
+            Write-Host "Installing dotnet-reportgenerator-globaltool."
+            dotnet tool install --global dotnet-reportgenerator-globaltool
+          } else {
+            Write-Host "dotnet-reportgenerator-globaltool is already installed."
+          }
+
+          # Find the installation directory of dotnet tools
+          $dotnetToolsPath = [System.IO.Path]::Combine($env:USERPROFILE, '.dotnet', 'tools')
+    
+          # Ensure the tool is in the expected tools path
+          if (Test-Path $dotnetToolsPath) {
+            Write-Host "Global tools are installed at: $dotnetToolsPath"
+          } else {
+            Write-Host "Failed to determine global tools installation directory."
+          }
+    
+          # Check for reportgenerator.exe in the tools path
+          $reportGeneratorPath = [System.IO.Path]::Combine($dotnetToolsPath, 'reportgenerator.exe')
+    
+          if (Test-Path $reportGeneratorPath) {
+            Write-Host "The report generator tool is located at: $reportGeneratorPath"
+          } else {
+            Write-Host "Report generator tool is not located at the expected path."
+          }
+
 
       #- name: Checking and delete sb Directory
         #run: |
@@ -23,25 +57,25 @@ jobs:
           #echo "Folder Path: $folderpath"
         #shell: bash
         #shell: pwsh
-      - name: Checking and deleting sb Directory (Cross-platform)
-        shell: pwsh
-        run: |
-           $folderName = "${{ vars.FOLDER_NAME }}"
+      #- name: Checking and deleting sb Directory (Cross-platform)
+        #shell: pwsh
+        #run: |
+           #$folderName = "${{ vars.FOLDER_NAME }}"
     
-           if ($IsWindows) {
-              $folderPath = "$env:GITHUB_WORKSPACE\$folderName"
-           } else {
-              $folderPath = "$env:GITHUB_WORKSPACE/$folderName"
-           }
+           #if ($IsWindows) {
+              #$folderPath = "$env:GITHUB_WORKSPACE\$folderName"
+           #} else {
+              #$folderPath = "$env:GITHUB_WORKSPACE/$folderName"
+           #}
 
-           Write-Host "Folder Path: $folderPath"
+           #Write-Host "Folder Path: $folderPath"
 
-           if (Test-Path $folderPath) {
-             Write-Host "Deleting folder: $folderPath"
-             Remove-Item -Recurse -Force $folderPath
-           } else {
-             Write-Host "Folder does not exist: $folderPath"
-           }
+           #if (Test-Path $folderPath) {
+             #Write-Host "Deleting folder: $folderPath"
+             #Remove-Item -Recurse -Force $folderPath
+           #} else {
+             #Write-Host "Folder does not exist: $folderPath"
+           #}
         
       #- name: Checking and delete sb Directory on Windows
         #if: runner.os == 'Windows'
