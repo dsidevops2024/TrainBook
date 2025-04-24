@@ -1,6 +1,6 @@
 name: OScheck
 on:
-  push:
+  #push:
     
 jobs:
   job1:
