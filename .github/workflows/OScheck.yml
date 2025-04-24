@@ -17,6 +17,10 @@ jobs:
 
       - name: Generate coverage report
         run: |
+          # Clear incorrect sources and add the correct one
+          dotnet nuget remove source bing -ea SilentlyContinue
+          dotnet nuget add source https://api.nuget.org/v3/index.json -n nuget.org
+
           # Check if the report generator tool is already installed
           $toolList = dotnet tool list --global
           $toolInstalled = $toolList -match "dotnet-reportgenerator-globaltool"
