@@ -1,6 +1,6 @@
 name: OScheck
 on:
-  workflow_dispatch:
+  push:
     
 jobs:
   job1:
@@ -17,22 +17,6 @@ jobs:
 
       - name: Generate coverage report
         run: |
-          # List existing NuGet sources
-          Write-Host "Existing NuGet sources:"
-          dotnet nuget list source
-
-          # Remove bad sources (e.g., Bing.com) — make sure the names match the output of the list command
-          dotnet nuget remove source bing.com -v n
-          dotnet nuget remove source bing -v n
-
-          # Remove & re-add nuget.org with correct URL
-          dotnet nuget remove source nuget.org -v n
-          dotnet nuget add source https://api.nuget.org/v3/index.json -n nuget.org
-
-          # Recheck
-          Write-Host "Updated NuGet sources:"
-          dotnet nuget list source
-
           # Check if the report generator tool is already installed
           $toolList = dotnet tool list --global
           $toolInstalled = $toolList -match "dotnet-reportgenerator-globaltool"
