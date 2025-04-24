@@ -1,11 +1,8 @@
-name: PR Workflow
+name: PcheckR Workflow
 
 on:
-  #workflow_dispatch:
-  pull_request:
-    paths:
-      - './.github/Test/**'
-      - './.github/workflows/**'
+  workflow_dispatch:
+  
 
 jobs:
   build:
@@ -14,5 +11,25 @@ jobs:
     steps:
       - name: Check out code
         uses: actions/checkout@v2
+      - name: chekc the path
+        run: |
+           Expand-Archive -Path './*.zip' -DestinationPath . -Force
+           # check if the release folder exists
+           if (test-path -path ./release) {
+           #/actions-runner/_work/sb-saas-cd/sb-saas-cd/SphereEngine-Dacpac/release) {
+             #if the folder exists, delete it
+            remove-item -path ./release -Recurse -Force
+            #actions-runner/_work/sb-saas-cd/sb-saas-cd/SphereEngine-Dacpac/release -Recurse -Force
+            write-output "folder './release' has been deleted."
+           } else {
+            write-output "folder './release' does not exist."
+           }
+           Get-ChildItem -Directory -Recurse
+           Get-ChildItem -File -Recurse
+           $artifact_name = (Get-ChildItem -Directory).Name | Out-String
+           $artifact_name = $artifact_name.Trim()
+           #$artifact_name = $artifact_name -replace '\s', '' 
+           Write-Output "Trimmed artifact name: |$artifact_name|"
+           Move-Item -Path "$artifact_name/*" -Destination .
 
-      # Add your workflow steps here
+    
