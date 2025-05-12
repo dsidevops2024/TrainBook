@@ -1,0 +1,13 @@
+name: EphemeralRunnerTest
+
+on:
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: ephemeral-runner-set
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      - name: Display message
+        run: echo "Runner is operational!"
