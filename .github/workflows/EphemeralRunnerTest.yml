@@ -4,11 +4,19 @@ on:
   push:
 
 jobs:
-  test:
+  test1:
     runs-on: 
       group : ARC-Runner
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
       - name: Display message
-        run: echo "Runner is operational!"
+        run: echo "Runner1 is operational!"
+  test2:
+    runs-on: 
+      group : ARC-Runner
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      - name: Checking runner machine
+        run: echo "Runner2 is working!"
