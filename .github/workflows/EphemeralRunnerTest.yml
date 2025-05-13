@@ -5,7 +5,7 @@ on:
 
 jobs:
   test:
-    runs-on: ephemeral-runner-set
+    runs-on: ARC-Runners
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
