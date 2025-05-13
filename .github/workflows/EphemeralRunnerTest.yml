@@ -1,7 +1,7 @@
 name: EphemeralRunnerTest
 
 on:
-  workflow_dispatch:
+  push:
 
 jobs:
   test:
