@@ -10,7 +10,7 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
-      - name: Display message
+      - name: Display messages
         run: echo "Runner1 is operational!"
   test2:
     runs-on: 
