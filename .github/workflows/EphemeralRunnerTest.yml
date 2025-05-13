@@ -5,7 +5,7 @@ on:
 
 jobs:
   test:
-    runs-on: ARC-Runners
+    runs-on: ARC-Runner
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
