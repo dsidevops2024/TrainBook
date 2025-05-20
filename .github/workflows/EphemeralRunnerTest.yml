@@ -11,7 +11,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
       - name: Display messages
-        run: echo "Runner1 checks is operational!"
+        run: echo "Runner1 check is operational!"
   test2:
     runs-on: 
       group : ARC-Runner
