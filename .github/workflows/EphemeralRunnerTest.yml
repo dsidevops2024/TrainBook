@@ -19,4 +19,4 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
       - name: Checking runner machine
-        run: echo "Runner2 is working!"
+        run: echo "Runner2 check is working!"
