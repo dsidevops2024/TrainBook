@@ -20,5 +20,5 @@ jobs:
          run: |
            gh variable set COMPONENT_VERSIONS --body '{"mvc":"2.0.0","dacpac":"2.1.0"}' --repo ${{ github.repository }}
          env:
-           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+           GH_TOKEN: ${{ secrets.PAT_TOKEN }}
 
