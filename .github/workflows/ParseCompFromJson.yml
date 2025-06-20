@@ -1,0 +1,13 @@
+name: ParseCompFromJson
+on:
+  workflow_dispatch:
+
+jobs:
+  Component-Parse:
+     runs-on: ubuntu-latest
+     steps:
+       - name: Get version from Json Repo variables
+         run: |
+            echo "${{ vars.component_versions }}" > versions.json
+            VERSIONS=$(jq -r '."mvc"' versions.json)
+            echo  "mvc version: $VERSIONS"
