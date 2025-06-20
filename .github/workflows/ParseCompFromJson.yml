@@ -8,6 +8,6 @@ jobs:
      steps:
        - name: Get version from Json Repo variables
          run: |
-            echo "${{ vars.component_versions }}" > versions.json
+            echo "${{ vars.COMPONENT_VERSIONS }}" > versions.json
             VERSIONS=$(jq -r '."mvc"' versions.json)
             echo  "mvc version: $VERSIONS"
