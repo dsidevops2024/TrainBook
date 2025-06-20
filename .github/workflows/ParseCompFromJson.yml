@@ -1,0 +1,23 @@
+name: ParseCompFromJson
+on:
+  workflow_dispatch:
+
+jobs:
+  Component-Parse:
+     runs-on: ubuntu-latest
+     steps:
+       - name: Checkout code 
+         uses: actions/checkout@v4
+         
+       - name: Get version from Json Repo variables
+         run: |
+            echo '${{ vars.COMPONENT_VERSIONS }}' > versions.json
+            cat versions.json
+            VERSIONS=$(jq -r '."mvc"' versions.json)
+            echo  "mvc version: $VERSIONS"
+
+       - name: Set COMPONENT_VERSIONS variable
+         run: |
+           gh variable set COMPONENT_VERSIONS --body '{"mvc":"2.0.0","dacpac":"2.1.0"}' --repo ${{ github.repository }}
+         env:
+           GH_TOKEN: ${{ secrets.PAT_TOKEN }}
