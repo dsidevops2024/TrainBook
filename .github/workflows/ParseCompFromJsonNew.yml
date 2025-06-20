@@ -11,7 +11,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Get current component versions
+      - name: Get current component version
         run: |
           echo '${{ vars.COMPONENT_VERSIONS }}' > versions.json
           cat versions.json
