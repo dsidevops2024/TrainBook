@@ -16,7 +16,7 @@ jobs:
           echo '${{ vars.COMPONENT_VERSIONS }}' > versions.json
           cat versions.json
 
-      - name: Get latest commit message
+      - name: Get latest commit message-check
         id: commit
         run: |
           COMMIT_MSG=$(git log -1 --pretty=%B)
