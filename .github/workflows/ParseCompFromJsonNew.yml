@@ -1,0 +1,88 @@
+name: ParseCompFromJson
+
+on:
+  workflow_dispatch:
+
+jobs:
+  Component-Parse:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Get current component versions
+        run: |
+          echo '${{ vars.COMPONENT_VERSIONS }}' > versions.json
+          cat versions.json
+
+      - name: Get latest commit message
+        id: commit
+        run: |
+          COMMIT_MSG=$(git log -1 --pretty=%B)
+          echo "Commit message: $COMMIT_MSG"
+          echo "commit_message=$COMMIT_MSG" >> $GITHUB_OUTPUT
+
+      - name: Determine affected component and bump version
+        id: bump
+        run: |
+          echo "Parsing commit message..."
+          COMMIT_MSG="${{ steps.commit.outputs.commit_message }}"
+
+          # Extract scope (e.g., mvc, dacpac)
+          COMPONENT=$(echo "$COMMIT_MSG" | sed -nE 's/^(feat|fix|chore|perf|refactor|style|test|docs)\(([^)]+)\):.*/\2/p')
+
+          if [ -z "$COMPONENT" ]; then
+            echo "No component scope found in commit message."
+            exit 0
+          fi
+
+          echo "Component: $COMPONENT"
+
+          # Extract existing version
+          VERSION=$(jq -r --arg key "$COMPONENT" '.[$key]' versions.json)
+
+          if [ "$VERSION" == "null" ]; then
+            echo "Component '$COMPONENT' not found in versions.json"
+            exit 1
+          fi
+
+          MAJOR=$(echo $VERSION | cut -d. -f1)
+          MINOR=$(echo $VERSION | cut -d. -f2)
+          PATCH=$(echo $VERSION | cut -d. -f3)
+
+          # Determine bump
+          if echo "$COMMIT_MSG" | grep -q -i "BREAKING CHANGE"; then
+            MAJOR=$((MAJOR + 1))
+            MINOR=0
+            PATCH=0
+          elif echo "$COMMIT_MSG" | grep -q "^feat"; then
+            MINOR=$((MINOR + 1))
+            PATCH=0
+          elif echo "$COMMIT_MSG" | grep -q "^fix"; then
+            PATCH=$((PATCH + 1))
+          else
+            echo "No bump needed."
+            exit 0
+          fi
+
+          NEW_VERSION="$MAJOR.$MINOR.$PATCH"
+          echo "New version for $COMPONENT: $NEW_VERSION"
+
+          # Save outputs
+          echo "component=$COMPONENT" >> $GITHUB_OUTPUT
+          echo "new_version=$NEW_VERSION" >> $GITHUB_OUTPUT
+
+      - name: Merge and update COMPONENT_VERSIONS
+        if: steps.bump.outputs.new_version != ''
+        run: |
+          echo "Updating COMPONENT_VERSIONS..."
+          echo '${{ vars.COMPONENT_VERSIONS }}' > current.json
+          echo "{\"${{ steps.bump.outputs.component }}\":\"${{ steps.bump.outputs.new_version }}\"}" > update.json
+
+          jq -s '.[0] * .[1]' current.json update.json > merged.json
+          cat merged.json
+
+          gh variable set COMPONENT_VERSIONS --body "$(cat merged.json)" --repo ${{ github.repository }}
+        env:
+          GH_TOKEN: ${{ secrets.PAT_TOKEN }}
