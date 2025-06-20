@@ -1,6 +1,7 @@
 name: OScheck
 on:
   #push:
+  workflow_dispatch:
     
 jobs:
   job1:
