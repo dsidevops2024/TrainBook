@@ -35,16 +35,31 @@ jobs:
           echo '${{ vars.COMPONENT_VERSIONS }}' > versions.json
           cat versions.json
 
-      - name: Get latest commit message-check
-        id: commit
-        run: |
-          COMMIT_MSG=$(git log -1 --pretty=%B)
-          echo "Commit message: $COMMIT_MSG"
-          echo "commit_message<<EOF" >> $GITHUB_OUTPUT
-          echo "$COMMIT_MSG" >> $GITHUB_OUTPUT
-          echo "EOF" >> $GITHUB_OUTPUT
+      #- name: Get latest commit message-check
+        #id: commit
+        #run: |
+          #COMMIT_MSG=$(git log -1 --pretty=%B)
+          #echo "Commit message: $COMMIT_MSG"
+          #echo "commit_message<<EOF" >> $GITHUB_OUTPUT
+          #echo "$COMMIT_MSG" >> $GITHUB_OUTPUT
+          #echo "EOF" >> $GITHUB_OUTPUT
           #echo "Commit message: $COMMIT_MSG"
           #echo "commit_message=$COMMIT_MSG" >> $GITHUB_OUTPUT
+
+      - name: Get developer commit messages from PR
+        id: devcommits
+        run: |
+         echo "Getting developer commit messages introduced in PR..."
+         COMMIT_MSGS=$(git log --pretty=%B ${{ github.event.before }}..${{ github.sha }})
+         echo "$COMMIT_MSGS"
+
+         # Optional: Only get the first non-merge commit message
+         COMMIT_MSG=$(echo "$COMMIT_MSGS" | grep -v "^Merge pull request" | head -n 1)
+
+         echo "Developer commit: $COMMIT_MSG"
+         echo "commit_message<<EOF" >> $GITHUB_OUTPUT
+         echo "$COMMIT_MSG" >> $GITHUB_OUTPUT
+         echo "EOF" >> $GITHUB_OUTPUT    
 
       - name: Determine affected component and bump version
         id: bump
