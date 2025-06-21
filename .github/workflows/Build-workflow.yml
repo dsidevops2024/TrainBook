@@ -28,7 +28,7 @@ jobs:
         run: |
           mkdir staging
           cp target/*.war staging/
-      #Checking Dev commits
+      #Checking Dev commits1st attempt
       - name: Get current component version
         run: |
           echo '${{ vars.COMPONENT_VERSIONS }}' > versions.json
