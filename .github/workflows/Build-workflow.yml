@@ -51,9 +51,16 @@ jobs:
         run: |
           echo "Parsing commit message..."
           COMMIT_MSG="${{ steps.commit.outputs.commit_message }}"
+           echo "Full commit message: $COMMIT_MSG"
+
+          # Get only the first line of the commit message
+          FIRST_LINE=$(echo "$COMMIT_MSG" | head -n 1)
+
+          # Extract scope (e.g., mvc, dacpac) from first line only
+          COMPONENT=$(echo "$FIRST_LINE" | sed -nE 's/^(feat|fix|chore|perf|refactor|style|test|docs)\(([^)]+)\):.*/\2/p')
 
           # Extract scope (e.g., mvc, dacpac)
-          COMPONENT=$(echo "$COMMIT_MSG" | sed -nE 's/^(feat|fix|chore|perf|refactor|style|test|docs)\(([^)]+)\):.*/\2/p')
+          #COMPONENT=$(echo "$COMMIT_MSG" | sed -nE 's/^(feat|fix|chore|perf|refactor|style|test|docs)\(([^)]+)\):.*/\2/p')
 
           if [ -z "$COMPONENT" ]; then
             echo "No component scope found in commit message."
