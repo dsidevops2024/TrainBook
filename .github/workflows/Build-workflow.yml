@@ -29,7 +29,7 @@ jobs:
         run: |
           mkdir staging
           cp target/*.war staging/
-      #second,Third,Fourth,fifth level check on versioning with push in main
+      #Checking Dev commits
       - name: Get current component version
         run: |
           echo '${{ vars.COMPONENT_VERSIONS }}' > versions.json
