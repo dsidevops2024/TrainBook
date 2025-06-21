@@ -1,6 +1,7 @@
 name: Build-workflow-versioningcheck
 on:
-  workflow_dispatch:
+  #workflow_dispatch:
+  push:
 
 jobs:
   build:
