@@ -40,7 +40,11 @@ jobs:
         run: |
           COMMIT_MSG=$(git log -1 --pretty=%B)
           echo "Commit message: $COMMIT_MSG"
-          echo "commit_message=$COMMIT_MSG" >> $GITHUB_OUTPUT
+          echo "commit_message<<EOF" >> $GITHUB_OUTPUT
+          echo "$COMMIT_MSG" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+          #echo "Commit message: $COMMIT_MSG"
+          #echo "commit_message=$COMMIT_MSG" >> $GITHUB_OUTPUT
 
       - name: Determine affected component and bump version
         id: bump
