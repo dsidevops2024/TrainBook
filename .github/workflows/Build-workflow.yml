@@ -1,4 +1,4 @@
-name: Build-workflow
+name: Build-workflow-SVbranch
 on:
   workflow_dispatch:
 
@@ -15,14 +15,13 @@ jobs:
       
     
       - name: Settting up JDK 17
-
         uses: actions/setup-java@v3
         with:
           java-version: '18'
           distribution: 'temurin'
           cache: maven
+      #checking versioning
       - name: Build with new Maven
-
         run: mvn -B package --file pom.xml
       - name: Creates stagin directory and copy .war
         run: |
