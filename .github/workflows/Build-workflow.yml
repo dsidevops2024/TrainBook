@@ -8,6 +8,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0  # fetches the entire commit history
       - name: Cache Maven packages
         uses: actions/cache@v3
         with:
@@ -65,7 +67,7 @@ jobs:
         id: bump
         run: |
           echo "Parsing commit message..."
-          COMMIT_MSG="${{ steps.commit.outputs.commit_message }}"
+          COMMIT_MSG="${{ steps.devcommits.outputs.commit_message }}"
            echo "Full commit message: $COMMIT_MSG"
 
           # Get only the first line of the commit message
