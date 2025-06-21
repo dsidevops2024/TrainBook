@@ -104,8 +104,8 @@ jobs:
           gh variable set COMPONENT_VERSIONS --body "$(cat merged.json)" --repo ${{ github.repository }}
         env:
           GH_TOKEN: ${{ secrets.PAT_TOKEN }}
-      - name: Publish Artifact
-        uses: actions/upload-artifact@v3
-        with:
-          name: web-app
-          path: staging
+      #- name: Publish Artifact
+        #uses: actions/upload-artifact@v3
+        #with:
+          #name: web-app
+          #path: staging
