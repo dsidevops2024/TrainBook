@@ -19,7 +19,8 @@ jobs:
           java-version: '18'
           distribution: 'temurin'
           cache: maven
-          
+
+      #checking versioning
       - name: Build with new Maven
         run: mvn -B package --file pom.xml
         
