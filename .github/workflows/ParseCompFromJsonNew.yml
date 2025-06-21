@@ -1,7 +1,8 @@
 name: ParseCompFromJsonNew
 
 on:
-  push:
+  #push:
+  workflow_dispatch:
 
 jobs:
   Component-Parse:
