@@ -61,7 +61,7 @@ jobs:
          #echo "$COMMIT_MSG" >> $GITHUB_OUTPUT
          #echo "EOF" >> $GITHUB_OUTPUT 
 
-      - name: Get developer commit messages from PRs
+      - name: Get developer commit messages from PR
         id: devcommits
         run: |
          echo "Getting developer commit messages introduced in PR..." 
