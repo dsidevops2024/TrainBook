@@ -7,6 +7,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
       - name: Cache Maven packages
         uses: actions/cache@v3
         with:
@@ -22,7 +24,7 @@ jobs:
 
       - name: Build with new Maven
         run: mvn -B package --file pom.xml
-      #checking PR checklists-new2
+      #checking PR checklists-new3
       - name: Creates stagin directory and copy .war
         run: |
           mkdir staging
@@ -45,34 +47,34 @@ jobs:
           #echo "Commit message: $COMMIT_MSG"
           #echo "commit_message=$COMMIT_MSG" >> $GITHUB_OUTPUT
 
-      #- name: Get developer commit messages from PR
-        #id: devcommits
-        #run: |
-         #echo "Getting developer commit messages introduced in PR..."
-         #COMMIT_MSGS=$(git log --pretty=%B ${{ github.event.before }}..${{ github.sha }})
-         #echo "$COMMIT_MSGS"
-         # Optional: Only get the first non-merge commit message
-         #COMMIT_MSG=$(echo "$COMMIT_MSGS" | grep -v "^Merge pull request" | head -n 1)
-         #echo "Developer commit: $COMMIT_MSG"
-         #echo "commit_message<<EOF" >> $GITHUB_OUTPUT
-         #echo "$COMMIT_MSG" >> $GITHUB_OUTPUT
-         #echo "EOF" >> $GITHUB_OUTPUT    
-      #checking developer commits
-      - name: Get developer commit message (not merge commit)
+      - name: Get developer commit messages from PR
         id: devcommits
         run: |
-          echo "Fetching developer commit message..."
+         echo "Getting developer commit messages introduced in PR..."
+         COMMIT_MSGS=$(git log --pretty=%B ${{ github.event.before }}..${{ github.sha }})
+         echo "$COMMIT_MSGS"
+         # Optional: Only get the first non-merge commit message
+         COMMIT_MSG=$(echo "$COMMIT_MSGS" | grep -v "^Merge pull request" | head -n 1)
+         echo "Developer commit: $COMMIT_MSG"
+         echo "commit_message<<EOF" >> $GITHUB_OUTPUT
+         echo "$COMMIT_MSG" >> $GITHUB_OUTPUT
+         echo "EOF" >> $GITHUB_OUTPUT    
+      #checking developer commits
+      #- name: Get developer commit message (not merge commit)
+        #id: devcommits
+        #run: |
+          #echo "Fetching developer commit message..."
 
           # Get the latest commit not authored by 'GitHub' (merge commits usually are)
-          COMMIT_MSG=$(git log --no-merges --pretty=%B -n 1)
+          #COMMIT_MSG=$(git log --no-merges --pretty=%B -n 1)
 
-          echo "Developer commit: $COMMIT_MSG"
+          #echo "Developer commit: $COMMIT_MSG"
 
           # Write to GitHub output (safe multiline syntax)
-          DELIM="EOF$(date +%s%N)"
-          echo "commit_message<<$DELIM" >> $GITHUB_OUTPUT
-          echo "$COMMIT_MSG" >> $GITHUB_OUTPUT
-          echo "$DELIM" >> $GITHUB_OUTPUT
+          #DELIM="EOF$(date +%s%N)"
+          #echo "commit_message<<$DELIM" >> $GITHUB_OUTPUT
+          #echo "$COMMIT_MSG" >> $GITHUB_OUTPUT
+          #echo "$DELIM" >> $GITHUB_OUTPUT
 
       - name: Determine affected component and bump version
         id: bump
