@@ -1,12 +1,15 @@
 name: Build-workflow
 on:
-  workflow_dispatch:
+  #workflow_dispatch:
+  push:
 
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0  # fetches the entire commit history
       - name: Cache Maven packages
         uses: actions/cache@v3
         with:
@@ -27,4 +30,111 @@ jobs:
         run: |
           mkdir staging
           cp target/*.war staging/
-      
+
+      #Checking Dev commits 2nd attempt
+      - name: Get current component version
+        run: |
+          echo '${{ vars.COMPONENT_VERSIONS }}' > versions.json
+          cat versions.json
+
+      #- name: Get latest commit message-check
+        #id: commit
+        #run: |
+          #COMMIT_MSG=$(git log -1 --pretty=%B)
+          #echo "Commit message: $COMMIT_MSG"
+          #echo "commit_message<<EOF" >> $GITHUB_OUTPUT
+          #echo "$COMMIT_MSG" >> $GITHUB_OUTPUT
+          #echo "EOF" >> $GITHUB_OUTPUT
+          #echo "Commit message: $COMMIT_MSG"
+          #echo "commit_message=$COMMIT_MSG" >> $GITHUB_OUTPUT
+
+      - name: Get developer commit from PR merge body
+        id: devcommits
+        run: |
+         echo "Getting commit message from merge body..."
+         COMMIT_MSG=$(git log -1 --pretty=%B)
+
+         # Remove merge line and blank lines
+         CLEAN_MSG=$(echo "$COMMIT_MSG" | sed '/^Merge pull request/d' | sed '/^\s*$/d' | head -n 1)
+
+         echo "Developer commit: $CLEAN_MSG"
+
+         echo "commit_message<<EOF" >> $GITHUB_OUTPUT
+         echo "$CLEAN_MSG" >> $GITHUB_OUTPUT
+         echo "EOF" >> $GITHUB_OUTPUT   
+
+      - name: Determine affected component and bump version
+        id: bump
+        run: |
+          echo "Parsing commit message..."
+          COMMIT_MSG="${{ steps.devcommits.outputs.commit_message }}"
+           echo "Full commit message: $COMMIT_MSG"
+
+          # Get only the first line of the commit message
+          FIRST_LINE=$(echo "$COMMIT_MSG" | head -n 1)
+
+          # Extract scope (e.g., mvc, dacpac) from first line only
+          COMPONENT=$(echo "$FIRST_LINE" | sed -nE 's/^(feat|fix|chore|perf|refactor|style|test|docs)\(([^)]+)\):.*/\2/p')
+
+          # Extract scope (e.g., mvc, dacpac)
+          #COMPONENT=$(echo "$COMMIT_MSG" | sed -nE 's/^(feat|fix|chore|perf|refactor|style|test|docs)\(([^)]+)\):.*/\2/p')
+
+          if [ -z "$COMPONENT" ]; then
+            echo "No component scope found in commit message."
+            exit 0
+          fi
+
+          echo "Component: $COMPONENT"
+
+          # Extract existing version
+          VERSION=$(jq -r --arg key "$COMPONENT" '.[$key]' versions.json)
+
+          if [ "$VERSION" == "null" ]; then
+            echo "Component '$COMPONENT' not found in versions.json"
+            exit 1
+          fi
+
+          MAJOR=$(echo $VERSION | cut -d. -f1)
+          MINOR=$(echo $VERSION | cut -d. -f2)
+          PATCH=$(echo $VERSION | cut -d. -f3)
+
+          # Determine bump
+          if echo "$COMMIT_MSG" | grep -q -i "BREAKING CHANGE"; then
+            MAJOR=$((MAJOR + 1))
+            MINOR=0
+            PATCH=0
+          elif echo "$COMMIT_MSG" | grep -q "^feat"; then
+            MINOR=$((MINOR + 1))
+            PATCH=0
+          elif echo "$COMMIT_MSG" | grep -q "^fix"; then
+            PATCH=$((PATCH + 1))
+          else
+            echo "No bump needed."
+            exit 0
+          fi
+
+          NEW_VERSION="$MAJOR.$MINOR.$PATCH"
+          echo "New version for $COMPONENT: $NEW_VERSION"
+
+          # Save outputs
+          echo "component=$COMPONENT" >> $GITHUB_OUTPUT
+          echo "new_version=$NEW_VERSION" >> $GITHUB_OUTPUT
+
+      - name: Merge and update COMPONENT_VERSIONS
+        if: steps.bump.outputs.new_version != ''
+        run: |
+          echo "Updating COMPONENT_VERSIONS..."
+          echo '${{ vars.COMPONENT_VERSIONS }}' > current.json
+          echo "{\"${{ steps.bump.outputs.component }}\":\"${{ steps.bump.outputs.new_version }}\"}" > update.json
+
+          jq -s '.[0] * .[1]' current.json update.json > merged.json
+          cat merged.json
+
+          gh variable set COMPONENT_VERSIONS --body "$(cat merged.json)" --repo ${{ github.repository }}
+        env:
+          GH_TOKEN: ${{ secrets.PAT_TOKEN }}
+      #- name: Publish Artifact
+        #uses: actions/upload-artifact@v3
+        #with:
+          #name: web-app
+          #path: staging
