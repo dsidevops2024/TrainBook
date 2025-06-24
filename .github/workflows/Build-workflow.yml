@@ -22,7 +22,7 @@ jobs:
 
       - name: Build with new Maven
         run: mvn -B package --file pom.xml
-        
+      #checking PR checklist
       - name: Creates stagin directory and copy .war
         run: |
           mkdir staging
