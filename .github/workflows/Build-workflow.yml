@@ -20,7 +20,7 @@ jobs:
           distribution: 'temurin'
           cache: maven
 
-      #checking versioning
+      #checking versionings
       - name: Build with new Maven
         run: mvn -B package --file pom.xml
         
