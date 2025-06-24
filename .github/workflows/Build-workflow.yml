@@ -1,15 +1,12 @@
 name: Build-workflow
 on:
-  #workflow_dispatch:
-  push:
+  workflow_dispatch:
 
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-        with:
-          fetch-depth: 0  # fetches the entire commit history
       - name: Cache Maven packages
         uses: actions/cache@v3
         with:
@@ -25,11 +22,12 @@ jobs:
 
       - name: Build with new Maven
         run: mvn -B package --file pom.xml
-      #checking PR checklists new
+      #checking PR checklists-new
       - name: Creates stagin directory and copy .war
         run: |
           mkdir staging
           cp target/*.war staging/
+
 
       #Checking Dev commits 2nd attempt
       - name: Get current component version
