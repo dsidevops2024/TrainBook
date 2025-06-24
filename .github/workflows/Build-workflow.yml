@@ -23,14 +23,14 @@ jobs:
           distribution: 'temurin'
           cache: maven
 
-      #checking versioning
       - name: Build with new Maven
         run: mvn -B package --file pom.xml
-        
+      #checking PR checklists
       - name: Creates stagin directory and copy .war
         run: |
           mkdir staging
           cp target/*.war staging/
+
       #Checking Dev commits 2nd attempt
       - name: Get current component version
         run: |
