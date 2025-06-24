@@ -25,7 +25,7 @@ jobs:
 
       - name: Build with new Maven
         run: mvn -B package --file pom.xml
-      #checking PR checklists
+      #checking PR checklists new
       - name: Creates stagin directory and copy .war
         run: |
           mkdir staging
