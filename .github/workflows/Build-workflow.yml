@@ -57,7 +57,7 @@ jobs:
          #echo "commit_message<<EOF" >> $GITHUB_OUTPUT
          #echo "$COMMIT_MSG" >> $GITHUB_OUTPUT
          #echo "EOF" >> $GITHUB_OUTPUT    
-
+      #checking developer commits
       - name: Get developer commit message (not merge commit)
         id: devcommits
         run: |
