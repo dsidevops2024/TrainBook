@@ -48,20 +48,36 @@ jobs:
           #echo "Commit message: $COMMIT_MSG"
           #echo "commit_message=$COMMIT_MSG" >> $GITHUB_OUTPUT
 
-      - name: Get developer commit from PR merge body
-        id: devcommits
-        run: |
-         echo "Getting commit message from merge body..."
-         COMMIT_MSG=$(git log -1 --pretty=%B)
+      #- name: Get developer commit from PR merge body
+        #id: devcommits
+        #run: |
+         #echo "Getting commit message from merge body..."
+         #COMMIT_MSG=$(git log -1 --pretty=%B)
 
          # Remove merge line and blank lines
-         CLEAN_MSG=$(echo "$COMMIT_MSG" | sed '/^Merge pull request/d' | sed '/^\s*$/d' | head -n 1)
+         #CLEAN_MSG=$(echo "$COMMIT_MSG" | sed '/^Merge pull request/d' | sed '/^\s*$/d' | head -n 1)
 
-         echo "Developer commit: $CLEAN_MSG"
+         #echo "Developer commit: $CLEAN_MSG"
 
-         echo "commit_message<<EOF" >> $GITHUB_OUTPUT
-         echo "$CLEAN_MSG" >> $GITHUB_OUTPUT
-         echo "EOF" >> $GITHUB_OUTPUT   
+         #echo "commit_message<<EOF" >> $GITHUB_OUTPUT
+         #echo "$CLEAN_MSG" >> $GITHUB_OUTPUT
+         #echo "EOF" >> $GITHUB_OUTPUT   
+
+      - name: Get developer commit message (not merge commit)
+        id: devcommits
+        run: |
+          echo "Fetching developer commit message..."
+
+          # Get the latest commit not authored by 'GitHub' (merge commits usually are)
+          COMMIT_MSG=$(git log --no-merges --pretty=%B -n 1)
+
+          echo "Developer commit: $COMMIT_MSG"
+
+          # Write to GitHub output (safe multiline syntax)
+          DELIM="EOF$(date +%s%N)"
+          echo "commit_message<<$DELIM" >> $GITHUB_OUTPUT
+          echo "$COMMIT_MSG" >> $GITHUB_OUTPUT
+          echo "$DELIM" >> $GITHUB_OUTPUT
 
       - name: Determine affected component and bump version
         id: bump
