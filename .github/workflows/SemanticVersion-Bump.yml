@@ -24,7 +24,8 @@ jobs:
       - name: Get changed components
         id: changed
         run: |
-         git fetch origin main COMPONENTS=$(git diff --name-only origin/main...HEAD | cut -d/ -f1 | sort -u | uniq | jq -R -s -c 'split("\n") | map(select(length > 0))')
+         git fetch origin main 
+         COMPONENTS=$(git diff --name-only origin/main...HEAD | cut -d/ -f1 | sort -u | uniq | jq -R -s -c 'split("\n") | map(select(length > 0))')
          echo "components=$COMPONENTS" >> $GITHUB_OUTPUT
 
       - name: Get SemVer bump from PR body
