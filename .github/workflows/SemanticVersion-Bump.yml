@@ -35,8 +35,56 @@ steps:
        echo "semver=patch" >> $GITHUB_OUTPUT
      elif echo "$PR_BODY" | grep -q '\[x\].*Minor';then
         echo "semver=Minor" >> $GITHUB_OUTPUT
-     elif echo "$PR_BODY" | grep -q '\[x\].*Minor';then
-        echo "semver=Minor" >> $GITHUB_OUTPUT
+     elif echo "$PR_BODY" | grep -q '\[x\].*Major';then
+        echo "semver=Major" >> $GITHUB_OUTPUT
+     else echo"No semver bump selected"
+       exit 1
+     fi
+
+  #- name: Get current version map
+     #id: get_versions
+     #run: |
+       #fetch repo variable(JSON)
+       #CURRENT=$(gh variable get )
+       
+  - name: Get current component version
+    run: |
+       echo '${{ vars.COMPONENT_VERSIONS }}' > versions.json
+       cat versions.json
+
+  - name: Bump versions for changed components
+    id: bump
+    run: |
+      CHANGED=$(echo '${{ steps.changed.outputs.components }}' | jq -r'.[]')
+      SEMVER=${{ steps.semver.outputs.semver }}
+      VERSIONS=$(cat versions.json | jq '.')
+
+      bump_version(){
+      local version=$1
+      local type=$2
+      IFS="."read -r major minor patch <<< "$version"
+      case "$type" in 
+        major) major=$((major+1)); minor=0;patch=0;;
+        minor) minor=$((minor+1)); patch=0;;
+        patch) patch=$((patch+1));;
+      esac
+        echo "$major.$minor.$patch"
+      }
+
+      for comp in $CHANGED; do
+        CURRENT_VER=$(echo "$VERSIONS" | jq -r -arg comp "$comp" '.[$comp]//"0.0.0")
+        NEW_VER=$(bump_version "$CURRENT_VER""$SEMVER")
+        VERSIONS=$(echo "$VERSIONS" | jq --arg comp "$comp" --arg new "$NEW_VER"'.[$comp] = $new')
+        echo "Bumped $comp: $CURRENT_VER -> $NEW_VER"
+      done
+        echo "$VERSIONS" > updated_versions.json
+
+  - name: Update Github variables
+    run: |
+      gh variable set COMPONENT_VERSIONS --body "$(cat updated_versions.json)" --repo ${{ github.repository }}
+    env:
+      GH_TOKEN: ${{ secrets.PAT_TOKEN }}  
+   
         
      
 
