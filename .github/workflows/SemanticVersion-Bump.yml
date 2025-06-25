@@ -73,7 +73,7 @@ jobs:
              }
 
              for comp in $CHANGED; do
-                CURRENT_VER=$(echo "$VERSIONS" | jq -r -arg comp "$comp" '.[$comp] // "0.0.0")
+                CURRENT_VER=$(echo "$VERSIONS" | jq -r -arg comp "$comp" '.[$comp] // "0.0.0"')
                 NEW_VER=$(bump_version "$CURRENT_VER" "$SEMVER")
                 VERSIONS=$(echo "$VERSIONS" | jq --arg comp "$comp" --arg new "$NEW_VER" '.[$comp] = $new')
                 echo "Bumped $comp: $CURRENT_VER -> $NEW_VER"
