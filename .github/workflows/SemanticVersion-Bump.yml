@@ -35,14 +35,10 @@ jobs:
          
          #Get all changed files
          FILES=$(git diff --name-only origin/main...HEAD)
-         
-         #Extract top level folders(eg:mvc,installers)
-         FOLDER_COMPONENTS=$(echo "FILES" | awk -F/ '{print $1}' | grep -vE '\.' | sort -u)
 
-         #Extract component names from filenames
-         FILE_COMPONENTS=$(echo "FILES" | grep -Eo '[a-zA-Z0-9_-]+\.(yml|yaml|sh|json)' |
-           sed -E 's/.*[-_] (.*)\..*/\1/' |
-           sort -u)
+         FOLDER_COMPONENTS=$(echo "$FILES" | awk -F/ '{print $1}' | grep -vE '\.' | sort -u)
+
+         FILE_COMPONENTS=$(echo "$FILES" | grep -Eo '[a-zA-Z0-9_-]+\.(yml|yaml|sh|json)' | sed -E 's/.*[-_](.*)\..*/\1/' | sort -u)
 
          #combine and deduplicate
          ALL_COMPONENTS=$(echo -e "$FOLDER_COMPONENTS\nFILE_COMPONENTS" | grep -v '^$' | sort -u)
