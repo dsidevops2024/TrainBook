@@ -1,7 +1,7 @@
 name: Semantic Version Bump
 
 on:
-  workflow_dispatch:
+ workflow_dispatch:
   #pull_request:
     #types: [closed]
     #branches:
