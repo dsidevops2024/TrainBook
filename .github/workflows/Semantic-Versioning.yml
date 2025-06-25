@@ -30,6 +30,9 @@ jobs:
           } >> "$GITHUB_OUTPUT"
           echo "files=$FILES" >> $GITHUB_OUTPUT
 
+      - name: checking changed files 
+        run: echo "${{ steps.changes.outputs.files }}"
+
       - name: Extract changed components
         id: components
         run: |
