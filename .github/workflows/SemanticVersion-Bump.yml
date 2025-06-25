@@ -21,7 +21,7 @@ jobs:
       #- name: Setup Github CLI
         #uses: cli/cli-action@v2
 
-      - name: Get chnaged components
+      - name: Get changed components
         id: changed
         run: |
          git fetch origin main COMPONENTS=$(git diff --name-only origin/main...HEAD | cut -d/ -f1 | sort -u | uniq | jq -R -s -c 'split("\n") | map(select(length > 0))')
@@ -49,7 +49,7 @@ jobs:
        
       - name: Get current component version
         run: |
-          echo '${{ vars.COMPONENT_VERSIONS }}' > versions.json
+          echo '${{ vars.JSON_VERSIONS }}' > versions.json
           cat versions.json
 
       - name: Bump versions for changed components
@@ -81,7 +81,7 @@ jobs:
 
       - name: Update Github variables
         run: |
-          gh variable set COMPONENT_VERSIONS --body "$(cat updated_versions.json)" --repo ${{ github.repository }}
+          gh variable set JSON_VERSIONS --body "$(cat updated_versions.json)" --repo ${{ github.repository }}
         env:
           GH_TOKEN: ${{ secrets.PAT_TOKEN }}      
      
