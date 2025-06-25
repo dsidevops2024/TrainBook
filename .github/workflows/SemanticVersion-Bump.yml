@@ -58,7 +58,8 @@ jobs:
           echo "components=$JSON" >> $GITHUB_OUTPUT
 
       - name: Show changed components
-        run: echo "Changed components: ${{ steps.changed.outputs.components }}"
+        run: |
+          echo "Changed components: ${{ steps.changed.outputs.components }}"
 
       - name: Get SemVer bump from PR checklist
         id: semver
