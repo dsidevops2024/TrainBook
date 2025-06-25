@@ -22,7 +22,7 @@ jobs:
         run: sudo apt-get install gh -y
 
       - name: Authenticate GitHub CLI
-        run: echo "${{ secrets.PAT_TOKEN }}" | gh auth login --with-token
+        run: echo "${{ secrets.PAT_TOKEN }}" 
         env:
           GH_TOKEN: ${{ secrets.PAT_TOKEN }}
           
