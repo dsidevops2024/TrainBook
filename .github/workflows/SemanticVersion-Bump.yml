@@ -1,10 +1,11 @@
 name: Semantic Version Bump
 
 on:
-  pull_request:
-    types: [closed]
-    branches:
-      - main
+  workflow_dispatch:
+  #pull_request:
+    #types: [closed]
+    #branches:
+      #- main
 
 jobs:
   bump-versions:
