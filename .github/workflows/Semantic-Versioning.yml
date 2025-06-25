@@ -20,7 +20,10 @@ jobs:
           git fetch origin main
           MERGE_BASE=$(git merge-base HEAD origin/main)
           FILES=$(git diff --name-only $MERGE_BASE HEAD)
-           echo "Changed files:"
+
+
+          echo "Changed files:"
+
           echo "$FILES"
     
           {
@@ -28,6 +31,11 @@ jobs:
             echo "$FILES"
             echo 'EOF'
           } >> "$GITHUB_OUTPUT"
+
+
+      - name: checking changed files 
+        run: echo "${{ steps.changes.outputs.files }}"
+
 
       - name: checking changed files 
         run: echo "${{ steps.changes.outputs.files }}"
