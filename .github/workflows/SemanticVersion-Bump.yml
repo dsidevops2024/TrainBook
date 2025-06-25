@@ -18,8 +18,8 @@ jobs:
       - name: checkout
         uses: actions/checkout@v4
 
-      #- name: Setup Github CLI
-        #uses: cli/cli-action@v2
+      - name: Setup Github CLI
+        uses: cli/cli-action@v2
 
       - name: Get changed components
         id: changed
@@ -84,7 +84,11 @@ jobs:
         run: |
           gh variable set JSON_VERSIONS --body "$(cat updated_versions.json)" --repo ${{ github.repository }}
         env:
-          GH_TOKEN: ${{ secrets.PAT_TOKEN }}      
+          GH_TOKEN: ${{ secrets.PAT_TOKEN }}   
+
+      - name: Show updated_versions.json
+        run: cat updated_versions.json
+
      
 
   
