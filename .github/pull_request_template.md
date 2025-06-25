@@ -1,8 +1,6 @@
 #Pre-Merge Checklist
-Please check all components that were modified in this PR
+_Select exactly one semver bump level:_
 
-- [ ] mvc
-- [ ] installer
-- [ ] dacpac
-- [ ] backend
-
+- [ ] Patch (Bug fixes, no breaking changes)
+- [ ] Minor (new feature, backward-compatible)
+- [ ] Major (breaking change)
