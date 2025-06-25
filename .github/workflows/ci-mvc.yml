@@ -3,8 +3,7 @@ on:
   workflow_call:
   push:
     paths:
-      - ".github/workflows/CI-mvc.yml"
-      - "mvc/**"
+      - ".github/workflows/ci-mvc.yml"
 
 jobs:
   Checking-MVC-build:
