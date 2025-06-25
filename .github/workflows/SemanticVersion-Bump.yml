@@ -1,10 +1,11 @@
 name: Semantic Version Bump
+
 on:
- pull_request:
-  types: [closed]
-  branches:
-     - main
-     
+  pull_request:
+    types: [closed]
+    branches:
+      - main
+
 jobs:
   bump-versions:
     if: github.event.pull_request.merged == true
@@ -12,71 +13,75 @@ jobs:
 
     permissions:
       contents: read
-      actions: read
       pull-requests: read
       repository-projects: write
 
     steps:
-      - name: checkout
+      - name: Checkout repository
         uses: actions/checkout@v4
 
       - name: Install GitHub CLI
         run: sudo apt-get install gh -y
 
       - name: Authenticate GitHub CLI
-        run: echo "${{ secrets.PAT_TOKEN }}" 
+        run: echo "Authenticated"
         env:
           GH_TOKEN: ${{ secrets.PAT_TOKEN }}
-          
-      - name: Get changed components
+
+      - name: Get changed components from PR
         id: changed
         run: |
-         git fetch origin main 
-         
-         #Get all changed files
-         FILES=$(git diff --name-only origin/main...HEAD)
+          git fetch origin main
 
-         FOLDER_COMPONENTS=$(echo "$FILES" | awk -F/ '{print $1}' | grep -vE '\.' | sort -u)
+          # Get merge base between last commit before merge and origin/main
+          MERGE_BASE=$(git merge-base HEAD^ origin/main)
 
-         FILE_COMPONENTS=$(echo "$FILES" | grep -Eo '[a-zA-Z0-9_-]+\.(yml|yaml|sh|json)' | sed -E 's/.*[-_](.*)\..*/\1/' | sort -u)
+          # Get all changed files between PR and main
+          FILES=$(git diff --name-only $MERGE_BASE HEAD^)
 
-         #combine and deduplicate
-         ALL_COMPONENTS=$(echo -e "$FOLDER_COMPONENTS\nFILE_COMPONENTS" | grep -v '^$' | sort -u)
-         
-         #convert to JSON array
-         JSON=$(echo "$ALL_COMPONENTS" |jq -R -s -c 'split("\n") | map(select(length > 0))')
-         echo "Detected components: $JSON"
-         echo "components=$JSON" >> $GITHUB_OUTPUT
-         #COMPONENTS=$(git diff --name-only origin/main...HEAD | cut -d/ -f1 | sort -u | uniq | jq -R -s -c 'split("\n") | map(select(length > 0))')
-        
-      - name: Debug changed components
-        run: |
-           echo 'Changed components: ${{ steps.changed.outputs.components }}'
-         
-      - name: Get SemVer bump from PR body
+          echo "Changed files:"
+          echo "$FILES"
+
+          # Extract folder-level component names
+          FOLDER_COMPONENTS=$(echo "$FILES" | awk -F/ '{print $1}' | grep -vE '\.' | sort -u)
+
+          # Extract components from filenames
+          FILE_COMPONENTS=$(echo "$FILES" | grep -Eo '[a-zA-Z0-9_-]+\.(yml|yaml|sh|json)' | sed -E 's/.*[-_](.*)\..*/\1/' | sort -u)
+
+          # Combine and deduplicate
+          ALL_COMPONENTS=$(echo -e "$FOLDER_COMPONENTS\n$FILE_COMPONENTS" | grep -v '^$' | sort -u)
+
+          # Convert to JSON array
+          JSON=$(echo "$ALL_COMPONENTS" | jq -R -s -c 'split("\n") | map(select(length > 0))')
+
+          echo "Detected components: $JSON"
+          echo "components=$JSON" >> $GITHUB_OUTPUT
+
+      - name: Show changed components
+        run: echo "Changed components: ${{ steps.changed.outputs.components }}"
+
+      - name: Get SemVer bump from PR checklist
         id: semver
         run: |
-         PR_BODY="${{ github.event.pull_request.body }}"
-         echo "PR Body: $PR_BODY"
-         if echo "$PR_BODY" | grep -q '\[x\].*Patch';then
-           echo "semver=patch" >> $GITHUB_OUTPUT
-         elif echo "$PR_BODY" | grep -q '\[x\].*Minor';then
-           echo "semver=Minor" >> $GITHUB_OUTPUT
-         elif echo "$PR_BODY" | grep -q '\[x\].*Major';then
-           echo "semver=Major" >> $GITHUB_OUTPUT
-         else echo "No semver bump selected"
-          exit 1
-         fi
+          PR_BODY="${{ github.event.pull_request.body }}"
+          echo "PR Body:"
+          echo "$PR_BODY"
 
-  #- name: Get current version map
-     #id: get_versions
-     #run: |
-       #fetch repo variable(JSON)
-       #CURRENT=$(gh variable get )
-       
-      - name: Get current component version
+          if echo "$PR_BODY" | grep -iq '\[x\].*patch'; then
+            echo "semver=patch" >> $GITHUB_OUTPUT
+          elif echo "$PR_BODY" | grep -iq '\[x\].*minor'; then
+            echo "semver=minor" >> $GITHUB_OUTPUT
+          elif echo "$PR_BODY" | grep -iq '\[x\].*major'; then
+            echo "semver=major" >> $GITHUB_OUTPUT
+          else
+            echo "❌ No valid semver bump detected in PR checklist."
+            exit 1
+          fi
+
+      - name: Get current component versions
         run: |
           echo '${{ vars.JSON_VERSIONS }}' > versions.json
+          echo "Current versions:"
           cat versions.json
 
       - name: Bump versions for changed components
@@ -90,28 +95,28 @@ jobs:
               local version=$1
               local type=$2
               IFS="." read -r major minor patch <<< "$version"
-              case "$type" in 
-              major) major=$((major+1)); minor=0; patch=0 ;;
-              minor) minor=$((minor+1)); patch=0 ;;
-              patch) patch=$((patch+1)) ;;
+              case "$type" in
+                major) major=$((major+1)); minor=0; patch=0 ;;
+                minor) minor=$((minor+1)); patch=0 ;;
+                patch) patch=$((patch+1)) ;;
               esac
               echo "$major.$minor.$patch"
-             }
+          }
 
-             for comp in $CHANGED; do
-                CURRENT_VER=$(echo "$VERSIONS" | jq -r -arg comp "$comp" '.[$comp] // "0.0.0"')
-                NEW_VER=$(bump_version "$CURRENT_VER" "$SEMVER")
-                VERSIONS=$(echo "$VERSIONS" | jq --arg comp "$comp" --arg new "$NEW_VER" '.[$comp] = $new')
-                echo "Bumped $comp: $CURRENT_VER -> $NEW_VER"
-             done
-             echo "$VERSIONS" > updated_versions.json
+          for comp in $CHANGED; do
+            CURRENT_VER=$(echo "$VERSIONS" | jq -r --arg comp "$comp" '.[$comp] // "0.0.0"')
+            NEW_VER=$(bump_version "$CURRENT_VER" "$SEMVER")
+            VERSIONS=$(echo "$VERSIONS" | jq --arg comp "$comp" --arg new "$NEW_VER" '.[$comp] = $new')
+            echo "🔄 Bumped $comp: $CURRENT_VER -> $NEW_VER"
+          done
 
-      - name: Update Github variables
+          echo "$VERSIONS" > updated_versions.json
+
+      - name: Update GitHub variable with new versions
         run: |
           gh variable set JSON_VERSIONS --body "$(cat updated_versions.json)" --repo ${{ github.repository }}
         env:
           GH_TOKEN: ${{ secrets.PAT_TOKEN }}
 
-      - name: Show updated_versions.json
+      - name: Show updated versions
         run: cat updated_versions.json
-
