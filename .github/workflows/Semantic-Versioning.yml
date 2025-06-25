@@ -1,0 +1,91 @@
+name: Semantic Versioning
+
+on:
+  pull_request:
+    types: [opened, edited, synchronize]
+
+jobs:
+  bump-json-version:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Get changed files
+        id: changes
+        run: |
+          git fetch origin main
+          MERGE_BASE=$(git merge-base HEAD origin/main)
+          FILES=$(git diff --name-only $MERGE_BASE HEAD)
+          echo "files=$FILES" >> $GITHUB_OUTPUT
+
+      - name: Extract changed components
+        id: components
+        run: |
+          FILES="${{ steps.changes.outputs.files }}"
+          COMPONENTS=$(echo "$FILES" | grep -oP 'ci-\K[^.]+(?=\.yml)' | sort -u | tr '\n' ' ')
+          echo "components=$COMPONENTS" >> $GITHUB_OUTPUT
+
+      - name: Parse bump type from PR checklist
+        id: bump
+        run: |
+          BODY="${{ github.event.pull_request.body }}"
+          if echo "$BODY" | grep -iq '\[x\].*major'; then TYPE=major;
+          elif echo "$BODY" | grep -iq '\[x\].*minor'; then TYPE=minor;
+          elif echo "$BODY" | grep -iq '\[x\].*patch'; then TYPE=patch;
+          else
+            echo "❌ No valid bump type found in PR body"
+            exit 1
+          fi
+          echo "Bump type: $TYPE"
+          echo "type=$TYPE" >> $GITHUB_OUTPUT
+
+      - name: Bump version in JSON
+        id: bump_json
+        run: |
+          COMPONENTS="${{ steps.components.outputs.components }}"
+          BUMP_TYPE="${{ steps.bump.outputs.type }}"
+
+          echo "Original JSON: ${{ vars.JSON_VERSIONS }}"
+          echo '${{ vars.JSON_VERSIONS }}' > versions.json
+
+          jq '.' versions.json > tmp.json
+
+          for COMP in $COMPONENTS; do
+            CURRENT=$(jq -r --arg c "$COMP" '.[$c]' tmp.json)
+            if [ "$CURRENT" = "null" ]; then
+              echo "Component $COMP not found in JSON. Skipping."
+              continue
+            fi
+
+            IFS='.' read -r MAJOR MINOR PATCH <<< "$CURRENT"
+
+            case "$BUMP_TYPE" in
+              major)
+                ((MAJOR+=1)); MINOR=0; PATCH=0 ;;
+              minor)
+                ((MINOR+=1)); PATCH=0 ;;
+              patch)
+                ((PATCH+=1)) ;;
+            esac
+
+            NEW="$MAJOR.$MINOR.$PATCH"
+            echo "Updating $COMP to $NEW"
+            tmp=$(mktemp)
+            jq --arg c "$COMP" --arg v "$NEW" '.[$c]=$v' tmp.json > "$tmp" && mv "$tmp" tmp.json
+          done
+
+          echo "Updated JSON:"
+          cat tmp.json
+          echo "updated_json=$(cat tmp.json | jq -c .)" >> $GITHUB_OUTPUT
+
+      - name: Push to GitHub variable (manual/API step)
+        run: |
+          echo "To update the variable JSON_VERSIONS, run the following manually:"
+          echo ""
+          echo "gh variable set JSON_VERSIONS --body '${{ steps.bump_json.outputs.updated_json }}' --repo ${{ github.repository }}"
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
