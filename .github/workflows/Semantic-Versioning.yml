@@ -20,7 +20,17 @@ jobs:
           git fetch origin main
           MERGE_BASE=$(git merge-base HEAD origin/main)
           FILES=$(git diff --name-only $MERGE_BASE HEAD)
-          echo "files=$FILES" >> $GITHUB_OUTPUT
+           echo "Changed files:"
+          echo "$FILES"
+    
+          {
+            echo 'files<<EOF'
+            echo "$FILES"
+            echo 'EOF'
+          } >> "$GITHUB_OUTPUT"
+
+      - name: checking changed files 
+        run: echo "${{ steps.changes.outputs.files }}"
 
       - name: Extract changed components
         id: components
