@@ -2,7 +2,9 @@ name: Semantic Version Bump
 on:
  pull_request:
   types: [closed]
-
+  branches:
+     - main
+     
 jobs:
   bump-versions:
     if: github.event.pull_request.merged == true
@@ -18,20 +20,44 @@ jobs:
       - name: checkout
         uses: actions/checkout@v4
 
-      #- name: Setup Github CLI
-        #uses: cli/cli-action@v2
+      - name: Install GitHub CLI
+        run: sudo apt-get install gh -y
 
+      - name: Authenticate GitHub CLI
+        run: echo "${{ secrets.PAT_TOKEN }}" 
+        env:
+          GH_TOKEN: ${{ secrets.PAT_TOKEN }}
+          
       - name: Get changed components
         id: changed
         run: |
          git fetch origin main 
-         COMPONENTS=$(git diff --name-only origin/main...HEAD | cut -d/ -f1 | sort -u | uniq | jq -R -s -c 'split("\n") | map(select(length > 0))')
-         echo "components=$COMPONENTS" >> $GITHUB_OUTPUT
+         
+         #Get all changed files
+         FILES=$(git diff --name-only origin/main...HEAD)
 
+         FOLDER_COMPONENTS=$(echo "$FILES" | awk -F/ '{print $1}' | grep -vE '\.' | sort -u)
+
+         FILE_COMPONENTS=$(echo "$FILES" | grep -Eo '[a-zA-Z0-9_-]+\.(yml|yaml|sh|json)' | sed -E 's/.*[-_](.*)\..*/\1/' | sort -u)
+
+         #combine and deduplicate
+         ALL_COMPONENTS=$(echo -e "$FOLDER_COMPONENTS\nFILE_COMPONENTS" | grep -v '^$' | sort -u)
+         
+         #convert to JSON array
+         JSON=$(echo "$ALL_COMPONENTS" |jq -R -s -c 'split("\n") | map(select(length > 0))')
+         echo "Detected components: $JSON"
+         echo "components=$JSON" >> $GITHUB_OUTPUT
+         #COMPONENTS=$(git diff --name-only origin/main...HEAD | cut -d/ -f1 | sort -u | uniq | jq -R -s -c 'split("\n") | map(select(length > 0))')
+        
+      - name: Debug changed components
+        run: |
+           echo 'Changed components: ${{ steps.changed.outputs.components }}'
+         
       - name: Get SemVer bump from PR body
         id: semver
         run: |
          PR_BODY="${{ github.event.pull_request.body }}"
+         echo "PR Body: $PR_BODY"
          if echo "$PR_BODY" | grep -q '\[x\].*Patch';then
            echo "semver=patch" >> $GITHUB_OUTPUT
          elif echo "$PR_BODY" | grep -q '\[x\].*Minor';then
@@ -84,12 +110,7 @@ jobs:
         run: |
           gh variable set JSON_VERSIONS --body "$(cat updated_versions.json)" --repo ${{ github.repository }}
         env:
-          GH_TOKEN: ${{ secrets.PAT_TOKEN }}   
+          GH_TOKEN: ${{ secrets.PAT_TOKEN }}
 
       - name: Show updated_versions.json
         run: cat updated_versions.json
-
-     
-
-  
-  
