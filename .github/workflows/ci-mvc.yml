@@ -24,7 +24,11 @@ jobs:
            distribution: 'temurin'
            java-version: '17'
 
+<<<<<<< Checking-PR-Checklist
       - name: Build with Maven-checking11
+=======
+      - name: Build with Maven-checking1
+>>>>>>> main
         run: mvn clean install
 
       
