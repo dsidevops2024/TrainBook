@@ -36,10 +36,6 @@ jobs:
       - name: checking changed files 
         run: echo "${{ steps.changes.outputs.files }}"
 
-
-      - name: checking changed files 
-        run: echo "${{ steps.changes.outputs.files }}"
-
       - name: Extract changed components
         id: components
         run: |
@@ -106,4 +102,4 @@ jobs:
           echo ""
           echo "gh variable set JSON_VERSIONS --body '${{ steps.bump_json.outputs.updated_json }}' --repo ${{ github.repository }}"
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.PAT_TOKEN }}
