@@ -24,7 +24,7 @@ jobs:
            distribution: 'temurin'
            java-version: '17'
 
-      - name: Build with Maven-checking5
+      - name: Build with Maven-checking66
         run: mvn clean install
 
       
