@@ -103,6 +103,6 @@ jobs:
 
       - name: Push to GitHub variable
         run: |
-          echo "gh variable set JSON_VERSIONS --body '${{ steps.bump_json.outputs.updated_json }}' --repo ${{ github.repository }}"
+          echo "gh variable set JSON_VERSIONS --body "${{ steps.bump_json.outputs.updated_json }}" --repo ${{ github.repository }}"
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
