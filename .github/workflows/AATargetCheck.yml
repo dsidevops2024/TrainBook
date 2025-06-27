@@ -82,3 +82,18 @@ jobs:
           else
             echo "runner=Nonprod" >> $GITHUB_OUTPUT
           fi
+
+
+SphereCo Update: 
+we have successfully implemented the code signing certificate in GitHub CI/CD  which ensures that only verified and untampered code progresses through the pipeline. It builds a chain of trust from commit to deployment, boosting security and accountability which is currently live in production.
+ 
+we have researched and documented about the artifact versioning. Our team is currently working on implementing artifcat versioning in our CI/CD pipelines which helps to do binary promotion for multiple environments. The end goal is to guarantee reliable deployment by uniquely identifying each build, ensuring consistency, traceability, and seamless rollback when needed. It acts as a safeguard against deploying unintended or unstable code.
+
+Internal:
+we have got new team members Keerthivasan and Poornadharshini to work with us in our devops teams.
+
+PowerBI:
+we have got another new team member Kamal Das to work under power BI
+
+Dresser utility Update: 
+We have got a new ID for the SharePoint Developer role. Divya is now overseeing the responsibilities related to SharePoint, power automate and power Apps in a Dressers Utility Project.
