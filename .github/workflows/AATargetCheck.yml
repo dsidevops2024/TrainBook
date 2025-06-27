@@ -84,20 +84,9 @@ jobs:
           fi
 
 
-SphereCo Update
-Code Signing Implementation
-We have successfully implemented a code signing certificate in our GitHub CI/CD pipelines. This ensures that only verified and untampered code progresses through the pipeline, establishing a chain of trust from commit to deployment. This enhancement improves both security and accountability and is now live in production.
-
-Artifact Versioning
-We have conducted thorough research and documentation on artifact versioning. Our team is actively working on integrating artifact versioning into our CI/CD pipelines. This will enable binary promotion across multiple environments and ensure reliable deployments by uniquely identifying each build. The goal is to enhance consistency, traceability, and rollback capabilities — safeguarding against the deployment of unintended or unstable code.
-
-Internal Updates
-DevOps Team Expansion
-We are pleased to welcome Keerthivasan and Poornadharshini to our DevOps team. They will be contributing to ongoing infrastructure and automation efforts.
-
-Power BI Team Update
-Kamal Das has joined the Power BI team and will be supporting dashboard development and reporting initiatives.
-
+💼 Business Intelligence (BI)
+A new ID has been created for Deepika Kamaraj in the role of BI Developer.
+She will be contributing to data-driven insights and reporting solutions to support business decision-making
 Dresser Utility Project
 SharePoint & Power Platform
 A new ID has been created for the SharePoint Developer role. Divya is now leading efforts related to SharePoint, Power Automate, and Power Apps within the Dresser Utility Project.
