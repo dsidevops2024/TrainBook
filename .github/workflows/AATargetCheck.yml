@@ -84,16 +84,21 @@ jobs:
           fi
 
 
-SphereCo Update: 
-we have successfully implemented the code signing certificate in GitHub CI/CD  which ensures that only verified and untampered code progresses through the pipeline. It builds a chain of trust from commit to deployment, boosting security and accountability which is currently live in production.
- 
-we have researched and documented about the artifact versioning. Our team is currently working on implementing artifcat versioning in our CI/CD pipelines which helps to do binary promotion for multiple environments. The end goal is to guarantee reliable deployment by uniquely identifying each build, ensuring consistency, traceability, and seamless rollback when needed. It acts as a safeguard against deploying unintended or unstable code.
+SphereCo Update
+Code Signing Implementation
+We have successfully implemented a code signing certificate in our GitHub CI/CD pipelines. This ensures that only verified and untampered code progresses through the pipeline, establishing a chain of trust from commit to deployment. This enhancement improves both security and accountability and is now live in production.
 
-Internal:
-we have got new team members Keerthivasan and Poornadharshini to work with us in our devops teams.
+Artifact Versioning
+We have conducted thorough research and documentation on artifact versioning. Our team is actively working on integrating artifact versioning into our CI/CD pipelines. This will enable binary promotion across multiple environments and ensure reliable deployments by uniquely identifying each build. The goal is to enhance consistency, traceability, and rollback capabilities — safeguarding against the deployment of unintended or unstable code.
 
-PowerBI:
-we have got another new team member Kamal Das to work under power BI
+Internal Updates
+DevOps Team Expansion
+We are pleased to welcome Keerthivasan and Poornadharshini to our DevOps team. They will be contributing to ongoing infrastructure and automation efforts.
 
-Dresser utility Update: 
-We have got a new ID for the SharePoint Developer role. Divya is now overseeing the responsibilities related to SharePoint, power automate and power Apps in a Dressers Utility Project.
+Power BI Team Update
+Kamal Das has joined the Power BI team and will be supporting dashboard development and reporting initiatives.
+
+Dresser Utility Project
+SharePoint & Power Platform
+A new ID has been created for the SharePoint Developer role. Divya is now leading efforts related to SharePoint, Power Automate, and Power Apps within the Dresser Utility Project.
+
