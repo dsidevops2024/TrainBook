@@ -26,135 +26,110 @@ jobs:
 
       - name: Build with new Maven
         run: mvn -B package --file pom.xml
-      #checking PR checklists-new3
+    
       - name: Creates stagin directory and copy .war
         run: |
           mkdir staging
           cp target/*.war staging/
           
-       #Checking Dev commits 2nd attempt(PR labels)
       - name: Get current component version
         run: |
-          echo '${{ vars.COMPONENT_VERSIONS }}' > versions.json
+          echo '${{ vars.JSON_VERSIONS }}' > versions.json
           cat versions.json
 
-      #- name: Get latest commit message-check
-        #id: commit
-        #run: |
-          #COMMIT_MSG=$(git log -1 --pretty=%B)
-          #echo "Commit message: $COMMIT_MSG"
-          #echo "commit_message<<EOF" >> $GITHUB_OUTPUT
-          #echo "$COMMIT_MSG" >> $GITHUB_OUTPUT
-          #echo "EOF" >> $GITHUB_OUTPUT
-          #echo "Commit message: $COMMIT_MSG"
-          #echo "commit_message=$COMMIT_MSG" >> $GITHUB_OUTPUT
-
-      #- name: Get developer commit messages from PR
-        #id: devcommits
-        #run: |
-         #echo "Getting developer commit messages introduced in PR..."
-         #COMMIT_MSGS=$(git log --pretty=%B ${{ github.event.before }}..${{ github.sha }})
-         #echo "$COMMIT_MSGS"
-         # Optional: Only get the first non-merge commit message
-         #COMMIT_MSG=$(echo "$COMMIT_MSGS" | grep -v "^Merge pull request" | head -n 1)
-         #echo "Developer commit: $COMMIT_MSG"
-         #echo "commit_message<<EOF" >> $GITHUB_OUTPUT
-         #echo "$COMMIT_MSG" >> $GITHUB_OUTPUT
-         #echo "EOF" >> $GITHUB_OUTPUT 
-
-      - name: Get developer commit messages from PR
-        id: devcommits
+      - name: Determine per-component version bumps from all commits
+        id: bump_components
+        shell: pwsh
         run: |
-         echo "Getting developer commit messages introduced in PR..." 
-         echo "Getting commit message from merge body..."
-         COMMIT_MSG=$(git log -1 --pretty=%B)
-  
-         # Remove merge line and blank lines
-         CLEAN_MSG=$(echo "$COMMIT_MSG" | sed '/^Merge pull request/d' | sed '/^\s*$/d' | head -n 1)
-  
-         echo "Developer commit: $CLEAN_MSG"
-  
-         echo "commit_message<<EOF" >> $GITHUB_OUTPUT
-         echo "$CLEAN_MSG" >> $GITHUB_OUTPUT
-         echo "EOF" >> $GITHUB_OUTPUT 
- 
-      #checking developer commits
-      #- name: Get developer commit message (not merge commit)
-        #id: devcommits
-        #run: |
-          #echo "Fetching developer commit message..."
+          # Get commit messages from PR (range from main to HEAD)
+          $commits = git log origin/main..HEAD --pretty=format:"%s"
 
-          # Get the latest commit not authored by 'GitHub' (merge commits usually are)
-          #COMMIT_MSG=$(git log --no-merges --pretty=%B -n 1)
+          # Define priorities
+          $priority = @{
+            "patch" = 0
+            "minor" = 1
+            "major" = 2
+          }
 
-          #echo "Developer commit: $COMMIT_MSG"
+          $bumpKeywords = @{
+            "fix" = "patch"
+            "feat" = "minor"
+            "breakingchange" = "major"
+            "BREAKING CHANGE" = "major"
+          }
 
-          # Write to GitHub output (safe multiline syntax)
-          #DELIM="EOF$(date +%s%N)"
-          #echo "commit_message<<$DELIM" >> $GITHUB_OUTPUT
-          #echo "$COMMIT_MSG" >> $GITHUB_OUTPUT
-          #echo "$DELIM" >> $GITHUB_OUTPUT
+          $componentBumps = @{}
 
-      - name: Determine affected component and bump version
-        id: bump
+          foreach ($commit in $commits) {
+            if ($commit -match "^(?<type>\w+)\((?<component>[^)]+)\):") {
+              $type = $matches['type'].ToLower()
+              $component = $matches['component'].ToLower()
+              if ($bumpKeywords.ContainsKey($type)) {
+                $bump = $bumpKeywords[$type]
+                if ($componentBumps.ContainsKey($component)) {
+                  if ($priority[$bump] -gt $priority[$componentBumps[$component]]) {
+                    $componentBumps[$component] = $bump
+                  }
+                } else {
+                  $componentBumps[$component] = $bump
+                }
+              }
+            } elseif ($commit -match "BREAKING CHANGE.*\((?<component>[^)]+)\)") {
+              $component = $matches['component'].ToLower()
+              $componentBumps[$component] = "major"
+            }
+          }
+
+          # Load versions.json
+          $versions = Get-Content versions.json | ConvertFrom-Json
+
+          $updates = @{}
+
+          foreach ($component in $componentBumps.Keys) {
+            $currentVersion = $versions[$component]
+            if (-not $currentVersion) {
+              Write-Host "Component $component not found in versions.json"
+              continue
+            }
+
+            $parts = $currentVersion -split '\.'
+            $major = [int]$parts[0]
+            $minor = [int]$parts[1]
+            $patch = [int]$parts[2]
+
+            switch ($componentBumps[$component]) {
+              "major" {
+                $major += 1; $minor = 0; $patch = 0
+              }
+              "minor" {
+                $minor += 1; $patch = 0
+              }
+              "patch" {
+                $patch += 1
+              }
+            }
+
+            $newVersion = "$major.$minor.$patch"
+            $versions[$component] = $newVersion
+            $updates[$component] = $newVersion
+          }
+
+          # Save updated versions
+          $versions | ConvertTo-Json -Depth 10 | Set-Content versions.json
+
+          # Output updates for next step
+          $updates | ConvertTo-Json -Compress | Out-File -FilePath updated_versions.json
+
+
+      - name: Merge and update JSON_VERSIONS
         run: |
-          echo "Parsing commit message..."
-          COMMIT_MSG="${{ steps.devcommits.outputs.commit_message }}"
-
-          # Extract scope (e.g., mvc, dacpac)
-          COMPONENT=$(echo "$COMMIT_MSG" | sed -nE 's/^(feat|fix|chore|perf|refactor|style|test|docs)\(([^)]+)\):.*/\2/p')
-
-          if [ -z "$COMPONENT" ]; then
-            echo "No component scope found in commit message."
-            exit 0
-          fi
-
-          echo "Component: $COMPONENT"
-
-          # Extract existing version
-          VERSION=$(jq -r --arg key "$COMPONENT" '.[$key]' versions.json)
-
-          if [ "$VERSION" == "null" ]; then
-            echo "Component '$COMPONENT' not found in versions.json"
-            exit 1
-          fi
-
-          MAJOR=$(echo $VERSION | cut -d. -f1)
-          MINOR=$(echo $VERSION | cut -d. -f2)
-          PATCH=$(echo $VERSION | cut -d. -f3)
-
-          # Determine bump
-          if echo "$COMMIT_MSG" | grep -q -i "BREAKING CHANGE"; then
-            MAJOR=$((MAJOR + 1))
-            MINOR=0
-            PATCH=0
-          elif echo "$COMMIT_MSG" | grep -q "^feat"; then
-            MINOR=$((MINOR + 1))
-            PATCH=0
-          elif echo "$COMMIT_MSG" | grep -q "^fix"; then
-            PATCH=$((PATCH + 1))
-          else
-            echo "No bump needed."
-            exit 0
-          fi
-
-          NEW_VERSION="$MAJOR.$MINOR.$PATCH"
-          echo "New version for $COMPONENT: $NEW_VERSION"
-
-          # Save outputs
-          echo "component=$COMPONENT" >> $GITHUB_OUTPUT
-          echo "new_version=$NEW_VERSION" >> $GITHUB_OUTPUT
-
-      - name: Merge and update COMPONENT_VERSIONS
-        if: steps.bump.outputs.new_version != ''
-        run: |
-          echo "Updating COMPONENT_VERSIONS..."
-          echo '${{ vars.COMPONENT_VERSIONS }}' > current.json
-          echo "{\"${{ steps.bump.outputs.component }}\":\"${{ steps.bump.outputs.new_version }}\"}" > update.json
-
+          echo "Updating JSON_VERSIONS..."
+          echo '${{ vars.JSON_VERSIONS }}' > current.json
+          cat updated_versions.json > update.json
           jq -s '.[0] * .[1]' current.json update.json > merged.json
           cat merged.json
 
-          gh variable set COMPONENT_VERSIONS --body "$(cat merged.json)" --repo ${{ github.repository }}
+          gh variable set JSON_VERSIONS --body "$(cat merged.json)" --repo ${{ github.repository }}
         env:
-          GH_TOKEN: ${{ secrets.PAT_TOKEN }}    
+         GH_TOKEN: ${{ secrets.PAT_TOKEN }}
+ 
