@@ -37,10 +37,12 @@ jobs:
           cat versions.json
           
       - name: Fetch full git history - checking
+        if: github.ref_name == 'main'
         run: git fetch origin main
         
       - name: Determine per-component version bumps from all commits
         id: bump_components
+        if: github.ref_name == 'main'
         shell: pwsh
         run: |
           # Get commit messages from PR (range from main to HEAD)
@@ -148,6 +150,7 @@ jobs:
              $updates | ConvertTo-Json -Compress | Out-File -FilePath updated_versions.json
 
       - name: Merge and update JSON_VERSIONS
+        if: github.ref_name == 'main'
         run: |
           echo "Updating JSON_VERSIONS..."
           echo '${{ vars.JSON_VERSIONS }}' > current.json
