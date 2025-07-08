@@ -1,0 +1,42 @@
+name: Version Bump
+
+on:
+  pull_request:
+    types: [closed]
+
+jobs:
+  bump_versions:
+    if: github.event.pull_request.merged == true && github.event.pull_request.base.ref == 'main'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Get current JSON_VERSIONS
+        run: echo '${{ vars.JSON_VERSIONS }}' > versions.json
+
+      - name: Fetch PR commit messages
+        run: |
+          echo "Fetching commit messages from PR..."
+          COMMITS=$(gh pr view ${{ github.event.pull_request.number }} --repo ${{ github.repository }} --json commits --jq '.commits[].message')
+          echo "$COMMITS" > commit_messages.txt
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Determine version bumps
+        shell: pwsh
+        run: |
+          $commits = Get-Content commit_messages.txt
+          
+          # Same version bump logic you already have:
+          # - Parse $commits
+          # - Update versions.json
+          # - Create updated_versions.json
+
+      - name: Merge and update JSON_VERSIONS
+        run: |
+          jq -s '.[0] * .[1]' versions.json updated_versions.json > merged.json
+          gh variable set JSON_VERSIONS --body "$(cat merged.json)" --repo ${{ github.repository }}
+        env:
+          GH_TOKEN: ${{ secrets.PAT_TOKEN }}
