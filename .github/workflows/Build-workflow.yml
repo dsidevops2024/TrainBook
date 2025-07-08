@@ -31,7 +31,6 @@ jobs:
           mkdir staging
           cp target/*.war staging/
           
-       #Checking Dev commits 2nd attempt(PR labels)
       - name: Get current component version
         run: |
           echo '${{ vars.JSON_VERSIONS }}' > versions.json
