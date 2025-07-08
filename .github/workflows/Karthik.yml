@@ -1,6 +1,7 @@
 name: reusing output of one job
 on:
-  workflow_dispatch:
+  #workflow_dispatch:
+  push:
 jobs:
   build:
     runs-on: self-hosted
