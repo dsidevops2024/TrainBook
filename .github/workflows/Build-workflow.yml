@@ -36,7 +36,7 @@ jobs:
           echo '${{ vars.JSON_VERSIONS }}' > versions.json
           cat versions.json
           
-      - name: Fetch full git history
+      - name: Fetch full git history - checking
         run: git fetch origin main
         
       - name: Determine per-component version bumps from all commits
