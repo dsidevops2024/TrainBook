@@ -23,7 +23,7 @@ jobs:
           distribution: 'temurin'
           cache: maven
 
-      - name: Build with new Maven
+      - name: Build with new Maven-checking
         run: mvn -B package --file pom.xml
     
       - name: Creates stagin directory and copy .war
