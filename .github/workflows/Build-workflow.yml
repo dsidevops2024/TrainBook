@@ -26,10 +26,10 @@ jobs:
           distribution: 'temurin'
           cache: maven
 
-      - name: Build with new Maven-checking
+      - name: Build with new Maven-checking2
         run: mvn -B package --file pom.xml
     
-      - name: Creates stagin directory and copy .war -checking
+      - name: Creates stagin directory and copy .war -checking2
         run: |
           mkdir staging
           cp target/*.war staging/
@@ -38,14 +38,24 @@ jobs:
         run: |
           echo '${{ vars.JSON_VERSIONS }}' > versions.json
           cat versions.json
-
+          
+      - name: Fetch full git history - checking1
+        if: github.event.pull_request.merged == true && github.event.pull_request.base.ref == 'main'
+        run: git fetch origin main
+        
       - name: Determine per-component version bumps from all commits
         id: bump_components
+        if: github.event.pull_request.merged == true && github.event.pull_request.base.ref == 'main'
         shell: pwsh
         run: |
           # Get commit messages from PR (range from main to HEAD)
           $commits = git log origin/main..HEAD --pretty=format:"%s"
 
+          Write-Host "Collected commit messages:"
+          foreach ($commit in $commits) {
+            Write-Host "- $commit"
+          }
+          
           # Define priorities
           $priority = @{
             "patch" = 0
@@ -62,68 +72,88 @@ jobs:
 
           $componentBumps = @{}
 
+          # Process commits to find bump per component
           foreach ($commit in $commits) {
-            if ($commit -match "^(?<type>\w+)\((?<component>[^)]+)\):") {
-              $type = $matches['type'].ToLower()
-              $component = $matches['component'].ToLower()
-              if ($bumpKeywords.ContainsKey($type)) {
-                $bump = $bumpKeywords[$type]
-                if ($componentBumps.ContainsKey($component)) {
-                  if ($priority[$bump] -gt $priority[$componentBumps[$component]]) {
-                    $componentBumps[$component] = $bump
-                  }
-                } else {
-                  $componentBumps[$component] = $bump
-                }
+           if ($commit -match "^(?<type>\w+)\((?<component>[^)]+)\):") {
+               $type = $matches['type'].ToLower()
+               $component = $matches['component'].ToLower()
+
+               if ($bumpKeywords.ContainsKey($type)) {
+                   $bump = $bumpKeywords[$type]
+                   if ($componentBumps.ContainsKey($component)) {
+                      if ($priority[$bump] -gt $priority[$componentBumps[$component]]) {
+                           $componentBumps[$component] = $bump
+                       }
+                   } else {
+                       $componentBumps[$component] = $bump
+                   }
               }
-            } elseif ($commit -match "BREAKING CHANGE.*\((?<component>[^)]+)\)") {
-              $component = $matches['component'].ToLower()
-              $componentBumps[$component] = "major"
-            }
+           }
+           elseif ($commit -match "BREAKING CHANGE.*\((?<component>[^)]+)\)") {
+               $component = $matches['component'].ToLower()
+               $componentBumps[$component] = "major"
+           }
           }
 
-          # Load versions.json
-          $versions = Get-Content versions.json | ConvertFrom-Json
+          # Load versions.json content
+          Write-Host "Versions file content:"
+          Get-Content versions.json | ForEach-Object { Write-Host $_ }
+
+          $versionsRaw = Get-Content versions.json | ConvertFrom-Json
+
+          # Convert versions keys to lowercase for safe lookup
+          $versions = @{}
+          $versionsRaw.PSObject.Properties | ForEach-Object {
+              $versions[$_.Name.ToLower()] = $_.Value
+          }
 
           $updates = @{}
 
+          # Calculate new versions per component bump
           foreach ($component in $componentBumps.Keys) {
-            $currentVersion = $versions[$component]
-            if (-not $currentVersion) {
-              Write-Host "Component $component not found in versions.json"
-              continue
-            }
+             if (-not $versions.ContainsKey($component)) {
+                Write-Host "Component '$component' not found in versions.json"
+             continue
+           }
 
-            $parts = $currentVersion -split '\.'
-            $major = [int]$parts[0]
-            $minor = [int]$parts[1]
-            $patch = [int]$parts[2]
+              $currentVersion = $versions[$component]
 
-            switch ($componentBumps[$component]) {
-              "major" {
-                $major += 1; $minor = 0; $patch = 0
-              }
-              "minor" {
-                $minor += 1; $patch = 0
-              }
-              "patch" {
-                $patch += 1
-              }
-            }
+              $parts = $currentVersion -split '\.'
+              $major = [int]$parts[0]
+              $minor = [int]$parts[1]
+              $patch = [int]$parts[2]
 
-            $newVersion = "$major.$minor.$patch"
-            $versions[$component] = $newVersion
-            $updates[$component] = $newVersion
-          }
+              switch ($componentBumps[$component]) {
+                 "major" {
+                     $major += 1
+                     $minor = 0
+                     $patch = 0
+                    }
+                 "minor" {
+                    $minor += 1
+                    $patch = 0
+                  }
+                 "patch" {
+                    $patch += 1
+                  }
+               }
 
-          # Save updated versions
-          $versions | ConvertTo-Json -Depth 10 | Set-Content versions.json
+              $newVersion = "$major.$minor.$patch"
+              Write-Host "Updating component '$component' from $currentVersion to $newVersion"
 
-          # Output updates for next step
-          $updates | ConvertTo-Json -Compress | Out-File -FilePath updated_versions.json
+              $versions[$component] = $newVersion
+              $updates[$component] = $newVersion
+             }
 
+             # Save updated versions back to versions.json
+             # Convert back to original casing if needed - here, just output lowercase keys
+             $versions | ConvertTo-Json -Depth 10 | Set-Content versions.json
+
+             # Output updates for next step
+             $updates | ConvertTo-Json -Compress | Out-File -FilePath updated_versions.json
 
       - name: Merge and update JSON_VERSIONS
+        if: github.event.pull_request.merged == true && github.event.pull_request.base.ref == 'main'
         run: |
           echo "Updating JSON_VERSIONS..."
           echo '${{ vars.JSON_VERSIONS }}' > current.json
