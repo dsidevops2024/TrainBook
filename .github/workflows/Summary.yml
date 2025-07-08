@@ -1,6 +1,7 @@
 name: Job Action Summary
 on:
-  workflow_dispatch:
+  #workflow_dispatch:
+  push:
 
 jobs:
   summary:
