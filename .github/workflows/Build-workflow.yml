@@ -26,10 +26,10 @@ jobs:
           distribution: 'temurin'
           cache: maven
 
-      - name: Build with new Maven-checking3
+      - name: Build with new Maven-checking4
         run: mvn -B package --file pom.xml
     
-      - name: Creates stagin directory and copy .war -checking3
+      - name: Creates stagin directory and copy .war -checking4
         run: |
           mkdir staging
           cp target/*.war staging/
@@ -39,15 +39,11 @@ jobs:
           echo '${{ vars.JSON_VERSIONS }}' > versions.json
           cat versions.json
           
-      - name: Fetch full git history - checking1
-        if: github.event.pull_request.merged == true 
-        #&& github.event.pull_request.base.ref == 'main'
+      - name: Fetch full git history - checking
         run: git fetch origin main
         
       - name: Determine per-component version bumps from all commits
         id: bump_components
-        if: github.event.pull_request.merged == true 
-        #&& github.event.pull_request.base.ref == 'main'
         shell: pwsh
         run: |
           # Get commit messages from PR (range from main to HEAD)
@@ -155,8 +151,6 @@ jobs:
              $updates | ConvertTo-Json -Compress | Out-File -FilePath updated_versions.json
 
       - name: Merge and update JSON_VERSIONS
-        if: github.event.pull_request.merged == true 
-        #&& github.event.pull_request.base.ref == 'main'
         run: |
           echo "Updating JSON_VERSIONS..."
           echo '${{ vars.JSON_VERSIONS }}' > current.json
