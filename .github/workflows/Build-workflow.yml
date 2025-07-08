@@ -35,7 +35,10 @@ jobs:
         run: |
           echo '${{ vars.JSON_VERSIONS }}' > versions.json
           cat versions.json
-
+          
+      - name: Fetch full git history
+        run: git fetch origin main
+        
       - name: Determine per-component version bumps from all commits
         id: bump_components
         shell: pwsh
@@ -43,6 +46,11 @@ jobs:
           # Get commit messages from PR (range from main to HEAD)
           $commits = git log origin/main..HEAD --pretty=format:"%s"
 
+          Write-Host "Collected commit messages:"
+          foreach ($commit in $commits) {
+            Write-Host "- $commit"
+          }
+          
           # Define priorities
           $priority = @{
             "patch" = 0
