@@ -36,7 +36,7 @@ jobs:
           echo '${{ vars.JSON_VERSIONS }}' > versions.json
           cat versions.json
           
-      - name: Fetch full git history - checking
+      - name: Fetch full git history - checking1
         if: github.ref_name == 'main'
         run: git fetch origin main
         
