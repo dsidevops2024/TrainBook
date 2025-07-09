@@ -1,8 +1,9 @@
 name: Basic workflow
  
 on: 
-  workflow_dispatch:
-  workflow_call:
+  #workflow_dispatch:
+  #workflow_call:
+  push:
  
 jobs:
   build:
