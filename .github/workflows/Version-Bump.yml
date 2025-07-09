@@ -22,7 +22,7 @@ jobs:
           COMMITS=$(gh pr view ${{ github.event.pull_request.number }} --repo ${{ github.repository }} --json commits --jq '.commits[].message')
           echo "$COMMITS" > commit_messages.txt
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.PAT_TOKEN }}
 
       - name: Determine version bumps
         shell: pwsh
