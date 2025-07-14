@@ -54,10 +54,11 @@ runs:
       shell: bash
       run: |
         #LABELS=$(jq -r '.pull_request.labels[].name' <<< "${{ toJson(github.event) }}")
-        #LABELS=$(echo '${{ toJson(github.event) }}' | jq -r '.pull_request.labels[].name')
-        LABELS=$(echo '${{ toJson(github.event.pull_request.labels) }}' | jq -r '.[].name')
+        LABELS=$(jq -r '.pull_request.labels[].name' <<< '${{ toJson(github.event) }}')
 
-        echo "Labels found: $LABELS"
+          echo "Detected PR Labels:"
+          echo "$LABELS"
+        
         TYPE=""
         if echo "$LABELS" | grep -q "semver:major"; then TYPE="major";
         elif echo "$LABELS" | grep -q "semver:minor"; then TYPE="minor";
