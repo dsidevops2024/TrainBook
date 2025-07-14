@@ -1,0 +1,100 @@
+name: Multi-Component-Version-Bump
+description: "Bump versions for all changed components in a single run"
+
+outputs:
+  bumped_versions:
+    description: "JSON of components and their new versions"
+
+runs:
+  using: "composite"
+  steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - name: Fetch base branch
+      run: git fetch origin ${{ github.base_ref }}
+
+    - name: Get changed files
+      id: changed
+      shell: bash
+      run: |
+        git diff --name-only origin/${{ github.base_ref }}...HEAD > changed_files.txt
+        echo "Changed files:"
+        cat changed_files.txt
+        echo "changed_files<<EOF" >> $GITHUB_OUTPUT
+        cat changed_files.txt >> $GITHUB_OUTPUT
+        echo "EOF" >> $GITHUB_OUTPUT
+
+    - name: Get bump type from PR labels
+      id: bump
+      shell: bash
+      run: |
+        BUMP_TYPE="patch"
+        LABELS_JSON='${{ toJson(github.event.pull_request.labels) }}'
+
+        echo "$LABELS_JSON" | grep -q '"name": *"semver:major"' && BUMP_TYPE="major"
+        echo "$LABELS_JSON" | grep -q '"name": *"semver:minor"' && [[ "$BUMP_TYPE" != "major" ]] && BUMP_TYPE="minor"
+        echo "$LABELS_JSON" | grep -q '"name": *"semver:patch"' && [[ "$BUMP_TYPE" == "patch" ]] && BUMP_TYPE="patch"
+
+        echo "BUMP_TYPE=$BUMP_TYPE"
+        echo "bump_type=$BUMP_TYPE" >> $GITHUB_OUTPUT
+
+    - name: Parse changed components and bump versions
+      id: bump_versions
+      shell: bash
+      run: |
+        echo '${{ secrets.REPO_VERSIONS_JSON }}' > versions.json
+        declare -A components
+
+        while IFS= read -r file; do
+          if [[ "$file" =~ ^([^/]+)/ ]]; then
+            components[${BASH_REMATCH[1]}]=1
+          elif [[ "$file" =~ ^.github/workflows/ci-([^/]+).yml$ ]]; then
+            components[${BASH_REMATCH[1]}]=1
+          fi
+        done < changed_files.txt
+
+        echo "Detected changed components:"
+        for comp in "${!components[@]}"; do
+          echo " - $comp"
+        done
+
+        BUMP_TYPE="${{ steps.bump.outputs.bump_type }}"
+        NEW_VERSIONS="{"
+        FIRST=true
+
+        for comp in "${!components[@]}"; do
+          CURRENT_VERSION=$(jq -r ".\"$comp\"" versions.json)
+          if [[ "$CURRENT_VERSION" == "null" ]]; then
+            echo "Skipping unknown component: $comp"
+            continue
+          fi
+
+          IFS='.' read -r MAJOR MINOR PATCH <<< "$CURRENT_VERSION"
+
+          case "$BUMP_TYPE" in
+            major)
+              MAJOR=$((MAJOR + 1)); MINOR=0; PATCH=0 ;;
+            minor)
+              MINOR=$((MINOR + 1)); PATCH=0 ;;
+            patch|*)
+              PATCH=$((PATCH + 1)) ;;
+          esac
+
+          NEW_VERSION="$MAJOR.$MINOR.$PATCH"
+          echo "New version for $comp: $NEW_VERSION"
+
+          if [ "$FIRST" = true ]; then
+            NEW_VERSIONS+="\"$comp\": \"$NEW_VERSION\""
+            FIRST=false
+          else
+            NEW_VERSIONS+=", \"$comp\": \"$NEW_VERSION\""
+          fi
+        done
+
+        NEW_VERSIONS+="}"
+
+        echo "Bumped versions JSON: $NEW_VERSIONS"
+        echo "bumped_versions=$NEW_VERSIONS" >> $GITHUB_OUTPUT
