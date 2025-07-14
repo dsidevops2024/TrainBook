@@ -16,7 +16,7 @@ jobs:
         uses: ./.github/actions/bump-json-version  # Local composite action
         with:
           base-branch: main
-          json-versions: ${{ secrets.JSON_VERSIONS }}
+          json-versions: ${{ vars.JSON_VERSIONS }}
 
       - name: Show outputs
         run: |
