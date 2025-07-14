@@ -13,7 +13,7 @@ jobs:
     steps:
       - name: Bump versions for changed components
         id: bump
-        uses: ./.github/actions/bump-json-version  # Local composite action
+        uses: ./.github/actions/version-bump  # Local composite action
         with:
           base-branch: main
           json-versions: ${{ vars.JSON_VERSIONS }}
