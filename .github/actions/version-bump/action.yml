@@ -8,13 +8,11 @@ outputs:
 runs:
   using: "composite"
   steps:
-    - name: Checkout repository
-      uses: actions/checkout@v4
-      with:
-        fetch-depth: 0
-
-    - name: Fetch base branch
-      run: git fetch origin ${{ github.base_ref }}
+    - name: Fetch base branch for diff if needed
+      if: ${{ inputs.component_changed == '' }}
+      shell: bash
+      run: |
+        git fetch origin ${{ github.base_ref }}
 
     - name: Get changed files
       id: changed
