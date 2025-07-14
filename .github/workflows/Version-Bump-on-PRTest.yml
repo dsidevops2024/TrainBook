@@ -11,6 +11,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - uses: actions/checkout@v3
       - name: Bump versions for changed components
         id: bump
         uses: ./.github/actions/version-bump  # Local composite action
