@@ -53,7 +53,8 @@ runs:
       id: labels
       shell: bash
       run: |
-        LABELS=$(jq -r '.pull_request.labels[].name' <<< "${{ toJson(github.event) }}")
+        #LABELS=$(jq -r '.pull_request.labels[].name' <<< "${{ toJson(github.event) }}")
+        LABELS=$(echo '${{ toJson(github.event) }}' | jq -r '.pull_request.labels[].name')
 
         TYPE=""
         if echo "$LABELS" | grep -q "semver:major"; then TYPE="major";
