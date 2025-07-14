@@ -50,7 +50,9 @@ runs:
       id: bump
       shell: bash
       run: |
-        LABELS=$(jq -r '.pull_request.labels[].name' <<< "${{ toJson(github.event) }}")
+        #LABELS=$(jq -r '.pull_request.labels[].name' <<< "${{ toJson(github.event) }}")
+        LABELS=$(jq -r '.[].name' <<< "${{ toJson(github.event.pull_request.labels) }}")
+
 
         TYPE=""
         if echo "$LABELS" | grep -q "semver:major"; then
