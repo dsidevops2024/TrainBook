@@ -54,7 +54,8 @@ runs:
       shell: bash
       run: |
         #LABELS=$(jq -r '.pull_request.labels[].name' <<< "${{ toJson(github.event) }}")
-        LABELS=$(jq -r '.pull_request.labels[].name' <<< '${{ toJson(github.event) }}')
+        #LABELS=$(jq -r '.pull_request.labels[].name' <<< '${{ toJson(github.event) }}')
+        LABELS=$(echo '${{ toJson(github.event.pull_request.labels) }}' | jq -r '.[].name')
 
         echo "Detected PR Labels:"
         echo "$LABELS"
