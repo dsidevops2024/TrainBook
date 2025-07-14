@@ -56,8 +56,8 @@ runs:
         #LABELS=$(jq -r '.pull_request.labels[].name' <<< "${{ toJson(github.event) }}")
         LABELS=$(jq -r '.pull_request.labels[].name' <<< '${{ toJson(github.event) }}')
 
-          echo "Detected PR Labels:"
-          echo "$LABELS"
+        echo "Detected PR Labels:"
+        echo "$LABELS"
         
         TYPE=""
         if echo "$LABELS" | grep -q "semver:major"; then TYPE="major";
