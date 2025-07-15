@@ -1,9 +1,9 @@
 name: CI/CD Pipeline for Dacpac
 on:
   workflow_call:
-  push:
-    paths:
-      - ".github/workflows/ci-dacpac.yml"
+  #push:
+    #paths:
+      #- ".github/workflows/ci-dacpac.yml"
 
 jobs:
   Checking-dacpac-build:
