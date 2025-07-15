@@ -15,7 +15,7 @@ jobs:
 
     steps:
 
-      - name: Checkout codess
+      - name: Checkout codes
         uses: actions/checkout@v3
 
       - name: Set up JDK 17
