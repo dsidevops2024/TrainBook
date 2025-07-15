@@ -14,12 +14,6 @@ outputs:
 runs:
   using: "composite"
   steps:
-    - name: Show versions-json input
-      shell: bash
-      run: |
-        echo "Received versions-json input:"
-        echo "${{ inputs.versions-json }}"
-
     - name: Get PR labels
       id: labels
       shell: bash
@@ -52,7 +46,7 @@ runs:
       shell: bash
       run: |
         component="${{ inputs.component }}"
-        json='${{ inputs.versions-json }}'
+        json="${{ inputs.versions-json }}"
 
         current_version=$(echo "$json" | jq -r --arg comp "$component" '.[$comp]')
         if [[ -z "$current_version" || "$current_version" == "null" ]]; then
