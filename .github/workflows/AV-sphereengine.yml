@@ -24,6 +24,14 @@ jobs:
       - name: Build with Maven
         run: mvn clean install
 
+      - name: Bump versions sphereengine
+        id: bump
+        if: github.event_name == 'pull_request' && github.event.pull_request.merged == true && github.event.pull_request.base.ref == 'main'
+        uses: ./.github/actions/semversion-calculation
+        with:
+          component: "sphereengine"
+          versions-json: ${{ vars.JSON_VERSIONS }}  
+
       - name: Upload to artifact 
         run: |
            echo "Submitting solution to Sphere Engine API..."
