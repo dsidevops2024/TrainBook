@@ -1,9 +1,8 @@
 name: AV-mvc
 
 on:
-  #pull_request:
-    #paths:
-      #- 'mvc/**'
+  pull_request:
+    types: [closed]
   workflow_call:
   push:
     paths:
