@@ -30,6 +30,15 @@ jobs:
       - name: Run tests
         run: mvn test
 
+      - name: Bump versions mvc check1
+        id: bump
+        #if: github.event_name == 'pull_request' && github.event.pull_request.merged == true && github.event.pull_request.base.ref == 'main'
+        if: github.ref == 'refs/heads/main' && startsWith(github.event.head_commit.message, 'Merge pull request')
+        uses: ./.github/actions/semversion-calculation
+        with:
+          component: "mvc"
+          versions-json: ${{ vars.JSON_VERSIONS }}
+
       - name: Push artifact to Artifactory (placeholder)
         run: |
           echo "Pushing artifact to Artifactory..." 
