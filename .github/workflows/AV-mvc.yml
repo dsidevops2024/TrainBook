@@ -29,4 +29,4 @@ jobs:
 
       - name: Push artifact to Artifactory (placeholder)
         run: |
-          echo "Pushing artifact to Artifactory... 
+          echo "Pushing artifact to Artifactory..." 
