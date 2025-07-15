@@ -23,8 +23,7 @@ runs:
       run: |
         echo "Received versions-json input:"
         echo '${{ inputs.versions-json }}'
-  
-       #LABELS=$(jq -r '.pull_request.labels[].name' "$GITHUB_EVENT_PATH")
+        #LABELS=$(jq -r '.pull_request.labels[].name' "$GITHUB_EVENT_PATH")
      
     - name: Get PR labels
       id: labels
