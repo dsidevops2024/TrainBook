@@ -28,10 +28,11 @@ runs:
     - name: Determine bump type
       id: type
       shell: bash
+      env:
+        LABELS: ${{ steps.labels.outputs.labels }}
       run: |
         bump="patch"
-        # Use quotes around "${{ steps.labels.outputs.labels }}" to prevent word splitting issues
-        for label in ${{ steps.labels.outputs.labels }}; do
+        for label in $LABELS; do
           if [[ "$label" == "semver:major" ]]; then
             bump="major"
             break
@@ -40,6 +41,22 @@ runs:
           fi
         done
         echo "bump_type=$bump" >> "$GITHUB_OUTPUT"
+    
+    #- name: Determine bump type
+      #id: type
+      #shell: bash
+      #run: |
+        #bump="patch"
+        # Use quotes around "${{ steps.labels.outputs.labels }}" to prevent word splitting issues
+        #for label in ${{ steps.labels.outputs.labels }}; do
+          #if [[ "$label" == "semver:major" ]]; then
+            #bump="major"
+            #break
+          #elif [[ "$label" == "semver:minor" ]]; then
+            #bump="minor"
+          #fi
+        #done
+        #echo "bump_type=$bump" >> "$GITHUB_OUTPUT"
 
     - name: Bump version
       id: bump
