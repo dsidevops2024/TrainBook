@@ -14,17 +14,16 @@ outputs:
 runs:
   using: "composite"
   steps:
-    #- name: Set up jq
-      #run: sudo apt-get update && sudo apt-get install -y jq
-      #shell: bash
-      
+    # - name: Set up jq
+    #   run: sudo apt-get update && sudo apt-get install -y jq
+    #   shell: bash
+
     - name: Debug: Show versions-json input
       shell: bash
       run: |
         echo "Received versions-json input:"
-        echo '${{ inputs.versions-json }}'
-        #LABELS=$(jq -r '.pull_request.labels[].name' "$GITHUB_EVENT_PATH")
-     
+        echo "${{ inputs.versions-json }}"
+
     - name: Get PR labels
       id: labels
       shell: bash
@@ -33,35 +32,38 @@ runs:
           echo "labels=" >> "$GITHUB_OUTPUT"
           exit 0
         fi
-        LABELS=$(jq -r '.pull_request.labels[].name' "$GITHUB_EVENT_PATH" | paste -sd "," -)
+        LABELS=$(jq -r '.pull_request.labels[].name' "$GITHUB_EVENT_PATH")
         echo "labels=$LABELS" >> "$GITHUB_OUTPUT"
-        
+
     - name: Determine bump type
       id: type
+      shell: bash
       run: |
         bump="patch"
+        # Use quotes around "${{ steps.labels.outputs.labels }}" to prevent word splitting issues
         for label in ${{ steps.labels.outputs.labels }}; do
           if [[ "$label" == "semver:major" ]]; then
-            bump="major"; break
+            bump="major"
+            break
           elif [[ "$label" == "semver:minor" ]]; then
             bump="minor"
           fi
         done
         echo "bump_type=$bump" >> "$GITHUB_OUTPUT"
-      shell: bash
-    
+
     - name: Bump version
       id: bump
+      shell: bash
       run: |
         component="${{ inputs.component }}"
         json='${{ inputs.versions-json }}'
-        current_version=$(echo "$json" | jq -r --arg comp "$component" '.[$comp]')
 
+        current_version=$(echo "$json" | jq -r --arg comp "$component" '.[$comp]')
         if [[ -z "$current_version" || "$current_version" == "null" ]]; then
           echo "Component '$component' not found in versions-json"
           exit 1
         fi
-        
+
         IFS='.' read -r major minor patch <<< "$current_version"
 
         case "${{ steps.type.outputs.bump_type }}" in
@@ -73,4 +75,3 @@ runs:
         new_version="$major.$minor.$patch"
         echo "new_version=$new_version" >> "$GITHUB_OUTPUT"
         echo "Bumped $component to $new_version"
-      shell: bash
