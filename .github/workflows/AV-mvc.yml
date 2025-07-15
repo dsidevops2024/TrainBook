@@ -1,11 +1,14 @@
 name: AV-mvc
 
 on:
-  workflow_call:
-  push:
+  pull_request:
     paths:
-      - ".github/workflows/AV-mvc.yml"
-      - "mvc/**"
+      - 'mvc/**'
+  #workflow_call:
+  #push:
+    #paths:
+      #- ".github/workflows/AV-mvc.yml"
+      #- "mvc/**"
 
 jobs:
   build:
@@ -26,6 +29,12 @@ jobs:
 
       - name: Run tests
         run: mvn test
+
+      - name: Bump version
+        id: bump
+        uses: ./.github/actions/semversion-calculation
+        with:
+          component: "mvc"
 
       - name: Push artifact to Artifactory (placeholder)
         run: |
