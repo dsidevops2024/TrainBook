@@ -1,10 +1,11 @@
 name: Version-Bump-on-PR
 
 on:
-  pull_request:
-    types: [opened]
-    branches:
-      - main
+  workflow_dispatch:
+  #pull_request:
+    #types: [opened]
+    #branches:
+      #- main
 
 jobs:
   version-bump:
