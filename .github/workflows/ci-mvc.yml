@@ -1,9 +1,9 @@
 name: CI/CD Pipeline for MVC
 on:
   workflow_call:
-  push:
-    paths:
-      - ".github/workflows/ci-mvc.yml"
+  #push:
+    #paths:
+      #- ".github/workflows/ci-mvc.yml"
 
 jobs:
   Checking-MVC-build:
