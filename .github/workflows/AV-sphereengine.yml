@@ -1,6 +1,8 @@
 name: AV-SphereEngine
 
 on:
+  pull_request:
+    types: [closed]
   workflow_call:
   push:
     paths:
