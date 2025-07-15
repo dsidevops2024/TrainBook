@@ -14,7 +14,7 @@ outputs:
 runs:
   using: "composite"
   steps:
-    - name: Debug: Show versions-json input
+    - name: Show versions-json input
       shell: bash
       run: |
         echo "Received versions-json input:"
