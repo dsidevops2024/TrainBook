@@ -1,14 +1,14 @@
 name: AV-mvc
 
 on:
-  pull_request:
-    paths:
-      - 'mvc/**'
-  #workflow_call:
-  #push:
+  #pull_request:
     #paths:
-      #- ".github/workflows/AV-mvc.yml"
-      #- "mvc/**"
+      #- 'mvc/**'
+  workflow_call:
+  push:
+    paths:
+      - ".github/workflows/AV-mvc.yml"
+      - "mvc/**"
 
 jobs:
   build:
@@ -32,6 +32,7 @@ jobs:
 
       - name: Bump version
         id: bump
+        if: github.event_name == 'pull_request' && github.event.pull_request.merged == true
         uses: ./.github/actions/semversion-calculation
         with:
           component: "mvc"
