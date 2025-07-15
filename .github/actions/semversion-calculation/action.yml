@@ -44,7 +44,7 @@ runs:
       id: bump
       run: |
         component="${{ inputs.component }}"
-        json="${{ vars.JSON_VARIABLE }}"
+        json="${{ vars.JSON_VERSIONS }}"
         current_version=$(echo "$json" | jq -r --arg comp "$component" '.[$comp]')
 
         IFS='.' read -r major minor patch <<< "$current_version"
