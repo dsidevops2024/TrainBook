@@ -4,6 +4,9 @@ inputs:
   component:
     description: "Component name"
     required: true
+  versions-json:
+    description: "JSON string containing versions"
+    required: true
 outputs:
   new_version:
     description: "The new version"
@@ -14,7 +17,11 @@ runs:
     #- name: Set up jq
       #run: sudo apt-get update && sudo apt-get install -y jq
       #shell: bash
-
+    - name: Bump version step
+      shell: bash
+      run: |
+        echo "Versions JSON: ${{ inputs.versions-json }}"
+        
     - name: Get PR labels
       id: labels
       run: |
@@ -44,7 +51,7 @@ runs:
       id: bump
       run: |
         component="${{ inputs.component }}"
-        json="${{ vars.JSON_VERSIONS }}"
+        json="${{ inputs.versions-json }}"
         current_version=$(echo "$json" | jq -r --arg comp "$component" '.[$comp]')
 
         IFS='.' read -r major minor patch <<< "$current_version"
