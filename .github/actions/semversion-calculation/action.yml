@@ -46,7 +46,7 @@ runs:
       shell: bash
       run: |
         component="${{ inputs.component }}"
-        json="${{ inputs.versions-json }}"
+        json='${{ inputs.versions-json }}'
 
         current_version=$(echo "$json" | jq -r --arg comp "$component" '.[$comp]')
         if [[ -z "$current_version" || "$current_version" == "null" ]]; then
