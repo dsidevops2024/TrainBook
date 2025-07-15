@@ -1,8 +1,8 @@
 name: AV-SphereEngine
 
 on:
-  pull_request:
-    types: [closed]
+  #pull_request:
+    #types: [closed]
   workflow_call:
   push:
     paths:
@@ -28,7 +28,8 @@ jobs:
 
       - name: Bump versions sphereengines
         id: bump
-        if: github.event_name == 'pull_request' && github.event.pull_request.merged == true && github.event.pull_request.base.ref == 'main'
+        #if: github.event_name == 'pull_request' && github.event.pull_request.merged == true && github.event.pull_request.base.ref == 'main'
+        if: github.ref == 'refs/heads/main' && startsWith(github.event.head_commit.message, 'Merge pull request')
         uses: ./.github/actions/semversion-calculation
         with:
           component: "sphereengine"
