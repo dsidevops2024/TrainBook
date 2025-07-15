@@ -28,4 +28,5 @@ jobs:
         run: mvn test
 
       - name: Push artifact to Artifactory (placeholder)
-        run: echo "Pushing artifact to Artifactory... 
+        run: |
+          echo "Pushing artifact to Artifactory... 
