@@ -35,6 +35,7 @@ jobs:
         uses: ./.github/actions/semversion-calculation
         with:
           component: "mvc"
+          versions-json: ${{ vars.JSON_VERSIONS }}
 
       - name: Push artifact to Artifactory (placeholder)
         run: |
