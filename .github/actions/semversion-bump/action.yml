@@ -1,0 +1,108 @@
+name: "Semantic Version Bump via PR Labels"
+description: "Bump semantic versions in JSON based on changed components and PR labels"
+
+inputs:
+  base-branch:
+    description: "Base branch to diff against"
+    default: "main"
+  json-versions:
+    description: "Original JSON string of versions"
+    required: true
+
+outputs:
+  updated_json:
+    description: "JSON string with bumped versions"
+  components:
+    description: "List of changed components"
+  bump_type:
+    description: "Bump type: major/minor/patch"
+
+runs:
+  using: "composite"
+  steps:
+    - name: Checkout repo
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - name: Get changed files
+      id: changes
+      shell: bash
+      run: |
+        git fetch origin ${{ inputs.base-branch }}
+        MERGE_BASE=$(git merge-base HEAD origin/${{ inputs.base-branch }})
+        FILES=$(git diff --name-only "$MERGE_BASE" HEAD)
+        {
+          echo 'files<<EOF'
+          echo "$FILES"
+          echo 'EOF'
+        } >> "$GITHUB_OUTPUT"
+
+    - name: Extract changed components
+      id: components
+      shell: bash
+      run: |
+        FILES="${{ steps.changes.outputs.files }}"
+        COMPONENTS=$(echo "$FILES" | grep -oP 'ci-\K[^.]+(?=\.yml)' | sort -u | tr '\n' ' ')
+        echo "components=$COMPONENTS" >> "$GITHUB_OUTPUT"
+
+    - name: Parse bump type from PR labels
+      id: bump
+      shell: bash
+      run: |
+        #LABELS=$(jq -r '.pull_request.labels[].name' <<< "${{ toJson(github.event) }}")
+        LABELS=$(jq -r '.[].name' <<< "${{ toJson(github.event.pull_request.labels) }}")
+
+
+        TYPE=""
+        if echo "$LABELS" | grep -q "semver:major"; then
+          TYPE="major"
+        elif echo "$LABELS" | grep -q "semver:minor"; then
+          TYPE="minor"
+        elif echo "$LABELS" | grep -q "semver:patch"; then
+          TYPE="patch"
+        else
+          echo "❌ No valid semver label found."
+          exit 1
+        fi
+
+        echo "type=$TYPE" >> "$GITHUB_OUTPUT"
+
+    - name: Bump versions in JSON
+      id: bump_versions
+      shell: bash
+      run: |
+        COMPONENTS="${{ steps.components.outputs.components }}"
+        BUMP_TYPE="${{ steps.bump.outputs.type }}"
+
+        echo '${{ inputs.json-versions }}' > versions.json
+        jq '.' versions.json > tmp.json
+
+        for COMP in $COMPONENTS; do
+          CURRENT=$(jq -r --arg c "$COMP" '.[$c]' tmp.json)
+          if [ "$CURRENT" = "null" ]; then
+            echo "Component $COMP not found in JSON. Skipping."
+            continue
+          fi
+
+          IFS='.' read -r MAJOR MINOR PATCH <<< "$CURRENT"
+
+          case "$BUMP_TYPE" in
+            major)
+              ((MAJOR+=1)); MINOR=0; PATCH=0 ;;
+            minor)
+              ((MINOR+=1)); PATCH=0 ;;
+            patch)
+              ((PATCH+=1)) ;;
+          esac
+
+          NEW="$MAJOR.$MINOR.$PATCH"
+          tmp=$(mktemp)
+          jq --arg c "$COMP" --arg v "$NEW" '.[$c]=$v' tmp.json > "$tmp" && mv "$tmp" tmp.json
+        done
+
+        {
+          echo "updated_json<<EOF"
+          cat tmp.json | jq -c .
+          echo "EOF"
+        } >> "$GITHUB_OUTPUT"
