@@ -27,7 +27,7 @@ jobs:
       - name: Build with Maven check1
         run: mvn clean install
 
-      - name: Run tests--checking main
+      - name: Run tests--checking main1
         run: mvn test
 
       - name: Bump versions mvc check1
