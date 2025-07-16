@@ -23,7 +23,7 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
 
-      - name: Build with Maven
+      - name: Build with Maven-checking dev
         run: mvn clean install
 
       - name: Bump versions sphereengines
