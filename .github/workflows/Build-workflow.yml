@@ -3,8 +3,8 @@ name: Build-workflow
 on:
   #pull_request:
     #types: [opened, edited, synchronize]
-  workflow_dispatch:
-  #push:
+  #workflow_dispatch:
+  push:
 
 jobs:
   build:
@@ -150,15 +150,15 @@ jobs:
              # Output updates for next step
              $updates | ConvertTo-Json -Compress | Out-File -FilePath updated_versions.json
 
-      - name: Merge and update JSON_VERSIONS
-        run: |
-          echo "Updating JSON_VERSIONS..."
-          echo '${{ vars.JSON_VERSIONS }}' > current.json
-          cat updated_versions.json > update.json
-          jq -s '.[0] * .[1]' current.json update.json > merged.json
-          cat merged.json
+      #- name: Merge and update JSON_VERSIONS
+        #run: |
+          #echo "Updating JSON_VERSIONS..."
+          #echo '${{ vars.JSON_VERSIONS }}' > current.json
+          #cat updated_versions.json > update.json
+          #jq -s '.[0] * .[1]' current.json update.json > merged.json
+          #cat merged.json
 
-          gh variable set JSON_VERSIONS --body "$(cat merged.json)" --repo ${{ github.repository }}
-        env:
-         GH_TOKEN: ${{ secrets.PAT_TOKEN }}
+          #gh variable set JSON_VERSIONS --body "$(cat merged.json)" --repo ${{ github.repository }}
+        #env:
+         #GH_TOKEN: ${{ secrets.PAT_TOKEN }}
  
