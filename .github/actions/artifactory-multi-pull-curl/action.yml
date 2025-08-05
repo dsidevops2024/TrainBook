@@ -1,0 +1,141 @@
+name: 'Calculate Component Versions'
+description: 'Detect changed components, semver label, and bump version'
+inputs:
+  github-token:
+    description: 'GitHub Token'
+    required: true
+  json-versions:
+    description: 'JSON_VERSIONS org variable value'
+    required: true
+outputs:
+  version_json:
+    description: 'Updated version JSON'
+    value: ${{ steps.bump_json.outputs.updated_json }}
+  components:
+    description: 'List of changed components'
+    value: ${{ steps.components.outputs.components }}
+runs:
+  using: "composite"
+  steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - name: Authenticate GitHub CLI
+      shell: bash
+      run: gh auth login --with-token <<< "${{ inputs.github-token }}"
+
+    - name: Get merged PR info
+      id: pr
+      shell: bash
+      env:
+        GITHUB_TOKEN: ${{ inputs.github-token }}
+      run: |
+        PR_JSON=$(gh pr list --state merged --limit 20 --json number,mergeCommit,baseRefName,headRefName,labels,mergeCommit \
+          --jq ".[] | select(.mergeCommit.oid == \"${{ github.sha }}\")")
+
+        echo "$PR_JSON" > pr.json
+
+        echo "PR_NUMBER=$(jq -r '.number' pr.json)" >> $GITHUB_ENV
+        echo "BASE_REF=$(jq -r '.baseRefName' pr.json)" >> $GITHUB_ENV
+        echo "HEAD_REF=$(jq -r '.headRefName' pr.json)" >> $GITHUB_ENV
+
+    - name: Get PR labels
+      id: labels
+      shell: bash
+      run: |
+        LABELS=$(jq -r '.labels[].name' pr.json)
+        TYPE=""
+
+        if echo "$LABELS" | grep -q 'semver:major'; then
+          TYPE="major"
+        elif echo "$LABELS" | grep -q 'semver:minor'; then
+          TYPE="minor"
+        elif echo "$LABELS" | grep -q 'semver:patch'; then
+          TYPE="patch"
+        else
+          echo "❌ No valid semver label found."
+          exit 1
+        fi
+        echo "type=$TYPE" 
+        echo "type=$TYPE" >> $GITHUB_OUTPUT
+
+    - name: Detect changed components
+      id: components
+      shell: bash
+      run: |
+        git fetch origin main
+        FILES=$(git diff --name-only HEAD^1 HEAD)
+        echo "$FILES"
+
+        COMPONENTS_FROM_YML=$(echo "$FILES" | grep -oP 'ci-\K[^.]+(?=\.yml)' || true)
+        COMPONENTS_FROM_DIR=$(echo "$FILES" | awk -F/ '$1 != ".github" && $1 != "backend" { print $1 }' | sort -u || true)
+
+        COMPONENTS=$(echo -e "$COMPONENTS_FROM_YML\n$COMPONENTS_FROM_DIR" | sort -u | tr '\n' ' ')
+
+        BACKEND_FILES=$(echo "$FILES" | grep '^backend/' || true)
+
+        if [ -n "$BACKEND_FILES" ]; then
+          COMPONENTS_JSON="backend/backend-components.json"
+          if ! jq empty "$COMPONENTS_JSON"; then
+            echo "❌ Invalid JSON in $COMPONENTS_JSON"
+            exit 1
+          fi 
+
+          declare -A MATCHED_BACKEND_COMPONENTS=()
+          while IFS= read -r file; do
+            TITLES=$(jq -r '.[].title' "$COMPONENTS_JSON")
+            for title in $TITLES; do
+              if [[ "$file" == *"$title"* ]]; then
+                MATCHED_BACKEND_COMPONENTS["$title"]=1
+              fi
+            done
+          done <<< "$FILES"
+
+          BACKEND_COMPONENTS=$(printf "%s\n" "${!MATCHED_BACKEND_COMPONENTS[@]}" | sort -u | tr '\n' ' ')
+          if [ -n "$BACKEND_COMPONENTS" ]; then
+            COMPONENTS="$COMPONENTS $BACKEND_COMPONENTS"
+          fi
+        fi
+
+        COMPONENTS=$(echo "$COMPONENTS" | xargs -n1 | grep -v '^backend$' | sort -u | tr '\n' ' ')
+        if [[ -z "$COMPONENTS" ]]; then
+          echo "⚠️ No components changed. Exiting."
+          exit 1
+        fi
+
+        echo "components=$COMPONENTS" >> $GITHUB_OUTPUT
+
+    - name: Bump version JSON
+      id: bump_json
+      shell: bash
+      run: |
+        echo '${{ inputs.json-versions }}' | jq . > versions.json 
+        cp versions.json tmp.json
+
+        BUMP_TYPE="${{ steps.labels.outputs.type }}"
+        COMPONENTS="${{ steps.components.outputs.components }}"
+
+        for COMP in $COMPONENTS; do
+          CURRENT=$(jq -r --arg c "$COMP" '.[$c]' tmp.json)
+          [[ "$CURRENT" == "null" ]] && continue
+          IFS='.' read -r MAJOR MINOR PATCH <<< "$CURRENT"
+          case "$BUMP_TYPE" in
+            major) ((MAJOR+=1)); MINOR=0; PATCH=0 ;;
+            minor) ((MINOR+=1)); PATCH=0 ;;
+            patch) ((PATCH+=1)) ;;
+          esac
+          NEW="$MAJOR.$MINOR.$PATCH"
+          jq --arg c "$COMP" --arg v "$NEW" '.[$c]=$v' tmp.json > tmp2.json && mv tmp2.json tmp.json
+        done
+
+        FINAL=$(jq -c . tmp.json)
+        echo "$FINAL" > version.json
+        echo "updated_json=$FINAL" >> $GITHUB_OUTPUT
+
+    #- name: Upload version.json
+      #uses: actions/upload-artifact@v4
+      #with:
+       # name: version-info
+        #path: version.json
