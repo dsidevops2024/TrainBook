@@ -1,0 +1,50 @@
+name: Build-sample
+#Using commit mgs
+on:
+  workflow_dispatch:
+  #push:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout code
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - name: Cache Maven packages
+        uses: actions/cache@v3
+        with:
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}      
+    
+      - name: Settting up JDK 17
+        uses: actions/setup-java@v3
+        with:
+          java-version: '18'
+          distribution: 'temurin'
+          cache: maven
+
+      - name: Build with new Maven-checking4
+        run: mvn -B package --file pom.xml
+    
+      - name: Creates stagin directory and copy .war -checking4
+        run: |
+          mkdir staging
+          cp target/*.war staging/
+
+     # -------------------------------
+      # Upload to JFrog Artifactory
+      # -------------------------------
+      - name: Set up JFrog CLI
+        uses: jfrog/setup-jfrog-cli@v3
+
+      - name: Upload WAR to JFrog Artifactory
+        env:
+          JF_URL: http://192.168.2.32:8082/artifactory
+          JF_ACCESS_TOKEN: ${{ vars.JFROG_IDENTITY_TOKEN }}
+        run: |
+          jf rt u "staging/*.war" "generic-local/dev-gen/${{ github.run_number }}/" \
+            --url $JF_URL \
+            --access-token $JF_ACCESS_TOKEN \
+            --target-props "name=SAAS-SPHEREboard.war;branch=${{ github.ref_name }};commit=${{ github.sha }};creator=${{ github.actor }};build.number=${{ github.run_number }};stage=dev"
