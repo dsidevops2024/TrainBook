@@ -41,14 +41,20 @@ jobs:
       shell: pwsh
       run: |
         $labels = "${{ steps.labels.outputs.labels }}"
-        if ($labels -match "major") {
+        if ($labels -match "semver:major") {
           echo "type=major" >> $env:GITHUB_OUTPUT
-        } elseif ($labels -match "minor") {
+        }
+        elseif ($labels -match "semver:minor") {
           echo "type=minor" >> $env:GITHUB_OUTPUT
-        } else {
+        }
+        elseif ($labels -match "semver:patch") {
           echo "type=patch" >> $env:GITHUB_OUTPUT
         }
-
+        else {
+          Write-Error "No semver label found (semver:major|minor|patch)"
+          exit 1
+        }
+        
     - name: Update version in Java file
       if: github.event_name == 'pull_request'
       shell: pwsh
