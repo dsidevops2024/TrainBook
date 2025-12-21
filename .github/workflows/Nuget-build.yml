@@ -1,0 +1,115 @@
+name: Version Bump, Build & Publish
+
+on:
+  pull_request:
+    types: [opened, synchronize]
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: write
+  pull-requests: read
+
+jobs:
+  version-and-build:
+    runs-on: windows-latest
+
+    steps:
+    # ---------------------------------------
+    # CHECKOUT (uses default GITHUB_TOKEN)
+    # ---------------------------------------
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        ref: ${{ github.event.pull_request.head.ref || 'main' }}
+
+    # ---------------------------------------
+    # PR → VERSION BUMP
+    # ---------------------------------------
+    - name: Read PR labels
+      if: github.event_name == 'pull_request'
+      id: labels
+      shell: pwsh
+      run: |
+        $labels = '${{ toJson(github.event.pull_request.labels) }}' | ConvertFrom-Json
+        echo "labels=$($labels.name -join ',')" >> $env:GITHUB_OUTPUT
+
+    - name: Decide bump type
+      if: github.event_name == 'pull_request'
+      id: bump
+      shell: pwsh
+      run: |
+        $labels = "${{ steps.labels.outputs.labels }}"
+        if ($labels -match "major") {
+          echo "type=major" >> $env:GITHUB_OUTPUT
+        } elseif ($labels -match "minor") {
+          echo "type=minor" >> $env:GITHUB_OUTPUT
+        } else {
+          echo "type=patch" >> $env:GITHUB_OUTPUT
+        }
+
+    - name: Update version in Java file
+      if: github.event_name == 'pull_request'
+      shell: pwsh
+      run: |
+        $file = "src/main/java/com/example/Version.java"
+        $content = Get-Content $file
+
+        $content -match 'VERSION\s*=\s*"([\d\.]+)"' | Out-Null
+        $current = $matches[1]
+
+        $v = $current.Split(".")
+        $major=[int]$v[0]; $minor=[int]$v[1]; $patch=[int]$v[2]
+
+        switch ("${{ steps.bump.outputs.type }}") {
+          "major" { $major++; $minor=0; $patch=0 }
+          "minor" { $minor++; $patch=0 }
+          "patch" { $patch++ }
+        }
+
+        $newVersion = "$major.$minor.$patch"
+        Write-Host "New Version: $newVersion"
+
+        $updated = $content -replace 'VERSION\s*=\s*".*?"', "VERSION = `"$newVersion`""
+        Set-Content $file $updated
+
+    - name: Commit & push (NO custom token)
+      if: github.event_name == 'pull_request'
+      shell: pwsh
+      run: |
+        git config user.name "github-actions[bot]"
+        git config user.email "github-actions[bot]@users.noreply.github.com"
+
+        git add src/main/java/com/example/Version.java
+        git commit -m "chore: bump version based on PR label" || exit 0
+        git push
+
+    # ---------------------------------------
+    # MAIN → BUILD & JFROG PUBLISH
+    # ---------------------------------------
+    - name: Setup Java
+      if: github.event_name == 'push'
+      uses: actions/setup-java@v4
+      with:
+        distribution: temurin
+        java-version: '17'
+
+    - name: Read version
+      if: github.event_name == 'push'
+      id: version
+      shell: pwsh
+      run: |
+        (Get-Content src/main/java/com/example/Version.java) `
+          -match 'VERSION\s*=\s*"([\d\.]+)"' | Out-Null
+        echo "version=$($matches[1])" >> $env:GITHUB_OUTPUT
+
+    - name: Build
+      if: github.event_name == 'push'
+      run: mvn clean package
+
+    - name: Upload to JFrog
+      if: github.event_name == 'push'
+      shell: pwsh
+      run: |
+        echo "pushed to jfrog successfully"
