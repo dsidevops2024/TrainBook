@@ -135,7 +135,7 @@ jobs:
       id: version
       shell: pwsh
       run: |
-        (Get-Content src/main/java/com/example/Version.java) `
+        (Get-Content src/com/shashi/example/Version.java) `
           -match 'VERSION\s*=\s*"([\d\.]+)"' | Out-Null
         echo "version=$($matches[1])" >> $env:GITHUB_OUTPUT
 
