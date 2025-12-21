@@ -55,17 +55,39 @@ jobs:
           exit 1
         }
         
+    - name: Debug repo structure
+      shell: pwsh
+      run: |
+        Write-Host "Current directory:"
+        Get-Location
+
+        Write-Host "Repo tree (top level):"
+        Get-ChildItem
+
+        Write-Host "Searching for Version.java:"
+        Get-ChildItem -Recurse -Filter Version.java
+
     - name: Update version in Java file
       if: github.event_name == 'pull_request'
       shell: pwsh
       run: |
-        #$file = "src/main/java/com/example/Version.java"
-        $file = "TrainBook/src/main/java/com/example/Version.java"
+        $file = Get-ChildItem -Recurse -Filter Version.java | Select-Object -First 1
 
-        $content = Get-Content $file
+        if (-not $file) {
+          Write-Error "Version.java not found in repository"
+          exit 1
+        }
 
-        $content -match 'VERSION\s*=\s*"([\d\.]+)"' | Out-Null
-        $current = $matches[1]
+        Write-Host "Using file: $($file.FullName)"
+
+        $content = Get-Content $file.FullName
+
+        if ($content -match 'VERSION\s*=\s*"([\d\.]+)"') {
+          $current = $matches[1]
+        } else {
+          Write-Error "VERSION constant not found"
+          exit 1
+        }
 
         $v = $current.Split(".")
         $major=[int]$v[0]; $minor=[int]$v[1]; $patch=[int]$v[2]
@@ -80,7 +102,7 @@ jobs:
         Write-Host "New Version: $newVersion"
 
         $updated = $content -replace 'VERSION\s*=\s*".*?"', "VERSION = `"$newVersion`""
-        Set-Content $file $updated
+        Set-Content $file.FullName $updated
 
     - name: Commit & push (NO custom token)
       if: github.event_name == 'pull_request'
