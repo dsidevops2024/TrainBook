@@ -59,7 +59,9 @@ jobs:
       if: github.event_name == 'pull_request'
       shell: pwsh
       run: |
-        $file = "src/main/java/com/example/Version.java"
+        #$file = "src/main/java/com/example/Version.java"
+        $file = "TrainBook/src/main/java/com/example/Version.java"
+
         $content = Get-Content $file
 
         $content -match 'VERSION\s*=\s*"([\d\.]+)"' | Out-Null
