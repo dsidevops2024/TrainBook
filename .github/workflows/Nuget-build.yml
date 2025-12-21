@@ -80,9 +80,12 @@ jobs:
 
         Write-Host "Using file: $($file.FullName)"
 
-        $content = Get-Content $file.FullName
+        #$content = Get-Content $file.FullName
+        $content = Get-Content $file.FullName -Raw
 
-        if ($content -match 'VERSION\s*=\s*"([\d\.]+)"') {
+
+        #if ($content -match 'VERSION\s*=\s*"([\d\.]+)"') {
+        if ($content -match 'VERSION\s*=\s*"([0-9]+\.[0-9]+\.[0-9]+)"') {
           $current = $matches[1]
         } else {
           Write-Error "VERSION constant not found"
@@ -101,7 +104,8 @@ jobs:
         $newVersion = "$major.$minor.$patch"
         Write-Host "New Version: $newVersion"
 
-        $updated = $content -replace 'VERSION\s*=\s*".*?"', "VERSION = `"$newVersion`""
+        #$updated = $content -replace 'VERSION\s*=\s*".*?"', "VERSION = `"$newVersion`""
+        $updated = $content -replace 'VERSION\s*=\s*"[0-9]+\.[0-9]+\.[0-9]+"', "VERSION = `"$newVersion`""
         Set-Content $file.FullName $updated
 
     - name: Commit & push (NO custom token)
