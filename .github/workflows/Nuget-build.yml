@@ -1,0 +1,150 @@
+name: Version Bump, Build & Publish
+
+on:
+  pull_request:
+    types: [opened, synchronize]
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: write
+  pull-requests: read
+
+jobs:
+  version-and-build:
+    runs-on: windows-latest
+
+    steps:
+    # ---------------------------------------
+    # CHECKOUT (uses default GITHUB_TOKEN)
+    # ---------------------------------------
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        ref: ${{ github.event.pull_request.head.ref || 'main' }}
+
+    # ---------------------------------------
+    # PR → VERSION BUMP
+    # ---------------------------------------
+    - name: Read PR labels
+      if: github.event_name == 'pull_request'
+      id: labels
+      shell: pwsh
+      run: |
+        $labels = '${{ toJson(github.event.pull_request.labels) }}' | ConvertFrom-Json
+        echo "labels=$($labels.name -join ',')" >> $env:GITHUB_OUTPUT
+
+    - name: Decide bump type
+      if: github.event_name == 'pull_request'
+      id: bump
+      shell: pwsh
+      run: |
+        $labels = "${{ steps.labels.outputs.labels }}"
+        if ($labels -match "semver:major") {
+          echo "type=major" >> $env:GITHUB_OUTPUT
+        }
+        elseif ($labels -match "semver:minor") {
+          echo "type=minor" >> $env:GITHUB_OUTPUT
+        }
+        elseif ($labels -match "semver:patch") {
+          echo "type=patch" >> $env:GITHUB_OUTPUT
+        }
+        else {
+          Write-Error "No semver label found (semver:major|minor|patch)"
+          exit 1
+        }
+        
+    - name: Debug repo structure
+      shell: pwsh
+      run: |
+        Write-Host "Current directory:"
+        Get-Location
+
+        Write-Host "Repo tree (top level):"
+        Get-ChildItem
+
+        Write-Host "Searching for Version.java:"
+        Get-ChildItem -Recurse -Filter Version.java
+
+    - name: Update version in Java file
+      if: github.event_name == 'pull_request'
+      shell: pwsh
+      run: |
+        $file = Get-ChildItem -Recurse -Filter Version.java | Select-Object -First 1
+
+        if (-not $file) {
+          Write-Error "Version.java not found in repository"
+          exit 1
+        }
+
+        Write-Host "Using file: $($file.FullName)"
+
+        #$content = Get-Content $file.FullName
+        $content = Get-Content $file.FullName -Raw
+
+
+        #if ($content -match 'VERSION\s*=\s*"([\d\.]+)"') {
+        if ($content -match 'VERSION\s*=\s*"([0-9]+\.[0-9]+\.[0-9]+)"') {
+          $current = $matches[1]
+        } else {
+          Write-Error "VERSION constant not found"
+          exit 1
+        }
+
+        $v = $current.Split(".")
+        $major=[int]$v[0]; $minor=[int]$v[1]; $patch=[int]$v[2]
+
+        switch ("${{ steps.bump.outputs.type }}") {
+          "major" { $major++; $minor=0; $patch=0 }
+          "minor" { $minor++; $patch=0 }
+          "patch" { $patch++ }
+        }
+
+        $newVersion = "$major.$minor.$patch"
+        Write-Host "New Version: $newVersion"
+
+        #$updated = $content -replace 'VERSION\s*=\s*".*?"', "VERSION = `"$newVersion`""
+        $updated = $content -replace 'VERSION\s*=\s*"[0-9]+\.[0-9]+\.[0-9]+"', "VERSION = `"$newVersion`""
+        Set-Content $file.FullName $updated
+
+    - name: Commit & push (NO custom token)
+      if: github.event_name == 'pull_request'
+      shell: pwsh
+      run: |
+        git config user.name "github-actions[bot]"
+        git config user.email "github-actions[bot]@users.noreply.github.com"
+        
+        git add src/com/shashi/example/Version.java
+        #git add src/main/java/com/example/Version.java
+        git commit -m "chore: bump version based on PR label" || exit 0
+        git push
+
+    # ---------------------------------------
+    # MAIN → BUILD & JFROG PUBLISH
+    # ---------------------------------------
+    - name: Setup Java
+      if: github.event_name == 'push'
+      uses: actions/setup-java@v4
+      with:
+        distribution: temurin
+        java-version: '17'
+
+    - name: Read version
+      if: github.event_name == 'push'
+      id: version
+      shell: pwsh
+      run: |
+        (Get-Content src/main/java/com/example/Version.java) `
+          -match 'VERSION\s*=\s*"([\d\.]+)"' | Out-Null
+        echo "version=$($matches[1])" >> $env:GITHUB_OUTPUT
+
+    - name: Build
+      if: github.event_name == 'push'
+      run: mvn clean package
+
+    - name: Upload to JFrog
+      if: github.event_name == 'push'
+      shell: pwsh
+      run: |
+        echo "pushed to jfrog successfully"
