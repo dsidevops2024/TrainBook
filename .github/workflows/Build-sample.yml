@@ -36,15 +36,15 @@ jobs:
      # -------------------------------
       # Upload to JFrog Artifactory
       # -------------------------------
-      - name: Set up JFrog CLI
-        uses: jfrog/setup-jfrog-cli@v3
+      #- name: Set up JFrog CLI
+        #uses: jfrog/setup-jfrog-cli@v3
 
-      - name: Upload WAR to JFrog Artifactory
-        env:
-          JF_URL: http://192.168.2.32:8082/artifactory
-          JF_ACCESS_TOKEN: ${{ vars.JFROG_IDENTITY_TOKEN }}
-        run: |
-          jf rt u "staging/*.war" "generic-local/dev-gen/${{ github.run_number }}/" \
-            --url $JF_URL \
-            --access-token $JF_ACCESS_TOKEN \
-            --target-props "name=SAAS-SPHEREboard.war;branch=${{ github.ref_name }};commit=${{ github.sha }};creator=${{ github.actor }};build.number=${{ github.run_number }};stage=dev"
+      #- name: Upload WAR to JFrog Artifactory
+        #env:
+          #JF_URL: http://192.168.2.32:8082/artifactory
+          #JF_ACCESS_TOKEN: ${{ vars.JFROG_IDENTITY_TOKEN }}
+       # run: |
+          #jf rt u "staging/*.war" "generic-local/dev-gen/${{ github.run_number }}/" \
+            #--url $JF_URL \
+            #--access-token $JF_ACCESS_TOKEN \
+            #--target-props "name=SAAS-SPHEREboard.war;branch=${{ github.ref_name }};commit=${{ github.sha }};creator=${{ github.actor }};build.number=${{ github.run_number }};stage=dev"
