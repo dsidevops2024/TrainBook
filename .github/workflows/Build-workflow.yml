@@ -3,8 +3,8 @@ name: Build-workflow
 on:
   #pull_request:
     #types: [opened, edited, synchronize]
-  #workflow_dispatch:
-  push:
+  workflow_dispatch:
+  #push:
 
 jobs:
   build:
