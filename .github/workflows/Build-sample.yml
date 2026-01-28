@@ -31,7 +31,7 @@ jobs:
           distribution: 'temurin'
           cache: maven
 
-      - name: Build with new Maven-checking4
+      - name: Build with new Maven-checking55
         run: mvn -B package --file pom.xml
     
       - name: Creates stagin directory and copy .war -checking4
